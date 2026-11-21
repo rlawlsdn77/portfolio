@@ -280,33 +280,38 @@ flowchart LR
 stateDiagram-v2
     direction LR
     state "게임 시작 → 회의실로" as GS
-    state "라운드 (3회)" as ROUND {
-        state "장르 배분 · 라이어 선정 → 키워드 뿌리기" as GA
-        state "마트 진입 · 이동 · 복귀" as MA
-        state "물건 보여주고 발언 (발언자마다 반복)" as SP
-        state "지목" as PA
-        state "변론 · 투표" as DV
-        state "라밍아웃 버튼 누름" as LO
-        state "라이어 확정 · 키워드 맞춤" as LF
-        state "점수 집계" as ST
-        [*] --> GA
-        GA --> MA
-        MA --> SP
-        SP --> PA
-        PA --> SP: 스킵 (사이클 1 · 2)
-        PA --> DV: 최다 지목자
-        SP --> LO: 라이어가 라밍아웃
-        LO --> LF: 라이어 발언 단계로
-        DV --> LF
-        LF --> ST
-        ST --> GA: 다음 라운드
-        ST --> [*]: 마지막 라운드
-    }
+    state "라운드 (3회)" as ROUND
     state "최종 결과 → 로비로" as FR
     [*] --> GS
     GS --> ROUND
     ROUND --> FR
     FR --> [*]
+```
+
+<!-- ✍️ 둘째 그림 앞 한 줄: '라운드 (3회)' 안에서 무엇을 보면 되는지 직접 쓰기 (11.22 답: 그림을 둘로 나누기 — 바깥 흐름 / 라운드 안 흐름) -->
+
+```mermaid
+stateDiagram-v2
+    state "장르 배분 · 라이어 선정 → 키워드 뿌리기" as GA
+    state "마트 진입 · 이동 · 복귀" as MA
+    state "물건 보여주고 발언 (발언자마다 반복)" as SP
+    state "지목" as PA
+    state "변론 · 투표" as DV
+    state "라밍아웃 버튼 누름" as LO
+    state "라이어 확정 · 키워드 맞춤" as LF
+    state "점수 집계" as ST
+    [*] --> GA
+    GA --> MA
+    MA --> SP
+    SP --> PA
+    PA --> SP: 스킵 (사이클 1 · 2)
+    PA --> DV: 최다 지목자
+    SP --> LO: 라이어가 라밍아웃
+    LO --> LF: 라이어 발언 단계로
+    DV --> LF
+    LF --> ST
+    ST --> GA: 다음 라운드
+    ST --> [*]: 마지막 라운드
 ```
 
 
@@ -830,7 +835,7 @@ private void OnSpecialChat(string id, string nickName, string text)
 ```
 
 - 기록에 **그 사람이 이번 카테고리에 소개한 물건**을 함께 붙입니다. 마트 복귀 때 서버가 준 유저별 고른 물건 ID(`itemListsByUser`)에서 현재 카테고리의 물건을 찾아 이름으로 바꿉니다(`DoGetItem`). TAB을 누르면 "누가 무엇을 들고 무슨 말을 했는지"를 한 줄씩 비교할 수 있습니다.
-- 색은 보낸 사람 기준으로 여기서 한 번만 입힙니다. 09.09 전에는 발언 종료 공지가 색을 입히기 전의 문자열을 받아 '내 색'으로 다시 칠했습니다 ([6.5 결정 3](#65-ui를-언제-부르고-어떻게-묶고-값을-어디서-얻나), 9장 그 밖의 수정).
+- 색은 보낸 사람 기준으로 여기서 한 번만 입힙니다. 09.09 전에는 발언 종료 공지가 색을 입히기 전의 문자열을 받아 '내 색'으로 다시 칠했습니다 ([6.5 결정 3](#65-ui를-언제-부르고-어떻게-묶고-값을-어디서-얻나)).
 
 | 특수채팅 공지 | TAB 정보창 | 키워드채팅 결과 |
 |---|---|---|
@@ -1082,10 +1087,7 @@ private void OnSelect(SelectMessage message)
 
 | 문제 | 원인 → 해결 |
 |---|---|
-| 발언 종료 공지의 특수채팅이 '내 색'으로 칠해짐 | UI가 색을 입히기 전의 문자열을 받아 `client.Me.Id`의 색으로 칠함 → 보낸 사람 색을 `LiarClient`에서 입혀 넘김 |
-| 2라운드부터 타이머가 안 보임 | 라운드 사이 로비를 거칠 때 `HideTimer`가 불리고, 다시 켜는 곳이 게임 시작 상태뿐 → 라운드가 시작되는 장르 배분 상태에서도 켬 |
 | 게임이 끝나도 지난 점수가 남음 | 점수(`UserScoreInfo`)를 지우는 곳이 없음 → 최종 결과 종료와 새 게임 시작 때 초기화 |
-| 채팅이 늘어도 스크롤 영역이 커지지 않음 | ContentSizeFitter가 런타임에 바로 갱신되지 않음 → TMP가 계산한 높이(`GetPreferredValues`)로 Content 크기를 직접 지정하고, 마트에서 돌아와 채팅창을 다시 켤 때도 다시 계산 |
 
 ---
 
@@ -1139,8 +1141,7 @@ private void OnSelect(SelectMessage message)
 
 **잘 된 것**
 
-1. 서버에서 보내는 데이터를 하나하나 분석해서 작업하는 것이 아닌 파라미터 형태에 따른 분기처리를 진행하여 효율적인 데이터 수신이 가능
-2. 상태 22개의 Action 필드와 case를 손으로 쓰지 않고 한 번에 받았습니다.
+1. 상태 22개의 Action 필드와 case를 손으로 쓰지 않고 한 번에 받았습니다.
 
 **안 된 것**
 
