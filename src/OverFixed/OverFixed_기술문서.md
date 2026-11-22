@@ -21,9 +21,16 @@ OverFixed!는 화물선이 목적지에 도착하기까지 한 번의 항해(4\~
 
 **모든 것이 동시에 급할 때, 무엇부터 할지 고르는 재미를 만들고자 했습니다.**
 
-이 게임의 재미는 여러 시간 압박이 한꺼번에 겹치는 데 있습니다. 재료는 약 30초 뒤 사라지고, 주문 3개는 각자 마감(60\~90초)이 다가오고, 사고는 30\~60초마다 터지며, 안정도는 매초 줄어듭니다.
+이 게임의 재미는 여러 시간 압박이 한꺼번에 겹치는 데 있습니다. 재료는 약 30초 뒤 사라지고, 주문 3개는 각자 마감(60\~90초)이 다가오고, 사고는 50\~80초마다 터지며, 안정도는 매초 줄어듭니다.
 
-이 구조를 만들면서 부딪힌 문제는 네 가지였습니다. 항해 한 번에 재료 수백 개가 생겼다 사라졌고([4장](#4-재료-흐름과-오브젝트-풀링-120개를-재사용하고-지붕-위로-흘려보낸다)), 미니게임 3종은 조작은 달라도 규칙은 같아야 했고([5장](#5-사고와-미니게임-조작은-다르고-규칙은-하나)), 크레딧·안정도·항해 번호가 세 씬을 넘어 이어져야 했고([6장](#6-게임-루프와-씬-간-상태-세-씬을-오가는-값을-한-곳에서만-바꾼다)), 약 100개인 밸런스 수치가 계속 바뀌었습니다([7장](#7-데이터-주도-설계-코드를-고치지-않고-수치를-바꾼다)). 이 문서는 그 설계·구현과 선택의 이유를 다룹니다.
+| 압박 | 시간 | 놓치면 |
+|---|---|---|
+| 재료 | 약 30초 흐르다 사라짐 | — |
+| 주문 3개 | 마감 60\~90초 | 안정도 −5% |
+| 사고 | 50\~80초마다, 30초 안에 3번 성공 | 안정도 −10% |
+| 코어 안정도 | 매초 줄어듦 | 0%면 게임오버 |
+
+이 구조를 만들면서 부딪힌 문제는 네 가지였습니다. 항해 한 번에 재료 수백 개가 생겼다 사라졌고([4장](#4-120개를-재사용하고-지붕-위로-흘려보낸다)), 미니게임 3종은 조작은 달라도 규칙은 같아야 했고([5장](#5-사고와-미니게임)), 크레딧·안정도·항해 번호가 세 씬을 넘어 이어져야 했고([6장](#6-세-씬을-오가는-값을-한-곳에서만-바꾼다)), 약 100개인 밸런스 수치가 계속 바뀌었습니다([7장](#7-코드를-고치지-않고-수치를-바꾼다)). 이 문서는 그 설계·구현과 선택의 이유를 다룹니다.
 
 목표는 2주 안에 한 판(타이틀 → 항해 → 정산 → 정비 → 다음 항해, 게임오버·기록)이 끝까지 도는 버전을 만들되, 이후의 수치 조정과 기능 추가가 쉬운 구조로 만드는 것이었습니다.
 
@@ -55,6 +62,8 @@ OverFixed!는 화물선이 목적지에 도착하기까지 한 번의 항해(4\~
 
 ## 2. 한 판의 흐름
 
+![한 판의 흐름. 타이틀에서 출항 → 선내 항해 → 도착 정산(할당량 200 / 200 완납, 주문 성공 2) → 정비 화면(다음 할당량 250 크레딧)](images/gameplay.gif)
+
 ### 2.1 항해 안에서
 
 ```mermaid
@@ -81,15 +90,15 @@ flowchart LR
 | 공통 | Q | 든 재료 놓기 |
 | 공통 | Esc | 열린 화면 닫기, 없으면 일시정지 |
 | 미니게임 | Space / 방향키·WASD / 마우스 왼쪽 클릭 | 타이밍 바 / 순서 입력 / 전선 잇기 |
-| 미니게임 | Q | 화면 닫기 (사고와 진행은 유지). 재료를 든 채 누르면 재료도 함께 놓일 수 있음 → [9.4](#94-남은-문제) |
+| 미니게임 | Q | 화면 닫기 (사고와 진행은 유지). 재료를 든 채 누르면 재료도 함께 놓일 수 있음 → [9.3](#93-남은-문제) |
 
 ### 2.2 항해 사이에서
 
-| 씬 | 역할 | 주요 화면 |
-|---|---|---|
-| MainMenu | 타이틀, 최고 기록 표시 | `TitleUI` |
-| SPACE | 항해 (선내·선외, 주문, 사고) | `HudUI`, `TerminalUI`, `MiniGameUI`, `PauseUI`, `SettlementUI`, `GameOverUI` |
-| PLANET | 정비 (안정화 물질 구매, 다음 항해 시작) | `MaintenanceUI` |
+| 씬 | 역할 |
+|---|---|
+| MainMenu | 타이틀, 최고 기록 표시 |
+| SPACE | 항해 (선내·선외, 주문, 사고) |
+| PLANET | 정비 (안정화 물질 구매, 다음 항해 시작) |
 
 ```mermaid
 stateDiagram-v2
@@ -137,42 +146,36 @@ flowchart LR
     SYS & GM -->|"표 조회 · 기록"| DATA
 ```
 
-> 실선은 직접 호출, 점선은 이벤트입니다. 이벤트는 일이 일어나면 미리 등록(구독)해 둔 함수를 부르는 방식입니다. 그림에서는 뺐지만, 화면은 주문판·사고 패널의 값도 매 프레임 직접 읽습니다. 설정 ScriptableObject는 각 컴포넌트가 인스펙터로 직접 참조합니다. 클래스 단위의 흐름은 5.1, 5.3, 6.1의 다이어그램에서 다룹니다.
-
-구조 전체를 관통하는 규칙은 네 가지이고, 왜 정했는지는 각 장에서 설명합니다.
-
-1. 값은 `GameManager`에만 둔다. 크레딧·안정도·할당량·항해 번호는 `{ get; private set; }`이고, 바꾸는 길은 `GameManager`의 함수뿐입니다. → [6장](#6-게임-루프와-씬-간-상태-세-씬을-오가는-값을-한-곳에서만-바꾼다)
-2. 밸런스 수치는 데이터에만 둔다. 행이 여러 개인 표는 TSV(칸을 탭으로 나눈 표 파일), 한 벌뿐인 조절값은 ScriptableObject(인스펙터에서 고치는 Unity 값 에셋)에 두고, 같은 값을 두 곳에 두지 않습니다. → [7장](#7-데이터-주도-설계-코드를-고치지-않고-수치를-바꾼다)
-3. 계속 변하는 값은 읽고, 한 번 일어나는 일은 이벤트로 알린다. HUD는 매 프레임 값을 읽고, 도착·게임오버·미니게임 성공은 이벤트로 알립니다. → [6.2](#62-값은-함수로만-바꾸고-화면은-결과를-구독한다)
-4. 상태와 화면을 나눈다. 사고의 남은 시간·성공 횟수는 화면이 아니라 사고가 난 패널이 갖습니다. 화면을 닫아도 상태는 남습니다. → [5장](#5-사고와-미니게임-조작은-다르고-규칙은-하나)
-
-| 갈래 | 클래스 | 맡는 일 | 장 |
-|---|---|---|---|
-| 재료 | `SpawnManager` | 재료 풀, 생성 주기, 흐름 경로 | 4 |
-| 사고 | `AccidentManager` · `AccidentPanel` · `MiniGameUI` · `MiniGame` 3종 | 사고 간격, 사고 상태와 판정, 미니게임 화면과 입력 | 5 |
-| 값 | `GameManager` | 크레딧·안정도·할당량·항해 번호와 그 규칙, 항해 진행, 씬 전환 | 6 |
-| UI | `HudUI` · `TerminalUI` | 값을 읽어 표시, 버튼 입력을 `GameManager` 함수로 전달 | 6 |
-| 데이터 | `TsvParser` · `DataManager` · `RecordSave` | 표를 읽어 행으로 조회, 최고 기록 저장 | 7 |
-| 주문 | `OrderBoard` · `OrderManager` | 주문 3칸 규칙(배정·완료·실패·재충전), 결과를 `GameManager`에 전달 | 8 |
-| 플레이어 | `PlayerController` · `LocalPlayer` | 입력·선내/선외 이동·시점·조작 잠금, E·Q 행동 | 8 |
+> 실선은 직접 호출, 점선은 이벤트입니다. 이벤트는 일이 일어나면 미리 등록(구독)해 둔 함수를 부르는 방식입니다. 그림에서는 뺐지만, 화면은 주문판·사고 패널의 값도 매 프레임 직접 읽습니다. 설정 ScriptableObject(인스펙터에서 고치는 Unity 값 에셋)는 각 컴포넌트가 인스펙터로 직접 참조합니다. 클래스 단위의 흐름은 5.1, 5.3, 6.1의 다이어그램에서 다룹니다.
 
 ---
 
-## 4. 재료 흐름과 오브젝트 풀링: 120개를 재사용하고 지붕 위로 흘려보낸다
+## 4. 120개를 재사용하고 지붕 위로 흘려보낸다
+
+![지붕 에어락(왼쪽의 하늘색 패드 2개)으로 나온 플레이어 시점. 재료가 모두 함선 위쪽을 지나가 지붕 근처에서 바로 잡을 수 있고, 가까이 오면 'E 크리스탈 줍기' 안내가 뜬다](images/09_flow_ingame.png)
 
 제한시간이 있는 주문을 통해, 선내에만 있는 단조로운 상황에서 벗어나 선외에서 재료를 가져와 제출하는 흐름을 구성했습니다. 재료가 사라지게 한 것은 필요한 재료를 얻기 위한, 목적이 있는 이동을 유도하기 위해서입니다.
 
+재료가 흐르는 약 30초는 따로 정했다기보다 자연스럽게 정해진 값입니다. 먼저 재료가 함선 안을 뚫고 지나가지 않게 하는 안전 구역과, 플레이어가 이동 거리를 너무 멀다고 느끼지 않을 생성 구역까지의 거리를 정했습니다. 그다음 재료가 바깥쪽 생성 구에서 출발해 안전 구역을 스치며 지나가게 하자, 흐르는 시간이 약 30초가 되었습니다. 주문 마감은 선외에서 재료를 모아 선내에서 제출하는 플레이 테스트로 적절한 시간대를 찾았습니다.
+
+재료가 흐르다 사라지게 할까?
+
+| | 계속 떠다니게 둔다 | 흐르다 사라지게 한다 |
+|---|---|---|
+| 장점 | 필요한 아이템을 놓쳐도 다시 찾으러 갈 수 있어 유저 친화적임 | 선내 사고와 주문 해결 사이에서 각 상황에 따른 선택을 유저가 스스로 결정하고, 그 과정이 긴박하게 진행됨 |
+
+흐르다 사라지게 하는 쪽을 골랐습니다. 선내 사고와 주문 해결 사이에서 플레이어가 상황에 따라 스스로 선택하고, 그 과정이 긴박하게 진행되기를 바랐기 때문입니다.
+
 ### 4.1 끊임없이 생기는 재료와 지붕 에어락
 
-1. 재료는 항해 내내 끊임없이 생겼다 사라집니다(수치는 [4.2](#42-함선-위를-스치는-경로와-줄지-않는-풀)의 표). 매번 `Instantiate`/`Destroy`하면 생성 비용과 가비지가 항해 내내 반복됩니다. 그래서 미리 만들어 둔 재료를 껐다 켜며 다시 씁니다(오브젝트 풀링).
+1. 재료는 항해 내내 끊임없이 생겼다 사라집니다(수치는 [4.2](#42-함선-위를-스치는-경로와-줄지-않는-풀)의 표). 매번 `Instantiate`/`Destroy`하면 생성 비용과 가비지(나중에 정리해야 할 메모리)가 항해 내내 반복됩니다. 그래서 미리 만들어 둔 재료를 껐다 켜며 다시 씁니다(오브젝트 풀링).
 2. 선외로 나가는 에어락은 함선 **지붕**에 있습니다. 재료가 아무 방향으로나 흐르면 상당수가 함선 아래나 먼 곳을 지나가 잡을 수 없습니다.
 
-| 단계 | 방법 | 조절 위치 |
-|---|---|---|
-| 풀 준비 | SPACE 씬을 열 때 종류마다 40개(3종 → 120개)를 꺼 둔 채 만든다. 물리 계산이 필요 없어 kinematic, 선외에서 잘 보이도록 5배 크기 | `SpawnConfig` |
-| 생성 | 항해 중에만 1.5개/초. 종류는 생성 비중(고철 6 : 연료 셀 3 : 크리스탈 1.2)으로 뽑는다 | `SpawnConfig`, `ItemTable` |
-| 흐름 | 생성 구(반지름 45 m)의 위쪽 반구에서 출발해, 함선 구(반지름 25 m)의 위를 스치는 직선을 등속으로 이동 | 씬의 `SpawnSphere`·`SafeSphere` 스케일(반지름 = 스케일 ÷ 2), `SpawnConfig` |
-| 반납 | 반대편 표면에 닿거나 플레이어가 잡으면 꺼서 풀로 돌려보낸다 | |
+![선내 에어락 패드에서 E를 누르고 있으면 막대가 차고 함선 지붕으로 나간다. 지붕의 에어락으로 다시 들어오면 선내로 돌아온다](images/airlock.gif)
+
+SPACE 씬을 열 때 종류마다 40개(3종 → 120개)를 선외에서 잘 보이도록 5배 크기로, 꺼 둔 채 만듭니다. 항해 중에는 초당 1.5개씩 생성 비중(고철 6 : 연료 셀 3 : 크리스탈 1.2)으로 종류를 뽑아 켜고, 켜진 재료는 함선 위를 스치는 직선을 따라 흐르다가 반대편 표면에 닿거나 플레이어가 잡으면 꺼져 풀로 돌아갑니다.
+
+![선외에서 본 재료 흐름. 연료 셀 · 고철 · 크리스탈이 한 방향으로 흘러가고, 플레이어가 유영해 다가가 연료 셀을 잡는다](images/exterior_flow.gif)
 
 잡혀도 풀로 돌아가므로 풀의 개수는 줄지 않습니다.
 
@@ -186,11 +189,9 @@ stateDiagram-v2
     Flow --> Idle: 플레이어가 잡음 (손에는 새 인스턴스)
 ```
 
-![지붕 에어락(왼쪽의 하늘색 패드 2개)으로 나온 플레이어 시점. 재료가 모두 함선 위쪽을 지나가 지붕 근처에서 바로 잡을 수 있고, 가까이 오면 'E 크리스탈 줍기' 안내가 뜬다](images/09_flow_ingame.png)
-
 ### 4.2 함선 위를 스치는 경로와 줄지 않는 풀
 
-#### ① 흐름 경로: 위쪽에서 출발해 함선 위를 스친다
+**① 흐름 경로: 위쪽에서 출발해 함선 위를 스친다**
 
 재료가 어느 방향으로 흐르게 할까?
 
@@ -200,6 +201,8 @@ stateDiagram-v2
 | 단점 | 함선과 먼 곳이나 아래쪽을 지나는 재료가 많아, 지붕 에어락으로 나온 플레이어가 잡을 수 있는 재료가 적다 | 방향을 정하는 계산이 조금 더 필요하고, 경로가 모두 함선 위쪽에 모여 흐름이 단조로워질 수 있다 |
 
 위쪽 반구에서 출발해 함선 위를 스치는 방향을 골랐습니다. 플레이어가 지붕 에어락으로만 드나드는 함선 구조에 맞췄습니다. '경로 길이가 일정하다'는 성질 덕분에 풀 크기를 감이 아니라 계산으로 점검할 수 있게 되었습니다.
+
+다만 플레이해 보니, 비교적 좁은 범위에서 많은 재료가 생겨 함선의 안전 구역을 스치며 지나가다 보니 재료가 몰려 겹쳤습니다. 겹친 재료 사이에서 필요한 재료를 골라 잡기 어려워서, 플레이어는 재료가 덜 모인 곳으로 가서 재료를 모으게 되었습니다.
 
 ![Scene 뷰에서 본 흐름 구조. 바깥 구가 생성 구(반지름 45 m), 안쪽 구가 함선 구(반지름 25 m)이고, 노란 선은 Spawn()이 만드는 경로의 예시, 흰 점이 출발점이다. 위쪽 반구에서 출발한 모든 경로가 함선 구의 꼭대기 쪽을 스쳐 지나간다](images/10_flow_path.png)
 
@@ -219,31 +222,12 @@ stateDiagram-v2
 | 항해 1회 생성 수 | 360\~540개 | 1.5개/초 × 240\~360초 |
 | 풀 크기 | 종류당 40개 (3종 120개) | `SpawnConfig` |
 
-#### ② 생성 주기: 넘친 시간을 버리지 않는다
-
-```csharp
-// SpawnManager.cs — 항해 중에만 초당 BaseSpawnRate개씩 만든다. 넘친 시간은 남겨 개수를 맞춘다
-private void Update()
-{
-    if (GameManager.Instance.IsPlaying == false) return;
-
-    spawnTimer += Time.deltaTime;
-    float spawnInterval = 1f / spawnConfig.BaseSpawnRate;
-    if (spawnTimer < spawnInterval) return;
-    spawnTimer -= spawnInterval;
-
-    float[] weights = new float[itemPrefabs.Length];
-    for (int index = 0; index < itemPrefabs.Length; index++) weights[index] = itemPrefabs[index].Row.SpawnWeight;
-    ItemObject itemPrefab = itemPrefabs[WeightedRandom.PickIndex(weights)];
-    ItemObject item = GetInactiveItem(itemPrefab.ItemID);
-    if (item != null) Spawn(item);
-}
-```
+**② 생성 주기: 넘친 시간을 버리지 않는다**
 
 - 타이머를 0으로 되돌리지 않고 간격만큼 빼서, 프레임 시간이 들쭉날쭉해도 길게 보면 정확히 초당 1.5개가 됩니다.
 - 해당 종류의 풀이 바닥나면 예외 없이 이번 회차만 건너뜁니다.
 
-#### ③ 잡기: 풀은 줄지 않는다
+**③ 잡기: 풀은 줄지 않는다**
 
 플레이어가 잡은 재료를 어떻게 처리할까?
 
@@ -252,7 +236,7 @@ private void Update()
 | 장점 | 추가 생성이 없다 | 풀은 '흐르는 재료' 전용으로 개수가 늘 일정해 생성 비율이 유지된다. 손에 든 재료는 보통 오브젝트라 제출할 때 그냥 파괴하면 된다 |
 | 단점 | 제출하면 파괴되고, 놓으면 그 자리에 남아 풀이 계속 줄어든다. 결국 그 종류는 생성이 멈춘다. 흐를 때의 크기(5배)·물리 상태도 손에 들 때마다 되돌려야 한다 | 잡을 때마다 `Instantiate`가 한 번 일어난다 |
 
-반납하고 새로 만드는 쪽을 골랐습니다. 잡는 횟수는 플레이어가 직접 E를 눌러야 해서 생성 횟수(항해 1회 360\~540번)보다 훨씬 적습니다. 적은 비용으로 **"풀은 줄지 않는다"는 불변 조건**을 구조로 지키는 쪽을 택했습니다. 이때 풀 오브젝트가 아니라 프리팹에서 복제해야 '놓을 때 되돌릴 원래 크기'가 5배로 잡히지 않습니다.
+반납하고 새로 만드는 쪽을 골랐습니다. 잡는 횟수는 플레이어가 직접 E를 눌러야 해서 생성 횟수(항해 1회 360\~540번)보다 훨씬 적습니다. 적은 비용으로 **"풀은 줄지 않는다"는 불변 조건**(언제나 지켜져야 하는 조건)을 구조로 지키는 쪽을 택했습니다. 이때 풀 오브젝트가 아니라 프리팹에서 복제해야 '놓을 때 되돌릴 원래 크기'가 5배로 잡히지 않습니다.
 
 놓아 둔 재료는 그대로 줍니다.
 
@@ -269,9 +253,40 @@ public ItemObject TakeItem(ItemObject item)
 
 반납할 때는 트윈부터 멈춥니다. 꺼진 재료가 계속 끌려가지 않게 하려는 것입니다.
 
+### 4.3 비중 뽑기가 경계값에서 아무것도 고르지 못하던 문제
+
+- (문제) 재료 종류와 사고 종류를 비중으로 뽑는 함수가, 드물게 반복문 안에서 아무것도 고르지 못했습니다. 이때 단순히 '마지막 번호'를 돌려주면, 마지막 항목의 비중이 0일 때 나와서는 안 되는 항목이 뽑힙니다.
+- (원인) `Random.Range(float, float)`는 정수 버전과 달리 최댓값도 포함합니다. 뽑은 값이 정확히 비중 합계이면 `pick < weight`가 끝까지 거짓입니다.
+- (해결) 비중 0인 번호는 건너뛰고, 반복문이 끝나면 비중이 있는 마지막 번호를 돌려줍니다. 모두 0이면 −1입니다.
+- (결과) 플레이로 확인했습니다. 비중이 0인 재료는 나오지 않습니다.
+
+비중이 0인 번호는 나오지 않고, 모두 0이면 -1을 돌려줍니다.
+
+```csharp
+// WeightedRandom.cs
+public static int PickIndex(float[] weights)
+{
+    float total = 0f;
+    for (int index = 0; index < weights.Length; index++) total += weights[index];
+
+    float pick = Random.Range(0f, total);
+    int lastIndex = -1;     // 비중이 있는 마지막 번호. Random.Range는 total도 내므로 반복문에서 못 고를 수 있다
+    for (int index = 0; index < weights.Length; index++)
+    {
+        if (weights[index] <= 0f) continue;
+        if (pick < weights[index]) return index;
+        pick -= weights[index];
+        lastIndex = index;
+    }
+    return lastIndex;
+}
+```
+
 ---
 
-## 5. 사고와 미니게임: 조작은 다르고 규칙은 하나
+## 5. 사고와 미니게임
+
+![사고가 난 패널. 패널 위에 장소와 거리가 표시되고(화면 밖이면 가장자리 화살표), 왼쪽 아래 알림에 사고 종류와 남은 시간이 뜬다](images/14_accident_marker.png)
 
 선내에서는 재료를 제출하는 것 외에는 할 행동이 없습니다(주 활동은 선외에서 재료를 주워 오는 것). 그래서 선내 활동의 비중을 늘리고, 안정도 변화에 영향을 주고, 플레이의 다양성을 확보하기 위해 사고를 추가했습니다.
 
@@ -281,15 +296,17 @@ public ItemObject TakeItem(ItemObject item)
 - 미니게임 3종은 조작이 모두 다릅니다 (Space 타이밍 / 방향키 순서 / 마우스로 전선 잇기). 하지만 규칙은 같습니다: 제한시간, **누적** 성공(실패해도 줄지 않음), 화면을 닫아도 사고·시간·성공 횟수 유지.
 - 플레이어는 사고 중에도 재료를 잡으러 나갈 수 있어야 합니다. 화면을 닫았다 다시 열면 이어서 해야 합니다.
 
-| 값 | 수치 | 어디서 나오나 |
-|---|---|---|
-| 사고 간격 | 30\~60초 (항해가 거듭될수록 30\~50초) | `VoyageTable` |
-| 사고가 나는 곳 | 함선 패널 3곳 중 한 곳 (한 번에 하나) | `AccidentManager` |
-| 제한시간 | 30초 | `AccidentTable` |
-| 해결에 필요한 성공 | 3번 (누적) | `AccidentTable` |
-| 시간 초과 시 | 코어 안정도 −10% | `AccidentTable` |
+미니게임에서 빗나가도 성공 수가 줄지 않게 한 이유는, 미니게임을 하는 시간 자체가 재료를 모으거나 터미널에서 주문을 처리하는 일을 포기하고 쓰는 시간이기 때문입니다. 여기에 성공 횟수까지 깎이면, 항해마다 반드시 일어나는 사고 미니게임을 불합리하다고 느낄 수 있다고 생각해 깎지 않기로 했습니다. 각 미니게임의 조작은 플레이의 다양성을 주기 위해 모두 다르게 정했습니다.
 
-![사고가 난 패널. 패널 위에 장소와 거리가 표시되고(화면 밖이면 가장자리 화살표), 왼쪽 아래 알림에 사고 종류와 남은 시간이 뜬다](images/14_accident_marker.png)
+| 값 | 수치 |
+|---|---|
+| 사고 간격 | 50\~80초 (항해가 거듭될수록 줄어 10번째 항해는 30\~50초) |
+| 사고가 나는 곳 | 함선 패널 3곳 중 한 곳 (한 번에 하나) |
+| 제한시간 | 30초 |
+| 해결에 필요한 성공 | 3번 (누적) |
+| 시간 초과 시 | 코어 안정도 −10% |
+
+게임 이름이 OverFixed인 만큼 선내 사고 해결을 중요하게 생각했습니다. 그래서 사고를 방치했을 때의 페널티를 크게 주고 싶어 안정도 −10%로 정했습니다.
 
 패널 앞에서 E를 누르면 미니게임 화면이 열립니다.
 
@@ -338,96 +355,7 @@ classDiagram
 | 장점 | 파일 하나로 끝난다 | 공통 동작은 부모에 한 번, 종류별 입력·판정만 자식에 둔다. `MiniGame[]`으로 인스펙터에 연결할 수 있다 |
 | 단점 | 세 종류의 화면 참조와 상태가 한 클래스에 섞이고, 종류를 추가할 때마다 기존 코드를 고친다 | 단일 상속이라 다른 부모 클래스를 가질 수 없다 |
 
-추상 클래스를 골랐습니다. `MiniGameUI`는 종류(enum)로 미니게임을 골라 `Begin`/`End`만 부르고, 그것이 어떤 미니게임인지 모릅니다(전략 패턴). 종류를 추가해도 기존 코드를 고치지 않습니다(개방-폐쇄 원칙). 단일 상속 제약은 미니게임이 다른 부모를 가질 필요가 없어 문제가 되지 않았습니다.
-
-**새 미니게임 추가하기**
-
-1. `AccidentType` enum **맨 뒤에** 종류를 추가한다.
-2. `MiniGame`을 상속해 `AccidentID`와 `Begin`/`End`를 구현하고, 성공 1회마다 `Succeed()`, 빗나가면 `Miss()`를 부른다.
-3. `AccidentTable.tsv`에 한 줄을 추가한다 (이름, 설명, 제한시간, 성공 횟수, 안정도 감소, 비중).
-4. `MiniGameUI`의 `miniGames` 배열에 연결한다.
-
-`AccidentManager`, `AccidentPanel`, `MiniGameUI`는 고치지 않습니다. 자식 클래스가 알아야 할 계약은 이것뿐입니다.
-
-```csharp
-// MiniGame.cs (발췌) — 화면이 열리면 Begin, 닫히면 End. 해결 판정과 제한시간은 AccidentPanel이 맡는다
-public abstract class MiniGame : MonoBehaviour
-{
-    public abstract AccidentType AccidentID { get; }
-
-    public Action Succeeded;    // MiniGameUI가 구독해 AccidentPanel에 넘긴다
-
-    // successCount는 이번 사고에서 이미 모은 성공 횟수 (닫았다 다시 열면 이어서 한다)
-    public virtual void Begin(AccidentRow accidentRow, int successCount)
-    {
-        resultValue.text = "";
-        gameObject.SetActive(true);
-    }
-
-    public virtual void End()
-    {
-        gameObject.SetActive(false);
-    }
-```
-
-자식 클래스는 성공 1회면 `Succeed`, 빗나가면 `Miss`를 부릅니다.
-
-```csharp
-    // MiniGame.cs (이어서)
-    protected void Succeed(string resultText)
-    {
-        ShowResult(resultText, successColor);
-        Succeeded?.Invoke();
-    }
-
-    protected void Miss(string resultText)
-    {
-        ShowResult(resultText, missColor);
-    }
-}
-```
-
-가장 짧은 구현인 타이밍 바는 입력과 판정만 갖습니다.
-
-```csharp
-// TimingBarGame.cs (발췌) — 좌우로 움직이는 토글이 가운데 구간에 있을 때 Space를 누르면 성공 1회
-public override AccidentType AccidentID => AccidentType.TimingBar;
-
-// 토글 위치 (0 = 왼쪽 끝, 1 = 오른쪽 끝). 끝에 닿으면 되돌아온다
-private float CursorValue => Mathf.PingPong(movedTime * miniGameConfig.TimingCursorSpeed, 1f);
-
-private void Update()
-{
-    movedTime += Time.deltaTime;
-    missLockTime -= Time.deltaTime;
-    DrawCursor();
-
-    if (SimpleInput.GetKeyDown(Key.Space)) Press();
-}
-```
-
-판정은 Space를 누를 때 부르는 `Press`가 합니다.
-
-```csharp
-// TimingBarGame.cs (이어서)
-private void Press()
-{
-    if (missLockTime > 0f) return;      // 빗나간 직후 0.5초는 받지 않는다 (연타 방지)
-
-    float cursorValue = CursorValue;
-    if (cursorValue >= ZoneMin && cursorValue <= ZoneMax)
-    {
-        movedTime = 0f;                 // 성공하면 왼쪽 끝에서 다시 출발
-        Succeed("성공");
-        return;
-    }
-
-    missLockTime = miniGameConfig.TimingMissLockTime;
-    Miss("빗나감");
-}
-```
-
-입력 읽기(`Update`)와 판정(`Press`)을 나눠, 이 미니게임만의 판정 규칙(성공 구간, 빗나간 뒤 0.5초 잠금)은 `Press` 한 곳에만 있습니다. 누적 횟수와 제한시간 같은 공통 규칙은 부모 클래스와 `AccidentPanel`이 맡으므로 자식 클래스에는 들어오지 않습니다.
+추상 클래스를 골랐습니다. `MiniGameUI`는 종류(enum)로 미니게임을 골라 시작과 끝만 알리고, 그것이 어떤 미니게임인지 모릅니다. 종류를 추가해도 기존 코드를 고치지 않습니다. 단일 상속 제약은 미니게임이 다른 부모를 가질 필요가 없어 문제가 되지 않았습니다.
 
 ### 5.3 상태는 패널에, 화면은 보여 주기만
 
@@ -438,7 +366,9 @@ private void Press()
 | 장점 | 화면 코드 안에서 모두 끝난다 | 화면은 보여 주기만 하므로, 닫아도 사고·시간·성공 횟수가 남는다. 시간 초과는 화면과 무관하게 패널이 처리한다 |
 | 단점 | 화면을 닫으면 진행이 사라지거나, 닫힌 화면이 시간을 세야 한다. 정산·게임오버로 화면이 강제로 닫힐 때 처리가 꼬인다 | 미니게임이 성공을 직접 처리하지 못하고 이벤트로 넘겨야 해서, 구독·해제 짝을 관리해야 한다 |
 
-패널에 두었습니다. "실패해도 성공 수는 남는다", "닫아도 사고는 계속된다"는 규칙을 주의가 아니라 구조로 보장하는 쪽입니다. 대가인 구독 관리는 **구독은 `Open`에서, 해제는 `Close`에서만** 하도록 한 곳에 짝지어 해결했습니다.
+패널에 두었습니다. "실패해도 성공 수는 남는다", "닫아도 사고는 계속된다"는 규칙을 주의가 아니라 구조로 보장하는 쪽입니다. 대가인 구독 관리는 **구독은 화면을 열 때(`Open`), 해제는 닫을 때(`Close`)만** 하도록 한 곳에 짝지어 해결했습니다.
+
+![전선 잇기를 닫았다 다시 여는 장면. 3쌍 중 노란 쌍을 이어 '성공 1 / 3'이 된 뒤 Q로 닫고, 패널에서 다시 E를 누르면 남은 2쌍만 나온다. 성공 수는 1 / 3 그대로이고, 남은 시간은 닫아 둔 동안에도 줄어 27초 → 24초가 된다](images/minigame_resume.gif)
 
 성공은 미니게임에서 패널로 가고, 해결 판정은 패널이 합니다.
 
@@ -461,38 +391,13 @@ sequenceDiagram
     Note over AP,MG: 시간 초과 시 안정도 -10% 후 Close()
 ```
 
-#### ① 상태와 판정은 패널에
+**① 상태와 판정은 패널에**
 
 화면이 닫혀 있어도 남은 시간은 패널이 셉니다.
 
-```csharp
-// AccidentPanel.cs (발췌)
-private void Update()
-{
-    if (GameManager.Instance.IsPlaying == false) return;
-    if (IsAccident == false) return;
+사고는 `AccidentManager`가 패널에 사고를 내면서 시작됩니다. 종류를 비중으로 뽑고 시간과 성공 횟수를 새로 셉니다. 시간을 넘기면 안정도를 깎고 사고를 끝냅니다. 해결하든 실패하든 사고를 끝낼 때는 미니게임 화면을 닫습니다.
 
-    RemainingTime -= Time.deltaTime;            // 화면이 닫혀 있어도 시간은 패널이 센다
-    if (RemainingTime <= 0f) FailAccident();
-}
-```
-
-미니게임 성공 1회는 `MiniGameUI`를 거쳐 여기로 옵니다.
-
-```csharp
-// AccidentPanel.cs (이어서)
-public void AddSuccess()
-{
-    if (IsAccident == false) return;            // 이미 끝난 사고에 늦게 온 성공은 무시
-
-    SuccessCount++;
-    if (SuccessCount >= CurrentAccident.SuccessCount) EndAccident();
-}
-```
-
-사고는 `AccidentManager`가 `StartAccident`를 불러 시작합니다. 종류를 비중으로 뽑고 시간과 성공 횟수를 새로 셉니다. 시간을 넘기면 안정도를 깎고 사고를 끝냅니다. 해결하든 실패하든 사고를 끝낼 때는 미니게임 화면을 닫습니다.
-
-#### ② 화면은 보여 주고 연결만 한다
+**② 화면은 보여 주고 연결만 한다**
 
 화면을 열 때 미니게임의 성공 이벤트를 패널에 연결하고, 지금까지의 성공 수를 넘겨 이어서 하게 합니다.
 
@@ -532,7 +437,7 @@ public void Close()
 }
 ```
 
-이어서 하기는 각 미니게임이 받은 `successCount`로 처리합니다. 예를 들어 전선 잇기는 다시 열면 **남은 쌍만** 만듭니다.
+이어서 하기는 각 미니게임이 받은 지금까지의 성공 수(`successCount`)로 처리합니다. 예를 들어 전선 잇기는 다시 열면 **남은 쌍만** 만듭니다.
 
 ```csharp
 // WireGame.cs — 쌍 수는 AccidentTable의 SuccessCount이고, 다시 열면 남은 쌍만 보인다
@@ -553,11 +458,55 @@ public override void Begin(AccidentRow accidentRow, int successCount)
 | 해당 종류의 미니게임이 연결되지 않음 | `KeyNotFoundException`으로 설정 누락을 바로 알림 |
 | 미니게임이 열린 채 도착하거나 게임오버 | 정산·게임오버 화면이 먼저 `Close()`를 부른다 |
 
+사고 미니게임을 넣어 보니, 선외에서 재료를 모으는 플레이에 다양성을 줄 수 있었습니다. 또 해결하지 않으면 안정도가 줄어들기 때문에, "여러 가지 선택지에서 상황에 따라 하나를 선택한다"는 게임의 취지에 맞는 기능이라고 생각합니다.
+
+### 5.4 미니게임을 연 첫 프레임에 전선이 엉뚱한 곳에서 시작하던 문제
+
+- (문제) 전선 잇기 화면을 열자마자 단자를 클릭하면, 전선이 단자가 아닌 엉뚱한 위치에서 시작했습니다.
+- (원인) 단자는 Layout Group 안에 복제해 만드는데, Layout Group은 자식 위치를 프레임 끝의 캔버스 갱신 때 계산합니다. 만든 바로 그 프레임에는 단자 위치가 아직 정렬 전 값입니다.
+- (해결) 단자를 만든 직후 정렬을 즉시 계산합니다.
+- (결과) 플레이로 확인했습니다. 전선이 단자에서 시작합니다.
+
+첫 프레임부터 단자 위치로 전선을 그릴 수 있게 정렬을 바로 맞춥니다.
+
+```csharp
+// WireGame.cs
+LayoutRebuilder.ForceRebuildLayoutImmediate(leftColumn);
+LayoutRebuilder.ForceRebuildLayoutImmediate(rightColumn);
+```
+
 ---
 
-## 6. 게임 루프와 씬 간 상태: 세 씬을 오가는 값을 한 곳에서만 바꾼다
+## 6. 세 씬을 오가는 값을 한 곳에서만 바꾼다
 
 선내 사고를 빠르게 해결하지 않으면 안정도가 감소합니다. 그리고 할당량 제출이 끝나면 크레딧을 더 모아야 할 이유가 퇴색되기 때문에, 안정도 기능과 안정도 회복 물질을 추가해 크레딧의 사용처를 늘렸습니다. 이렇게 사고·주문·구매가 모두 같은 안정도와 크레딧을 바꾸게 되자, 그 값을 어디에 두고 누가 바꿀지 정해야 했습니다.
+
+크레딧을 어디에 쓰게 할까?
+
+| | 할당량에만 쓴다 | 할당량과 안정도 회복에 나눠 쓴다 |
+|---|---|---|
+| 장점 | 저회차 플레이어의 할당량 부담을 줄일 수 있음 | 크레딧의 사용처가 늘고, 남은 크레딧을 소모할 곳이 생김 |
+| 단점 | 할당량 제출이 끝나면 크레딧을 더 모아야 할 이유가 퇴색됨 | 저회차 플레이어의 할당량 부담이 커질 수 있음 |
+
+할당량과 안정도 회복에 나눠 쓰는 쪽을 골랐습니다. 다회차 플레이에서 쌓이는 크레딧을 소모할 사용처로 적합하다고 판단했습니다.
+
+![터미널에서 크레딧을 나눠 쓰는 장면. 할당량 납부 탭에서 100을 내면 크레딧 260 → 160, 할당량 0 → 100 / 200이 되고, 안정화 물질 탭에서 60 크레딧에 사면 크레딧 100, 코어 안정도 76% → 86%가 된다](images/credit_spend.gif)
+
+크레딧과 안정도를 바꾸는 길은 아래가 전부입니다.
+
+```mermaid
+flowchart LR
+    OK["주문 완료<br/>보상 30~120"] -->|"+2%"| S(("코어<br/>안정도"))
+    OK --> C["크레딧"]
+    NG["주문 실패"] -->|"−5%"| S
+    AC["사고 시간 초과"] -->|"−10%"| S
+    T["매초"] -->|"−0.02~0.04%"| S
+    C -->|"납부"| Q["할당량"]
+    Q -->|"다 내고 도착"| E["정산 → 정비"]
+    C -->|"60 크레딧"| B["안정화 물질"]
+    B -->|"+10%"| S
+    S -->|"0%"| G["게임오버"]
+```
 
 ### 6.1 값의 주인을 하나로
 
@@ -568,20 +517,17 @@ public override void Begin(AccidentRow accidentRow, int successCount)
 | | static 클래스 | ScriptableObject에 런타임 값 저장 | `DontDestroyOnLoad` 싱글톤 MonoBehaviour |
 |---|---|---|---|
 | 장점 | 가장 단순하고 씬과 무관하다 | 씬과 무관하고 인스펙터에서 값이 보인다 | `Update`로 항해 시간과 안정도 감소를 진행하고, `sceneLoaded`를 구독하고, 설정 ScriptableObject를 인스펙터로 연결한다 |
-| 단점 | MonoBehaviour가 아니라 `Update`로 시간을 진행할 수 없고, 설정 ScriptableObject를 인스펙터로 연결할 수 없다 | 에디터에서는 플레이 중 바뀐 값이 에셋에 남아 매번 초기화를 관리해야 하고, 시간을 진행할 MonoBehaviour가 따로 필요하다 | 어디서든 접근할 수 있어 결합도가 높아지고, 생명주기 함정이 있다 ([9.3 ①](#93-안다고-생각한-동작이-실제와-달랐다)) |
+| 단점 | MonoBehaviour가 아니라 `Update`로 시간을 진행할 수 없고, 설정 ScriptableObject를 인스펙터로 연결할 수 없다 | 에디터에서는 플레이 중 바뀐 값이 에셋에 남아 매번 초기화를 관리해야 하고, 시간을 진행할 MonoBehaviour가 따로 필요하다 | 어디서든 접근할 수 있어 결합도(한 코드가 다른 코드에 얽힌 정도)가 높아지고, 만들어지고 등록되는 순서에 따른 함정이 있다 ([6.4](#64-씬을-넘기면-gamemanager가-사라질-수-있었던-문제)) |
 
 싱글톤을 골랐습니다. 이 게임의 값은 '보관'만 되는 것이 아니라 매 프레임 '진행'되어야 했습니다(안정도 감소, 도착까지 남은 시간). 대가인 결합도는 "값은 `private set`, 바꾸는 길은 `GameManager` 함수뿐" 규칙으로 줄였습니다.
 
-싱글톤의 함정도 규칙으로 막았습니다. 배운 `SingletonBase`의 `Instance`는 씬에 오브젝트가 없으면 새로 만듭니다. 그래서 정비 씬에서 `OrderManager.Instance`를 부르면 설정이 빠진 가짜 매니저가 생기고, 이 때문에 다음 항해 씬의 진짜 매니저가 중복으로 파괴됩니다. 이를 막으려고 SPACE 밖의 씬에서는 `GameManager` 함수만 부르게 했습니다(정비 화면의 안정화 물질 구매도 `GameManager.BuyStabilizer`).
+싱글톤의 함정도 규칙으로 막았습니다. 배운 `SingletonBase`는 인스턴스를 찾을 때 씬에 오브젝트가 없으면 새로 만듭니다. 그래서 정비 씬에서 `OrderManager`를 찾으면 설정이 빠진 가짜 매니저가 생기고, 이 때문에 다음 항해 씬의 진짜 매니저가 중복으로 파괴됩니다. 이를 막으려고 SPACE 밖의 씬에서는 `GameManager` 함수만 부르게 했습니다(정비 화면의 안정화 물질 구매도 `GameManager`의 구매 함수).
 
-`GameManager` 하나가 값과 규칙을 모두 갖습니다.
+`GameManager`는 `DontDestroyOnLoad`(씬이 바뀌어도 파괴하지 않게 하는 Unity 함수)를 건 싱글톤(하나만 있게 만든 오브젝트)입니다. 프리팹을 3개 씬에 모두 두어 어느 씬에서 플레이를 시작해도 동작하고, 두 번째부터는 중복으로 파괴됩니다. SPACE 씬에 들어온 것을 알아채(`SceneManager.sceneLoaded`) 항해를 시작하고, 안정도 감소와 남은 시간은 `Update`에서 진행합니다(6.3).
 
-| 구성 | 방법 |
-|---|---|
-| 씬을 넘어 유지 | `DontDestroyOnLoad`(씬이 바뀌어도 파괴하지 않게 하는 Unity 함수)를 건 싱글톤(하나만 있게 만든 오브젝트). 프리팹을 3개 씬에 모두 두어 어느 씬에서 플레이를 시작해도 동작하고, 두 번째부터는 중복으로 파괴된다 |
-| 값 보호 | 모든 값은 `{ get; private set; }`. 바꾸는 길은 `GameManager`의 함수뿐 |
-| 항해 진행 | `SceneManager.sceneLoaded`로 SPACE 진입을 감지해 항해를 시작하고, `Update`에서 안정도 감소와 남은 시간을 진행 |
-| 결과 알림 | `VoyageEnded`(정산 화면), `GameOverHappened`(게임오버 화면) 이벤트 |
+![터미널의 주문 보드 탭. 주문 3개의 필요한 재료 · 남은 시간 · 보상이 있고, 아래에 '재료를 들고 터미널에서 E를 누르면 마감이 가장 급한 주문에 들어갑니다' 안내가 있다](images/08_terminal.png)
+
+![선외에서 크리스탈을 잡아 지붕 에어락으로 들어와 터미널에서 제출하는 장면. 왼쪽 주문판에서 120 크레딧 주문의 '크리스탈 0/1'이 '1/1'로 바뀐다](images/submit_order.gif)
 
 값이 바뀌는 경로 하나를 따라가 보면 이렇습니다 (주문 완료).
 
@@ -604,19 +550,11 @@ sequenceDiagram
 
 ### 6.2 값은 함수로만 바꾸고, 화면은 결과를 구독한다
 
-| 함수 | 하는 일 | 부르는 곳 |
-|---|---|---|
-| `ChangeStability(amount)` | 안정도 증감. 0\~100%로 자르고, 항해 중 0%가 되면 게임오버 | `AccidentPanel`(시간 초과), 내부(초당 감소·주문·구매) |
-| `CompleteOrder(reward)` · `FailOrder()` | 크레딧과 이번 항해 기록 갱신, 안정도 +2% · −5% | `OrderManager` |
-| `PayQuota(amount)` | 할당량 납부. 항해 중에 1 \~ 낼 수 있는 최대만 받는다 | `TerminalUI` |
-| `BuyStabilizer()` | 60 크레딧으로 안정도 +10%. 가득 찼거나 크레딧이 모자라면 무시 | `TerminalUI`, `MaintenanceUI` |
-| `FinishSettlement()` | 도착 보상 지급 후 정비 씬으로 | `SettlementUI` |
-| `StartNextVoyage()` | 항해 번호 +1 후 항해 씬으로 | `MaintenanceUI` |
-| `StartGame()` · `GoToTitle()` · `AbandonVoyage()` | 새 게임 · 타이틀로 · 항해 포기(기록 저장 후 타이틀) | `TitleUI`, `GameOverUI`, `PauseUI` |
+주문 실패에 안정도 −5%를 둔 것은, 이전 항해에서 모은 크레딧으로 바로 할당량을 내 버리고 주문은 해결하지 않는 상황이 생길 수 있기 때문입니다. 실패 페널티로 주문 해결을 유도했습니다. 안정화 물질은 남은 크레딧을 소모하는 사용처로 정했고, 가격 60 크레딧은 나중에 따로 밸런싱할 계획입니다.
 
 ![터미널의 할당량 납부 탭. 낼 금액을 고르고 '납부' 버튼으로 낸다](images/08b_terminal_quota.png)
 
-낼 금액은 화면(`TerminalUI`)이 고르지만, 실제로 크레딧을 빼고 할당량에 더하는 일은 '납부' 버튼이 부르는 `GameManager.PayQuota` 하나뿐입니다. 같은 크레딧이 안정화 물질 탭에서는 `BuyStabilizer`로 쓰입니다.
+낼 금액은 화면(`TerminalUI`)이 고르지만, 실제로 크레딧을 빼고 할당량에 더하는 일은 '납부' 버튼이 부르는 `GameManager`의 납부 함수(`PayQuota`) 하나뿐입니다. 같은 크레딧이 안정화 물질 탭에서는 구매 함수(`BuyStabilizer`)로 쓰입니다.
 
 화면은 값을 어떻게 알아낼까?
 
@@ -625,69 +563,68 @@ sequenceDiagram
 | 장점 | 바뀔 때만 그린다 | 구독이 없어 놓칠 일도, 해제할 일도 없다. 화면을 늦게 열어도 첫 프레임부터 정확한 값이 보인다 |
 | 단점 | 안정도와 남은 시간은 매 프레임 바뀌므로 결국 매 프레임 이벤트가 발생한다. 구독·해제 짝을 화면마다 관리해야 한다 | 바뀌지 않은 값도 매 프레임 다시 그린다 |
 
-둘을 나눠 썼습니다. 계속 변하는 값(안정도·남은 시간·주문 시간)은 HUD와 터미널이 매 프레임 읽고, 한 번만 일어나는 사건(도착·게임오버)은 이벤트로 알려 화면이 정확히 한 번 열리게 했습니다. 판단 기준은 **"그 값이 얼마나 자주 바뀌는가"** 였습니다. 폴링의 비용(매 프레임 문자열 생성)은 [9.4](#94-남은-문제)에 개선 과제로 남겼습니다.
+둘을 나눠 썼습니다. 계속 변하는 값(안정도·남은 시간·주문 시간)은 HUD와 터미널이 매 프레임 읽고, 한 번만 일어나는 사건(도착·게임오버)은 이벤트로 알려 화면이 정확히 한 번 열리게 했습니다. 판단 기준은 **"그 값이 얼마나 자주 바뀌는가"** 였습니다. 폴링의 비용(매 프레임 문자열 생성)은 [9.3](#93-남은-문제)에 개선 과제로 남겼습니다.
 
-화면은 결과 이벤트를 구독해 열립니다.
-
-```csharp
-// SettlementUI.cs — 씬을 넘어 살아남는 GameManager를 구독하므로, 이 화면이 사라질 때 반드시 해제한다
-private void Start()
-{
-    gameManager = GameManager.Instance;
-    gameManager.VoyageEnded += Show;
-    nextButton.onClick.AddListener(gameManager.FinishSettlement);
-    settlementPanel.SetActive(false);
-}
-
-private void OnDestroy()
-{
-    if (gameManager != null) gameManager.VoyageEnded -= Show;
-}
-```
-
-`GameManager`는 씬이 바뀌어도 살아 있지만, 정산 화면은 SPACE 씬과 함께 사라집니다. 해제하지 않으면 다음 항해에 도착할 때 이미 파괴된 화면의 `Show`가 불려 오류가 납니다. 그래서 구독은 `Start`, 해제는 `OnDestroy`에서 짝지어 합니다. 게임을 끌 때는 `GameManager`가 먼저 파괴될 수 있어서, 해제할 때는 `Start`에서 받아 둔 참조가 null인지 확인한 뒤 씁니다.
-
-### 6.3 실패 판정은 한 곳에서, 한 프레임에 하나만
-
-`Update`는 매 프레임 안정도를 줄이고, 도착까지 남은 시간을 셉니다.
-
-```csharp
-// GameManager.cs (발췌)
-private void Update()
-{
-    if (IsPlaying == false) return;
-
-    // 안정도는 초당 BaseDecay씩 줄고, 0%가 되면 ChangeStability가 게임오버를 낸다
-    ChangeStability(-Voyage.BaseDecay * Time.deltaTime);
-    if (IsPlaying == false) return;                                     // ①
-
-    RemainingTime -= Time.deltaTime;
-    if (RemainingTime <= 0f) Arrive();
-}
-```
-
-1. 같은 프레임 중복 방지. 안정도 감소로 이번 프레임에 게임오버가 났다면 도착 판정을 하지 않습니다. 게임오버와 정산 화면이 동시에 뜨는 일이 없습니다.
+### 6.3 실패 판정은 한 곳에서
 
 도착하면 할당량을 다 냈는지에 따라 정산과 게임오버로 갈립니다.
 
 안정도는 0 ~ 최대치로 자르고, 항해 중 0%가 되면 게임오버를 냅니다.
 
 ```csharp
-// GameManager.cs (이어서)
+// GameManager.cs (발췌)
 public void ChangeStability(float amount)
 {
     Stability = Mathf.Clamp(Stability + amount, 0f, coreConfig.MaxStability);
-    if (IsPlaying && Stability <= 0f) GameOver(GameOverReason.StabilityZero);   // ②
+    if (IsPlaying && Stability <= 0f) GameOver(GameOverReason.StabilityZero);
 }
 ```
 
-2. 판정은 한 곳에. 안정도를 바꾸는 모든 길(초당 감소·주문·사고·구매)이 이 함수를 지나므로, 0\~100% 제한과 0% 게임오버 판정이 한 곳에만 있습니다. `IsPlaying` 조건 덕분에 정비 씬처럼 항해 밖에서는 게임오버가 나지 않습니다.
+- 판정은 한 곳에. 안정도를 바꾸는 모든 길(초당 감소·주문·사고·구매)이 이 함수를 지나므로, 0\~100% 제한과 0% 게임오버 판정이 한 곳에만 있습니다. '항해 중인가' 조건 덕분에 정비 씬처럼 항해 밖에서는 게임오버가 나지 않습니다.
 
 게임오버가 나면 기록을 갱신하고 화면에 알립니다. '완료한 항해 수'(지금 항해는 세지 않음)가 많으면, 같으면 누적 크레딧이 많을 때만 JSON에 저장합니다.
 
+### 6.4 씬을 넘기면 GameManager가 사라질 수 있었던 문제
+
+- (문제) 실행 순서에 따라 `GameManager`가 `DontDestroyOnLoad`에 등록되지 않았습니다. 그래서 정비 씬으로 넘어갈 때 파괴되고, 그 씬의 `GameManager`가 새로 시작해 크레딧·안정도가 처음 값으로 돌아갔습니다.
+- (원인) 배운 `SingletonBase`는 instance를 두 곳에서 정하는데, `DontDestroyOnLoad`를 거는 조건이 다릅니다.
+  - `Awake`: instance가 비어 있으면 자기 자신으로 정하면서 `DontDestroyOnLoad`를 겁니다.
+  - `Instance` 게터: 씬에서 찾은 오브젝트를 instance로 정하고, `DontDestroyOnLoad`는 찾지 못해 새로 만든 경우에만 겁니다.
+  - 그래서 다른 스크립트가 `GameManager.Awake`보다 먼저 `Instance`를 부르면, 게터가 씬의 `GameManager`를 instance로 정하고(등록 없음), 뒤이은 `Awake`에서는 이미 instance가 자기 자신이라 등록을 건너뜁니다.
+- (해결) `GameManager.Awake`에서 자기 자신이 instance이면 한 번 더 등록합니다. 실행 순서를 `[DefaultExecutionOrder]`로 앞당기는 방법도 있었지만, 지켜야 할 순서 규칙을 하나 늘리는 대신 순서와 상관없이 항상 성립하는 쪽을 택했습니다.
+- (결과) 플레이하며 하이어라키에서 확인했습니다.
+
+다른 스크립트가 `Awake`보다 먼저 `Instance`를 부르면 `SingletonBase`가 `DontDestroyOnLoad`를 건너뛰므로, 한 번 더 겁니다.
+
+```csharp
+// GameManager.cs
+protected override void Awake()
+{
+    base.Awake();
+    if (instance == this) DontDestroyOnLoad(gameObject);
+}
+```
+
+### 6.5 안정도가 '100%'로 보이는데 안정화 물질을 살 수 있던 문제
+
+- (문제) 안정도가 "100%"로 보이는데 구매 버튼이 켜져 있었고, 사면 60 크레딧을 내고 안정도는 0.02%만 올랐습니다.
+- (원인) 안정도는 매초 조금씩 줄어 99.98%처럼 소수가 되는데, 화면은 올림해 "100%"로 보여 주고 구매 가능 여부는 실제 값(99.98 < 100)으로 판정했습니다. 화면 표기와 판정의 기준이 달랐습니다.
+- (해결) '가득 참' 판정을 화면과 같은 올림 기준으로 맞췄습니다. 보이는 값과 판정이 어긋나지 않습니다.
+- (결과) 플레이로 확인했습니다. 안정도가 100%로 보일 때 눌러도 크레딧이 나가지 않습니다.
+
+화면 표기(올림)가 상한이면 가득 찬 것으로 봅니다. 99.98%일 때 사서 크레딧만 잃지 않게 하려는 것입니다.
+
+```csharp
+// GameManager.cs
+public bool IsStabilityFull => Mathf.CeilToInt(Stability) >= coreConfig.MaxStability;
+public bool CanBuyStabilizer => Credit >= coreConfig.StabilizerPrice && IsStabilityFull == false;
+```
+
 ---
 
-## 7. 데이터 주도 설계: 코드를 고치지 않고 수치를 바꾼다
+## 7. 코드를 고치지 않고 수치를 바꾼다
+
+이 장은 플레이어에게 특별히 경험을 주는 요소는 아니지만, 밸런스를 맡는 부분입니다. 조작감 · 재료 생성 수치 · 미니게임 밸런스 같은 수치를 여기서 조정합니다.
 
 ### 7.1 누가 고치는가로 나눈 세 형식
 
@@ -701,7 +638,26 @@ public void ChangeStability(float amount)
 | ScriptableObject | 한 벌뿐인 조절값 | 인스펙터 (플레이 중에도) | `CoreConfig`(안정도), `SpawnConfig`(재료 생성), `PlayerControlConfig`(이동·카메라), `MiniGameConfig` 등 7종 | `[SerializeField]` 참조 |
 | JSON (`persistentDataPath`) | 게임을 꺼도 남는 기록 | 게임이 저장 | `RecordSave`(최고 항해 수, 그때의 누적 크레딧) | `GameManager` |
 
+![플레이 중인 Unity 에디터. 오른쪽 인스펙터에 SpawnConfig 에셋의 값(재료 생성과 흐름 · 풀링)이 보이고, 아래 Game 뷰에서는 게임이 계속 돌아간다](images/inspector_config.png)
+
 경계는 이렇게 나눕니다. 사고 종류마다 다른 값(제한시간·성공 횟수·안정도 감소·뽑힐 비중)은 `AccidentTable`의 한 줄에, 미니게임마다 한 벌뿐인 조작감 값(타이밍 바 커서 속도·성공 구간 폭, 순서 입력 길이)은 `MiniGameConfig`에 둡니다.
+
+| 항해 | 할당량 (크레딧) | 항해 시간 | 초당 안정도 감소 | 사고 간격 |
+|---|---|---|---|---|
+| 1 | 200 | 240초 | 0.02% | 50\~80초 |
+| 4 | 375 | 285초 | 0.0275% | 42.5\~65초 |
+| 7 | 600 | 330초 | 0.035% | 35\~55초 |
+| 10 | 800 | 360초 | 0.04% | 30\~50초 |
+
+```mermaid
+xychart-beta
+    title "항해 단계별 할당량"
+    x-axis "항해" [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    y-axis "할당량 (크레딧)" 0 --> 900
+    line [200, 250, 300, 375, 450, 525, 600, 665, 735, 800]
+```
+
+항해가 거듭될수록 난이도를 올린 이유는 두 가지입니다. 같은 난이도가 반복되면 플레이어는 점점 익숙해지는데, 게임이 그 수준에 머물면 지루함을 느낄 수 있습니다. 또 반복 플레이로 크레딧이 쌓이는데 항해마다 할당량이 늘지 않으면, 항해에 들어가자마자 모아 둔 크레딧을 바로 내 버려 선외에서 재료를 모을 이유가 부족해집니다. 그래서 할당량을 항해마다 늘렸고, 사고 간격도 반복 플레이로 익숙해져 생기는 지루함을 줄이기 위해 점점 짧게 했습니다.
 
 사고 표를 예로, TSV 파일이 행 객체가 되기까지의 차례입니다.
 
@@ -723,7 +679,7 @@ sequenceDiagram
     DM-->>AP: AccidentRow 목록
 ```
 
-`AccidentTable.tsv`는 실행 전에 에디터에서 `TsvImporter`가 TextAsset으로 가져와 둡니다(7.3 ④).
+`AccidentTable.tsv`는 실행 전에 에디터에서 `TsvImporter`가 TextAsset으로 가져와 둡니다(7.3).
 
 ### 7.2 표의 첫 줄은 코드가, 둘째 줄은 사람이 읽는다
 
@@ -760,46 +716,14 @@ Wire        전선 연결    30             3                               10  
 
 영어 열 이름 + `#` 한글 설명 줄을 골랐습니다. 키가 깨지는 문제는 실행해야만 드러나지만, 설명 줄은 파서 조건 하나(`StartsWith("#")`)로 해결되기 때문입니다. ID 값도 같은 이유로 영어로 둡니다.
 
-새 표를 추가할 때는 ① TSV 파일 추가 → ② 행 클래스와 `FromCells` 작성 → ③ `DataManager`에 조회 함수 추가만 하면 됩니다. 파서는 고치지 않습니다.
+새 표를 추가할 때는 ① TSV 파일 추가 → ② 행 클래스와 그 변환 함수(`FromCells`) 작성 → ③ `DataManager`에 조회 함수 추가만 하면 됩니다. 파서는 고치지 않습니다.
 
 ### 7.3 파서 하나가 모든 표를 읽는다
 
-#### ① 파서: 열 이름을 키로 칸을 찾는다
-
-첫 줄의 열 이름을 키로 삼아 줄마다 칸을 모으고, `#` 설명 줄은 건너뜁니다.
-
-```csharp
-// TsvParser.cs — 첫 줄은 열 이름(코드가 칸을 찾는 키)이고, #으로 시작하는 한글 설명 줄은 건너뛴다
-public static List<TRow> ParseRows<TRow>(string tsvText, Func<Dictionary<string, string>, TRow> fromCells)
-{
-    List<TRow> rowList = new List<TRow>();
-    string[] lines = tsvText.TrimStart('﻿').Split('\n');   // BOM 제거
-    string[] header = lines[0].Trim().Split('\t');
-
-    for (int lineIndex = 1; lineIndex < lines.Length; lineIndex++)
-    {
-        string line = lines[lineIndex].Trim();
-        if (line.Length == 0 || line.StartsWith("#")) continue;
-
-        string[] values = line.Split('\t');
-        Dictionary<string, string> cells = new Dictionary<string, string>();
-        for (int index = 0; index < header.Length; index++)
-        {
-            cells[header[index].Trim()] = index < values.Length ? values[index].Trim() : "";
-        }
-        rowList.Add(fromCells(cells));
-    }
-    return rowList;
-}
-```
-
 - 칸을 **열 번호가 아니라 열 이름으로** 찾습니다. 표에 열을 추가하거나 순서를 바꿔도 기존 코드가 깨지지 않습니다.
-- 한 줄을 행 객체로 바꾸는 방법은 `fromCells` 함수로 받습니다(제네릭). 파서 하나가 모든 표에 쓰입니다.
-- `#` 줄과 빈 줄은 건너뛰고, 엑셀이 UTF-8로 저장할 때 붙이는 BOM을 지웁니다.
-
-표에는 아직 쓰지 않는 행과 열도 있습니다(모듈이 필요한 주문 4종, 생성 비중이 0인 재료 4종, `BadZoneWeight` 열 등). 파서가 열 이름으로 칸을 찾고 주문 후보는 `OrderManager`가 `RequireModule`이 빈 행만 고르므로, 남아 있어도 동작에는 영향이 없습니다.
-
-#### ② 행 변환: 오타는 표를 읽는 순간 드러난다
+- 한 줄을 행 객체로 바꾸는 방법은 함수로 넘겨받습니다(제네릭). 파서 하나가 모든 표에 쓰입니다.
+- `DataManager`는 static 클래스라 씬에 오브젝트를 둘 필요도, 초기화 순서를 맞출 필요도 없습니다. 처음 조회할 때 한 번 읽고 캐시합니다.
+- Unity는 `.tsv`를 TextAsset으로 읽지 않으므로 직접 가져옵니다. `ScriptedImporter`로 `.tsv` 확장자를 등록해 `Resources` 폴더에서 TextAsset으로 읽을 수 있게 했습니다. `Editor` 폴더에 있어 빌드에는 포함되지 않습니다.
 
 ID를 문자열로 둘까, enum으로 둘까?
 
@@ -810,68 +734,7 @@ ID를 문자열로 둘까, enum으로 둘까?
 
 enum을 골랐습니다. 대가는 "새 값은 항상 맨 뒤에 추가한다"는 규칙을 enum 선언 위 주석으로 고정해 막았습니다.
 
-칸 이름으로 값을 꺼내 형식을 바꿉니다.
-
-```csharp
-// Accident.cs
-public static AccidentRow FromCells(Dictionary<string, string> cells)
-{
-    return new AccidentRow
-    {
-        AccidentID = TsvParser.ToEnum<AccidentType>(cells["AccidentID"]),
-        Name = cells["Name"],
-        Desc = cells["Desc"],
-        TimeLimit = TsvParser.ToFloat(cells["TimeLimit"]),
-        SuccessCount = TsvParser.ToInt(cells["SuccessCount"]),
-        StabilityPenalty = TsvParser.ToFloat(cells["StabilityPenalty"]),
-        SpawnWeight = TsvParser.ToFloat(cells["SpawnWeight"]),
-    };
-}
-```
-
 - ID를 enum으로 바꾸다 실패하면 예외가 납니다. TSV에 `Timingbar` 같은 오타가 있으면, 그 행이 뽑힐 때가 아니라 표를 처음 읽을 때 모든 행을 변환하면서 드러납니다 (Fail-fast).
-- `Enum.Parse`는 `"5"`처럼 숫자로 적으면 enum에 없는 값도 그대로 받습니다. 그래서 ID는 항상 이름으로 적습니다 ([7.2](#72-표의-첫-줄은-코드가-둘째-줄은-사람이-읽는다) 작성 규칙 3).
-- 숫자는 `CultureInfo.InvariantCulture`로 읽어, 소수점을 쉼표로 쓰는 지역 설정에서도 `0.02`가 같은 값이 됩니다.
-
-#### ③ 지연 로드와 범위 처리
-
-항해 번호(1부터)의 행을 돌려줍니다. 표의 마지막 항해보다 뒤면 마지막 행입니다.
-
-```csharp
-// DataManager.cs
-public static VoyageRow GetVoyage(int voyageIndex)
-{
-    if (voyageTable == null) voyageTable = TsvParser.ParseRows(LoadTsv("VoyageTable"), VoyageRow.FromCells);
-    int rowIndex = Mathf.Clamp(voyageIndex, 1, voyageTable.Count) - 1;
-    return voyageTable[rowIndex];
-}
-```
-
-표 파일은 `Resources`에서 읽습니다.
-
-- `DataManager`는 static 클래스라 씬에 오브젝트를 둘 필요도, 초기화 순서를 맞출 필요도 없습니다. 처음 조회할 때 한 번 읽고 캐시합니다.
-- 게임은 게임오버까지 끝없이 이어지므로, 표의 마지막(10번째) 항해 뒤로는 마지막 행을 계속 씁니다.
-- 파일이 없으면 경로를 담은 예외를 내서 누락을 바로 알 수 있습니다.
-
-#### ④ 임포터: .tsv를 텍스트 에셋으로
-
-Unity는 `.tsv`를 TextAsset으로 읽지 않으므로 직접 가져옵니다.
-
-```csharp
-// TsvImporter.cs (Editor 폴더) — Unity는 .tsv를 TextAsset으로 읽지 않으므로 직접 TextAsset으로 가져온다
-[ScriptedImporter(1, "tsv")]
-public class TsvImporter : ScriptedImporter
-{
-    public override void OnImportAsset(AssetImportContext context)
-    {
-        TextAsset textAsset = new TextAsset(File.ReadAllText(context.assetPath));
-        context.AddObjectToAsset("text", textAsset);
-        context.SetMainObject(textAsset);
-    }
-}
-```
-
-`ScriptedImporter`로 `.tsv` 확장자를 등록해 `Resources.Load<TextAsset>`으로 읽을 수 있게 했습니다. `Editor` 폴더에 있어 빌드에는 포함되지 않습니다.
 
 ---
 
@@ -879,18 +742,17 @@ public class TsvImporter : ScriptedImporter
 
 4~7장에서 깊게 다룬 기능 외에는 한 줄씩 정리합니다.
 
-| 기능 | 구현 요점 | 클래스 |
-|---|---|---|
-| 선내 / 선외 이동 | 이동 상태 2개. 선내는 중력과 평면 이동, 선외는 관성 유영. 선외에서는 이동 키를 놓으면 속도가 서서히 줄어든다 | `PlayerController` |
-| 선외 활동 범위 | 활동 구 밖으로 나가면 바깥으로 향하는 속도 성분을 없애고 안쪽으로 밀어 낸다 | `PlayerController` |
-| 조작 잠금 | bool이 아닌 횟수로 센다. 에어락 통과와 화면 열기가 겹쳐도 모두 풀려야 해제되고, 화면 잠금 중에는 커서를 보인다 | `PlayerController` |
-| 에어락 | 0.5초 동안 조작을 잠그고 진행 막대를 채운 뒤 선내 ↔ 지붕으로 옮긴다. `CharacterController`를 끄고 위치를 바꾼 뒤 다시 켠다 | `LocalPlayer`, `AirLock`, `HoldBarUI` |
-| 상호작용 | 상자 범위(`OverlapBox`) 안 상호작용 태그 대상 중 가장 가까운 것을 고른다. HUD 안내도 같은 규칙으로 "크리스탈 줍기"를 띄우고, 지금 못 하면 이유("손이 찼음", "맞는 주문 없음")를 흐리게 보인다. 다만 같은 규칙이 두 스크립트에 따로 있음 → [9.4](#94-남은-문제) | `InteractionCube`, `LocalPlayer`, `InteractionPromptUI` |
-| 주문 보드 | MonoBehaviour가 아닌 순수 C# 클래스. 주문 3칸, 제출한 재료는 그 재료가 필요한 주문 중 남은 시간이 가장 짧은 칸에 자동 배정, 끝난 칸은 5초 뒤 새 주문으로 채운다 | `OrderBoard`, `OrderManager` |
-| 1인칭 로봇 애니메이션 | 이동 속도에 맞춰 걷기·뛰기 애니메이션을 섞어 발이 미끄러지지 않게 한다. 재료를 들면 두 손이 재료를 쥐고, 1인칭 카메라에 내 머리가 보이지 않게 숨긴다 | `PlayerAnimator`, `FirstPersonHead`, `PlayerCamera` |
-| 사고 위치 표시 | 사고 패널 위에 "이름 거리m"를 띄운다. 화면 밖이나 카메라 뒤면 화면 가장자리에 붙이고 화살표로 방향을 가리킨다 | `WorldMarkerUI` |
-| 상호작용 대상 빛 | 터미널·에어락 패드·사고 패널을 상태와 상관없이 늘 같은 밝기로 빛나게 해 위치를 알린다. 정적 배칭으로 합쳐진 메시 대신 원본 메시를 따로 받아, 같은 모양의 빛 껍데기를 자식으로 만든다 | `InteractionHighlight` |
-| Esc 처리 | Esc는 `PauseUI` 한 곳에서만 받아 터미널 → 미니게임 → 일시정지 순서로 하나만 처리한다. 화면마다 받으면 한 번 눌러 두 화면이 반응하기 때문이다 | `PauseUI` |
+| 기능 | 구현 요점 |
+|---|---|
+| 선내 / 선외 이동 | 이동 상태 2개. 선내는 중력과 평면 이동, 선외는 관성 유영. 선외에서는 이동 키를 놓으면 속도가 서서히 줄어든다 |
+| 에어락 | 0.5초 동안 조작을 잠그고 진행 막대를 채운 뒤 선내 ↔ 지붕으로 옮긴다. `CharacterController`를 끄고 위치를 바꾼 뒤 다시 켠다 |
+| 상호작용 | 상자 범위(`OverlapBox`) 안 상호작용 태그 대상 중 가장 가까운 것을 고른다. HUD 안내도 같은 규칙으로 "크리스탈 줍기"를 띄우고, 지금 못 하면 이유("손이 찼음", "맞는 주문 없음")를 흐리게 보인다. 다만 같은 규칙이 두 스크립트에 따로 있음 → [9.3](#93-남은-문제) |
+| 주문 보드 | MonoBehaviour가 아닌 순수 C# 클래스. 주문 3칸, 제출한 재료는 그 재료가 필요한 주문 중 남은 시간이 가장 짧은 칸에 자동 배정, 끝난 칸은 5초 뒤 새 주문으로 채운다 |
+| 1인칭 로봇 애니메이션 | 이동 속도에 맞춰 걷기·뛰기 애니메이션을 섞어 발이 미끄러지지 않게 한다. 재료를 들면 두 손이 재료를 쥐고, 1인칭 카메라에 내 머리가 보이지 않게 숨긴다 |
+| 사고 위치 표시 | 사고 패널 위에 "이름 거리m"를 띄운다. 화면 밖이나 카메라 뒤면 화면 가장자리에 붙이고 화살표로 방향을 가리킨다 |
+| Esc 처리 | Esc는 `PauseUI` 한 곳에서만 받아 터미널 → 미니게임 → 일시정지 순서로 하나만 처리한다. 화면마다 받으면 한 번 눌러 두 화면이 반응하기 때문이다 |
+
+![상호작용 대상을 바라보면 주황 외곽선과 E 안내가 뜨는 장면. 사고 패널과 에어락 패드에 차례로 외곽선이 생긴다](images/interaction_highlight.gif)
 
 ![재료를 든 1인칭 화면. 두 손이 크리스탈 양옆을 쥐고 있고, 왼쪽 아래에는 '손 1/1 크리스탈'이 표시된다](images/15_first_person_hold.png)
 
@@ -903,7 +765,7 @@ public class TsvImporter : ScriptedImporter
 | 개요의 목표 | 결과 | 근거 |
 |---|---|---|
 | 2주 안에 한 판이 끝까지 도는 버전 | 타이틀 → 항해 → 정산 → 정비 → 다음 항해, 게임오버·최고 기록까지 구현 | 씬 3개, [2.2](#22-항해-사이에서) 상태도의 전환 8개가 모두 `GameManager`에 있음 |
-| 흐르는 재료 재사용 | 씬을 열 때 120개를 만든 뒤, 항해 중에는 흐르는 재료를 새로 만들거나 파괴하지 않음 (항해 1회 360~540회 생성을 모두 재사용) | `SpawnManager`에서 흐르는 재료의 `Instantiate`는 씬을 열 때뿐 (성능 측정은 [9.4](#94-남은-문제) 과제) |
+| 흐르는 재료 재사용 | 씬을 열 때 120개를 만든 뒤, 항해 중에는 흐르는 재료를 새로 만들거나 파괴하지 않음 (항해 1회 360~540회 생성을 모두 재사용) | `SpawnManager`에서 흐르는 재료의 `Instantiate`는 씬을 열 때뿐 (성능 측정은 [9.3](#93-남은-문제) 과제) |
 | 같은 규칙의 미니게임 3종 | 공통 흐름 1벌(`AccidentPanel`·`MiniGameUI`) + 종류별 클래스 3개. 종류 추가 = 클래스 1개 + TSV 1줄 + 인스펙터 연결 ([5.2](#52-새-미니게임은-클래스-하나와-표-한-줄로)) | `MiniGame` 추상 클래스 |
 
 **목표한 경험은 어떻게 됐나.**
@@ -916,7 +778,9 @@ public class TsvImporter : ScriptedImporter
 
 목표한 경험은 생겼다고 봅니다. 물품 배달·기지의 고장·할당량이 합쳐져 몰입감이 좋았다는 반응이 그 근거입니다. 제한시간의 촉박함과 유영·몰입도 의도한 경험이었습니다. 하지만 하나씩 들고 오가는 반복은 플레이어에게 답답함을 주었을 것이라고 느꼈습니다.
 
-다음에는 한 번에 여러 개를 들 수 있게 하고, 제한시간을 늘리는 대신 방해 요소를 더하겠습니다.
+한 번에 하나만 드는 방식은 레퍼런스로 삼은 Overcooked!를 임시로 따라간 것이었는데, 이 부분이 부족했습니다.
+
+다음에는 한 번에 여러 개를 들 수 있게 하고, 제한시간을 늘리고, 그 대신 방해 요소를 더하겠습니다.
 
 ### 9.2 AI와 함께 만든 방식
 
@@ -930,104 +794,17 @@ public class TsvImporter : ScriptedImporter
 
 안 된 점도 있었습니다. 스폰 경로를 요청했을 때 AI가 안전 범위를 무시한 경로를 줘서, 재료가 우주선에 충돌하거나 뚫고 지나가는 버그가 생겼습니다. 플레이로 확인한 뒤 다시 검수를 요청해 바꿨습니다.
 
-### 9.3 안다고 생각한 동작이 실제와 달랐다
-
-#### ① 씬을 넘기면 GameManager가 사라질 수 있었던 문제
-
-- (문제) 실행 순서에 따라 `GameManager`가 `DontDestroyOnLoad`에 등록되지 않았습니다. 그래서 정비 씬으로 넘어갈 때 파괴되고, 그 씬의 `GameManager`가 새로 시작해 크레딧·안정도가 처음 값으로 돌아갔습니다.
-- (원인) 배운 `SingletonBase`는 instance를 두 곳에서 정하는데, `DontDestroyOnLoad`를 거는 조건이 다릅니다.
-  - `Awake`: instance가 비어 있으면 자기 자신으로 정하면서 `DontDestroyOnLoad`를 겁니다.
-  - `Instance` 게터: 씬에서 찾은 오브젝트를 instance로 정하고, `DontDestroyOnLoad`는 찾지 못해 새로 만든 경우에만 겁니다.
-  - 그래서 다른 스크립트가 `GameManager.Awake`보다 먼저 `Instance`를 부르면, 게터가 씬의 `GameManager`를 instance로 정하고(등록 없음), 뒤이은 `Awake`에서는 이미 instance가 자기 자신이라 등록을 건너뜁니다.
-- (해결) `GameManager.Awake`에서 자기 자신이 instance이면 한 번 더 등록합니다. 실행 순서를 `[DefaultExecutionOrder]`로 앞당기는 방법도 있었지만, 지켜야 할 순서 규칙을 하나 늘리는 대신 순서와 상관없이 항상 성립하는 쪽을 택했습니다.
-- (결과) 플레이하며 하이어라키에서 확인했습니다.
-
-다른 스크립트가 `Awake`보다 먼저 `Instance`를 부르면 `SingletonBase`가 `DontDestroyOnLoad`를 건너뛰므로, 한 번 더 겁니다.
-
-```csharp
-// GameManager.cs
-protected override void Awake()
-{
-    base.Awake();
-    if (instance == this) DontDestroyOnLoad(gameObject);
-}
-```
-
-#### ② 안정도가 '100%'로 보이는데 안정화 물질을 살 수 있던 문제
-
-- (문제) 안정도가 "100%"로 보이는데 구매 버튼이 켜져 있었고, 사면 60 크레딧을 내고 안정도는 0.02%만 올랐습니다.
-- (원인) 안정도는 매초 조금씩 줄어 99.98%처럼 소수가 되는데, 화면은 올림해 "100%"로 보여 주고 구매 가능 여부는 실제 값(99.98 < 100)으로 판정했습니다. 화면 표기와 판정의 기준이 달랐습니다.
-- (해결) '가득 참' 판정을 화면과 같은 올림 기준으로 맞췄습니다. 보이는 값과 판정이 어긋나지 않습니다.
-- (결과) 플레이로 확인했습니다. 안정도가 100%로 보일 때 눌러도 크레딧이 나가지 않습니다.
-
-화면 표기(올림)가 상한이면 가득 찬 것으로 봅니다. 99.98%일 때 사서 크레딧만 잃지 않게 하려는 것입니다.
-
-```csharp
-// GameManager.cs
-public bool IsStabilityFull => Mathf.CeilToInt(Stability) >= coreConfig.MaxStability;
-public bool CanBuyStabilizer => Credit >= coreConfig.StabilizerPrice && IsStabilityFull == false;
-```
-
-#### ③ 비중 뽑기가 경계값에서 아무것도 고르지 못하던 문제
-
-- (문제) 재료 종류와 사고 종류를 비중으로 뽑는 함수가, 드물게 반복문 안에서 아무것도 고르지 못했습니다. 이때 단순히 '마지막 번호'를 돌려주면, 마지막 항목의 비중이 0일 때 나와서는 안 되는 항목이 뽑힙니다.
-- (원인) `Random.Range(float, float)`는 정수 버전과 달리 최댓값도 포함합니다. 뽑은 값이 정확히 비중 합계이면 `pick < weight`가 끝까지 거짓입니다.
-- (해결) 비중 0인 번호는 건너뛰고, 반복문이 끝나면 비중이 있는 마지막 번호를 돌려줍니다. 모두 0이면 −1입니다.
-- (결과) 플레이로 확인했습니다. 비중이 0인 재료는 나오지 않습니다.
-
-비중이 0인 번호는 나오지 않고, 모두 0이면 -1을 돌려줍니다.
-
-```csharp
-// WeightedRandom.cs
-public static int PickIndex(float[] weights)
-{
-    float total = 0f;
-    for (int index = 0; index < weights.Length; index++) total += weights[index];
-
-    float pick = Random.Range(0f, total);
-    int lastIndex = -1;     // 비중이 있는 마지막 번호. Random.Range는 total도 내므로 반복문에서 못 고를 수 있다
-    for (int index = 0; index < weights.Length; index++)
-    {
-        if (weights[index] <= 0f) continue;
-        if (pick < weights[index]) return index;
-        pick -= weights[index];
-        lastIndex = index;
-    }
-    return lastIndex;
-}
-```
-
-#### ④ 미니게임을 연 첫 프레임에 전선이 엉뚱한 곳에서 시작하던 문제
-
-- (문제) 전선 잇기 화면을 열자마자 단자를 클릭하면, 전선이 단자가 아닌 엉뚱한 위치에서 시작했습니다.
-- (원인) 단자는 Layout Group 안에 복제해 만드는데, Layout Group은 자식 위치를 프레임 끝의 캔버스 갱신 때 계산합니다. 만든 바로 그 프레임에는 단자 위치가 아직 정렬 전 값입니다.
-- (해결) 단자를 만든 직후 정렬을 즉시 계산합니다.
-- (결과) 플레이로 확인했습니다. 전선이 단자에서 시작합니다.
-
-첫 프레임부터 단자 위치로 전선을 그릴 수 있게 정렬을 바로 맞춥니다.
-
-```csharp
-// WireGame.cs
-LayoutRebuilder.ForceRebuildLayoutImmediate(leftColumn);
-LayoutRebuilder.ForceRebuildLayoutImmediate(rightColumn);
-```
-
-### 9.4 남은 문제
+### 9.3 남은 문제
 
 | 아쉬운 점 (기술 부채) | 왜 문제인가 | 향후 계획 (To-Be) |
 |---|---|---|
 | 상호작용 규칙이 두 곳에 있다 (`LocalPlayer.Interact`, `InteractionPromptUI`) | 대상이 하나 늘 때마다 같은 분기를 두 곳에서 고쳐야 한다 | 대상이 `IInteractable`(안내 문구, 실행)을 직접 구현해 규칙을 한 곳에 모은다 |
 | Q를 두 곳에서 받는다 (`MiniGameUI`는 화면 닫기, `PlayerController`는 재료 놓기) | 두 스크립트의 실행 순서를 정해 두지 않아, 재료를 든 채 미니게임을 Q로 닫으면 같은 프레임에 재료까지 놓일 수 있다. Esc를 한 곳에서 받기로 한 이유(8장)와 같은 문제다 | Esc처럼 한 곳에서 받아, 열린 화면이 있으면 닫기만 한다 |
-| 배운 `SingletonBase`의 `Awake`가 씬 전용 매니저(`OrderManager`, `SpawnManager`)에도 `DontDestroyOnLoad`를 건다 | 지금은 부모 오브젝트 아래에 있어 무시될 뿐이고(실행마다 경고 로그), 루트로 옮기면 씬을 넘어 살아남아 다음 항해의 매니저와 충돌한다 | 씬 전용 매니저는 싱글톤 대신 인스펙터 참조로 바꾸고, 씬을 넘는 것은 `GameManager`만 둔다 |
-| 이벤트가 `public Action` 필드다 | 외부에서 `=`로 덮어쓰거나 직접 `Invoke`할 수 있다 | `event` 키워드로 구독·해제만 허용한다 |
 | HUD·터미널이 매 프레임 문자열을 새로 만들어 표시한다 | 값이 그대로여도 매 프레임 할당이 생긴다 | 표시 값이 바뀔 때만 텍스트를 갱신하고, 프로파일러로 전후를 측정한다 |
 | 오브젝트 풀링의 효과를 수치로 재지 않았다 | 재사용 구조는 있지만 개선 폭(GC 할당, 프레임 시간)을 말할 수 없다 | 프로파일러로 `Instantiate`/`Destroy` 방식과 GC Alloc·프레임 시간을 비교한다 |
-| 쓰지 않는 표 3종이 `Resources` 폴더에 있다 | 빌드에 포함되고, 저장소를 보는 사람은 어떤 표가 쓰이는지 헷갈린다 | 시스템을 넣기 전까지 `Resources` 밖으로 옮긴다 |
-| `GameManager` 한 클래스에 값·규칙·항해 진행·씬 전환·기록이 모여 있다 (210줄) | 기능이 늘수록 커진다 | 값과 규칙(모델)과 씬 전환을 나눈다 |
-| `OrderBoard`·`WeightedRandom`은 Unity에 의존하지 않는 순수 C#인데 자동 테스트가 없다 | 규칙을 바꾸면 플레이로만 확인할 수 있다 | Edit Mode 단위 테스트로 "가장 급한 주문에 배정", "시간 초과 시 실패", "비중 0은 뽑히지 않음"을 고정한다 |
 
-### 9.5 기준을 먼저 세우고, 불변 조건은 구조로 지킨다
+### 9.4 기준을 먼저 세우고, 불변 조건은 구조로 지킨다
 
 - 판단 기준을 먼저 세우면 선택이 빨라진다. 데이터 형식은 "누가 어떻게 고치는가", 화면 갱신은 "값이 얼마나 자주 바뀌는가", 상태의 위치는 "화면이 닫혀도 남아야 하는가"로 정했습니다. 기준이 있으니 비슷한 고민이 다시 나와도 같은 답을 낼 수 있었습니다.
-- 불변 조건은 주의가 아니라 구조로 지킨다. "값은 `GameManager` 함수로만 바뀐다"(`private set`), "풀은 줄지 않는다"(잡으면 교체), "닫아도 사고는 계속된다"(상태는 패널에)를 코드 구조로 강제했습니다.
-- 쓰는 도구의 실제 동작을 확인한다. 9.3의 ①③④는 모두 싱글톤 `Instance`의 부수 효과, `Random.Range(float)`의 최댓값 포함, Layout Group의 계산 시점처럼 '안다고 생각한 동작'과 실제 동작의 차이에서 나왔습니다.
+- 불변 조건은 주의가 아니라 구조로 지킨다. "값은 `GameManager` 함수로만 바뀐다"(바깥에서는 읽기만), "풀은 줄지 않는다"(잡으면 교체), "닫아도 사고는 계속된다"(상태는 패널에)를 코드 구조로 강제했습니다.
+- 쓰는 도구의 실제 동작을 확인한다. 6.4 · 4.3 · 5.4는 모두 싱글톤이 인스턴스를 찾을 때의 부수 효과, `Random.Range(float)`의 최댓값 포함, Layout Group의 계산 시점처럼 '안다고 생각한 동작'과 실제 동작의 차이에서 나왔습니다.
