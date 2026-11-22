@@ -8,8 +8,8 @@
   "team": { "type": "solo", "size": "1인", "role": "" },
   "meta": [
     { "label": "장르", "value": "2D 퍼즐 플랫포머" },
-    { "label": "기간", "value": "2026.06.24 ~ 07.10 (07.07 완성, 07.10 정리)" },
-    { "label": "인원", "value": "1인" },
+    { "label": "기간", "value": "2026.06.24 ~ 2026.07.10" },
+    { "label": "인원", "value": "1인 개인 프로젝트" },
     { "label": "환경", "value": "Unity 6 (6000.3.15f1), URP 2D · C#" }
   ],
   "tags": ["Unity 6", "C#", "URP 2D", "Physics2D", "키네마틱 이동", "레이캐스트", "Input System"],
@@ -19,89 +19,90 @@
     "extra": []
   },
   "intent": {
-    "text": "이 게임을 만든 이유는 키 입력 한 번이 플레이 전체에 큰 영향을 주는 경험을 만들고 싶어서였습니다.",
+    "text": "이동과 공격만 있는 게임에서는 키를 눌러도 캐릭터 하나가 움직일 뿐이라, 입력에 비해 돌아오는 변화의 크기가 작다고 판단했습니다. 그래서 키 하나가 발판·총알·퍼즐을 동시에 바꾸는 구조를 택했습니다.",
     "verbatim": true
   },
   "highlights": [
     {
-      "title": "같은 색이면 실체, 다른 색이면 허상",
-      "what": "발판·총알·벽이 모두 \"캐릭터와 같은 색인가\" 하나로 판단해, Shift 한 번에 밟을 길과 맞는 총알이 함께 뒤집힌다",
-      "how": "색을 태그 하나로 나타내 캐릭터 색을 바꾸는 곳은 `Shifter.ShiftTag()` 하나뿐이고, 다른 색 발판은 콜라이더째 꺼서 캐릭터 이동과 레이저에서 함께 사라진다",
-      "why": "06.25 첫 구현 때 캐릭터 쪽 `collisionLayer`만 바꾸는 방법과 견줘, 나중에 만들 기능도 콜라이더를 보기만 하면 같은 색 규칙을 따르도록 콜라이더를 끄는 쪽을 골랐다",
-      "section": "4.2 색을 바꾸고, 발판이 따라 바뀌는 코드",
+      "title": "색을 바꾸는 곳은 하나, 발판은 읽기만",
+      "what": "Shift 한 번에 캐릭터의 색 하나만 바뀌고, 발판·총알·벽·화면 표시는 각자 필요한 때에 그 색을 읽어 함께 뒤집힌다",
+      "how": "색을 태그(`Common`·`White`·`Black`)로 나타내 `Shifter.ShiftTag()` 한 곳에서만 바꾸고, `PlatformManager`가 발판마다 캐릭터와 태그를 비교(`CompareTag`)해 다른 색 발판의 콜라이더를 끈다",
+      "why": "캐릭터 쪽 `collisionLayer`만 바꾸는 방법과 견줘, 나중에 만들 기능도 콜라이더를 보기만 하면 같은 색 규칙을 따르도록 발판의 콜라이더를 끄는 쪽을 골랐다. 그래서 2주 뒤 만든 레이저 퍼즐이 추가 코드 없이 색 규칙을 따랐다",
+      "section": "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만",
       "image": null
     },
     {
       "title": "꺼진 발판은 빛도 지나가는 레이저 퍼즐",
-      "what": "조준 중에 Shift로 색을 바꿔 빛이 지나갈 발판을 고르고, 거울 3개에서 꺾어 센서에 맞히면 문이 열린다",
-      "how": "매 프레임 레이캐스트로 맞은 곳까지 선을 긋고 거울이면 반사해 다시 쏜다. 색을 확인하는 갈림길 없이, 레이캐스트가 꺼진 콜라이더를 보지 못하는 것만으로 색 규칙을 따른다",
-      "why": "빛 알갱이를 날려 물리 반사에 맡기는 방법과 견줘, 조준 퍼즐은 '이 각도면 어디에 맞는가'가 바로 보여야 한다고 판단했다",
-      "section": "4.3 레이저 퍼즐: 꺼진 발판은 빛도 지나간다",
-      "image": { "src": "images/laser.gif", "w": 960, "h": 540, "caption": "검은색으로 위쪽을 겨눠 거울 3개를 거쳐 센서에 닿는 장면" }
+      "what": "마우스로 빛을 쏴 거울 3개에서 꺾어 센서에 맞히면 문이 열리고, 조준하는 동안에도 Shift로 색을 바꿔 빛이 지나갈 발판을 고른다",
+      "how": "매 프레임 레이캐스트로 경로를 이어 붙이고 거울에 맞으면 반사해 다시 쏜다. 레이캐스트는 꺼진 콜라이더를 보지 못해, 색을 확인하는 갈림길 없이 색 규칙을 따른다",
+      "why": "빛 알갱이를 날려 물리로 튕기게 하면 같은 각도로 쏴도 경로가 달라질 수 있어 레이캐스트로 경로를 이어 붙였고, 센서에 닿았는지도 경로의 끝점만 보면 된다",
+      "section": "4.4 꺼진 발판은 빛도 지나간다",
+      "image": { "src": "images/laser.gif", "w": 960, "h": 540, "caption": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다" }
     },
     {
       "title": "거꾸로 쓰는 색 규칙: 크러셔 벽",
-      "what": "밀려오는 흰·검 벽은 발판과 반대로, 같은 색이면 몸이 지나가고 다른 색이면 끝 지점까지 끌려간다",
-      "how": "벽은 1.2초마다 초당 10유닛으로 밀려와 캐릭터(초당 8)보다 빨라 도망칠 수 없고, 쿨타임 1초가 벽 간격보다 짧아 벽마다 색을 맞출 수는 있다",
-      "why": "총알 개수 세기 퍼즐은 Shift를 쓸 이유가 약해서 바꿨고, 처음 값(속도 3)은 피해 달아날 수 있어 Shift를 적극적으로 쓰게 하려고 도망칠 수 없게 했다",
-      "section": "5.1 STAGE 2를 크러셔 벽으로 바꾼 이유",
+      "what": "1.2초마다 밀려오는 흰·검 벽은 발판과 반대로, 같은 색이면 몸이 지나가고 다른 색이면 벽에 걸려 끝 지점까지 끌려간다",
+      "how": "벽은 초당 10유닛으로 캐릭터(초당 8)보다 빨라 도망칠 수 없고, Shift 쿨타임 1초가 벽 간격 1.2초보다 짧아 벽마다 색을 맞출 수는 있다(코드 기본값 초당 3 · 0.7초 · 2초에서 플레이해 보며 맞춘 값)",
+      "why": "처음 코드 기본값에서는 벽이 느려 피해 달아날 수 있어, Shift를 적극적으로 써서 기믹을 풀게 하려고 벽을 캐릭터보다 빠르게 바꿔 도망칠 수 없게 했다",
+      "section": "5.1 같은 색이면 지나가고, 다르면 끌려간다",
       "image": { "src": "images/crusher.gif", "w": 960, "h": 540, "caption": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면" }
     },
     {
-      "title": "보스전: 공격 3번 → 5초 빈틈 → 약점",
-      "what": "스테이지에서 익힌 Shift로 흰·검 탄막을 피하다가, 공격 3번 뒤 5초 동안 드러나는 약점을 위에서 밟는다",
-      "how": "`BossManager`는 10초마다 이전 공격의 `EndPattern()`을 부른 뒤 무작위 공격을 시작하고, 3번 뒤 그로기로 약점을 연다. 각 공격은 자기가 만든 총알을 스스로 지운다",
-      "why": "세 공격의 공통점은 시작·정리뿐이라, 나눠 가질 것은 동작이 아니라 약속이라고 보고 부모 클래스 대신 인터페이스 `IBossPattern`으로 묶었다",
-      "section": "6.3 공격 교체와 그로기",
-      "image": { "src": "images/boss_groggy.gif", "w": 960, "h": 540, "caption": "첫 그로기에 발판에서 2단 점프로 약점을 밟아 보스 체력이 한 칸 줄어드는 장면" }
+      "title": "공격은 자기 총알을 스스로 치운다",
+      "what": "보스가 10초마다 공격을 바꾸거나 그로기로 넘어갈 때, 이전 공격이 만든 총알과 아직 쏘지 않은 발사가 함께 사라진다",
+      "how": "공격 3종이 '시작'·'정리' 두 함수만 약속하는 인터페이스 `IBossPattern`을 구현해 만든 총알을 목록에 담아 두고, `BossManager`는 공격을 바꿀 때 이전 공격의 `EndPattern()`만 부른다",
+      "why": "세 공격의 공통점은 시작·정리뿐이고 공격 방식이 모두 달라 부모 클래스가 가질 동작이 거의 없었다. 나눠 가질 것은 동작이 아니라 약속이라고 보고 인터페이스로 정했고, 정리 코드 반복(3곳 × 8줄 정도)은 감수했다",
+      "section": "6.3 공격은 자기 총알을 스스로 치운다",
+      "image": null
     }
   ],
   "troubleshooting": [
     {
       "title": "벽과 겹치면 캐릭터가 얼어붙던 문제",
-      "problem": "벽의 콜라이더를 켜 두고 이동 코드에 막힘을 맡겼더니, 벽이 움직여 캐릭터와 겹치는 순간 캐릭터가 벽 속에서 꼼짝하지 못했다",
-      "cause": "캐릭터는 움직이기 전에 상자를 밀어 보아 막힘을 재는데, 이미 겹쳐 있으면 어느 방향이든 거리 0이 나와 움직일 수 있는 거리가 늘 0이 된다. Shift를 의심해 AI에게 물었고, AI가 원인을 짚은 뒤 로그로 확인했다",
-      "solution": "벽의 콜라이더를 끄고, 겹침을 직접 확인해 벽이 움직인 만큼 캐릭터를 옮기는 방식으로 바꿨다",
+      "problem": "벽 콜라이더를 켜고 이동 코드에 맡기자, 벽이 움직여 캐릭터와 겹치는 순간 캐릭터가 벽 속에서 꼼짝하지 못했다",
+      "cause": "캐릭터는 움직이기 전에 가려는 방향으로 상자를 밀어 보아 막힘을 재는데, 이미 겹쳐 있으면 어느 방향이든 거리 0이 나와 움직일 수 있는 거리가 늘 0이 된다. 이동 코드에는 겹침을 풀어 주는 처리가 없다. AI가 원인을 짚었고, 로그로 확인했다",
+      "solution": "벽 콜라이더를 끄고 그림의 사각형으로 겹침을 직접 확인해, 벽이 움직인 만큼 `AddExternalMovement`로 캐릭터를 밀게 했다. 실제 이동은 `CharacterController2D`가 막힘을 잰 뒤에 한다",
       "result": "다른 색 벽에 걸리면 벽과 함께 끝 지점까지 밀려가고, 그 사이 Shift로 같은 색이 되면 그 자리에서 벽이 몸을 지나간다(플레이로 확인)",
       "lesson": "",
-      "section": "5.2 문제 해결: 벽과 겹치면 캐릭터가 얼어붙던 문제 (07.07)"
+      "section": "5.2 벽 콜라이더를 끄고 직접 민다"
     },
     {
-      "title": "고쳤던 빌드 에러가 정리 작업에서 되살아난 문제",
-      "problem": "메뉴의 종료 버튼 코드에 에디터에서만 있는 기능(`UnityEditor.EditorApplication.isPlaying`)이 들어 있어, 실행 파일로 빌드하면 빌드가 실패한다",
-      "cause": "07.07 코드 검수 때 `#if UNITY_EDITOR`로 감싸 고쳤지만 07.10 리팩토링 커밋에서 이 감싸기가 다시 빠졌고, 에디터에서는 정상으로 돌아가 드러나지 않았다",
-      "solution": "11.09 문서를 쓰며 커밋 기록을 다시 읽다가 발견해 다시 감쌌고, 에디터 전용 기능을 쓰는 곳이 이 한 곳뿐임을 검색으로 확인했다",
-      "result": "실제로 빌드해 에러 없이 실행 파일이 만들어지는 것을 확인했다",
-      "lesson": "",
-      "section": "8. 나머지 기능"
-    },
-    {
-      "title": "왼쪽을 보면 충돌 범위가 그림과 어긋나던 문제",
+      "title": "왼쪽을 보면 닿는 위치가 그림과 어긋나던 문제",
       "problem": "왼쪽으로 이동하면 그림만 뒤집혀, 발판 왼쪽 끝에서는 그림이 허공에 나가 있는데도 서 있고 오른쪽 끝에서는 그림이 발판 위에 있는데도 떨어졌다",
       "cause": "좌우 반전을 그림이 붙은 자식 오브젝트에만 해서, 부모(`Shifter`)에 있는 콜라이더(중심에서 오른쪽으로 0.265 치우침)는 뒤집히지 않았다",
       "solution": "부모째 좌우로 뒤집어 그림과 콜라이더가 함께 뒤집히게 했다",
       "result": "왼쪽을 보고 벽·발판에 붙어도 그림과 닿는 위치가 맞는다(플레이로 확인)",
       "lesson": "",
-      "section": "7.3 문제 해결: 왼쪽을 보면 충돌 범위가 그림과 어긋나던 문제 (07.01)"
+      "section": "7.2 부모째 뒤집어 콜라이더도 함께"
+    },
+    {
+      "title": "고친 빌드 에러가 리팩토링에서 되살아난 문제",
+      "problem": "AI와 한 코드 검수에서 고친 빌드 에러(메뉴 종료 버튼의 에디터 전용 코드)가, 그 뒤 AI와 한 리팩토링 커밋에서 다시 빠졌다",
+      "cause": "에디터에서는 정상으로 돌아가 드러나지 않았다",
+      "solution": "문서를 쓰며 커밋 기록을 다시 읽다가 찾아 고쳤다",
+      "result": "고친 뒤 실제 빌드로 확인했다",
+      "lesson": "무엇을 지켜야 하는지는 내가 먼저 말하지 않으면 지켜지지 않는다 — 다음에는 정해 둔 규칙과 구조를 AI에게 먼저 전한 뒤 맡긴다",
+      "section": "AI와 함께 만든 방식"
     }
   ],
   "screenshots": [
-    { "src": "images/02_ingame.png", "w": 1920, "h": 1080, "caption": "인게임 화면" },
-    { "src": "images/shift.gif", "w": 960, "h": 540, "caption": "STAGE 1 시작에서 Shift로 색을 바꾸며 흰 발판과 검은 발판을 번갈아 밟는 장면" },
-    { "src": "images/laser.gif", "w": 960, "h": 540, "caption": "검은색으로 위쪽을 겨눠 거울 3개를 거쳐 센서에 닿는 장면" },
+    { "src": "images/02_ingame.png", "w": 1920, "h": 1080, "caption": "STAGE 2, 흰색 상태" },
+    { "src": "images/shift.gif", "w": 960, "h": 540, "caption": "회색에서 Shift로 흰색이 되어 흰 발판에 올라서고, 검은색이 되면 그 발판이 꺼져 아래로 빠집니다" },
+    { "src": "images/laser.gif", "w": 960, "h": 540, "caption": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다" },
     { "src": "images/crusher.gif", "w": 960, "h": 540, "caption": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면" },
     { "src": "images/boss_eruption.gif", "w": 640, "h": 360, "caption": "운석 공격" },
-    { "src": "images/boss_groggy.gif", "w": 960, "h": 540, "caption": "첫 그로기에 발판에서 2단 점프로 약점을 밟아 보스 체력이 한 칸 줄어드는 장면" }
+    { "src": "images/boss_groggy.gif", "w": 960, "h": 540, "caption": "보스 앞 발판에서 2단 점프로 약점을 밟자 보스 체력 바가 한 칸 줄어듭니다(3 → 2)" }
   ],
   "retro": {
     "section": "9. 돌아보며",
     "achieved": [
       "Shift 한 번에 발판·총알·퍼즐이 함께 바뀌는 규칙의 크기는 만들었다",
-      "다만 받은 반응은 피드백이 부족하다는 것이었고, 소리·타격감·연출 없이 규칙만으로는 목표한 경험에 절반만 닿았다고 본다"
+      "수업 시연·발표에서 받은 반응은 피드백이 부족하다는 것이었다. 규칙이 크게 바뀌는 것과 플레이어가 그 변화를 크게 느끼는 것은 다른 일이었고, 소리·타격감·연출 없이 규칙만으로는 목표한 경험에 절반만 닿았다고 본다"
     ],
     "regrets": [
-      "색을 태그 하나로 정한 대가가 퍼졌다 — 캐릭터를 이름 `\"Shifter\"`로 찾는 곳이 6개 파일 7곳, 쿨타임은 코드 기본값 2초 · 프리팹 1초로 흩어졌다",
-      "코드를 나누는 원칙은 만들기 전에 세웠지만 보스 공격을 AI에게 맡길 때 말해 주지 않아, 고친 빌드 에러가 되살아나고 `BossManager`가 공격 타입을 `switch`로 알게 됐다"
+      "색을 태그 하나로 정한 대가가 곳곳에 퍼졌다 — 캐릭터를 이름 `\"Shifter\"`로 찾는 곳이 6개 파일 7곳, 크러셔 벽은 코드에 적히지 않은 `Rigidbody2D` 규칙에 기댔고, 쿨타임은 코드 기본값 2초 · 프리팹 1초로 흩어졌다. 데이터와 기능이 붙어 있으면 기능 하나를 고칠 때 엉뚱한 곳이 함께 흔들린다는 것을 알게 됐다",
+      "코드를 나누는 원칙(3장)은 만들기 전에 세웠지만 보스 공격을 AI에게 맡길 때 말해 주지 않아, 검수에서 고친 빌드 에러가 리팩토링에서 되살아나고 `BossManager`가 공격의 실제 타입을 `switch`로 알게 됐다",
+      "크러셔 벽 수치(벽 간격 1.2초 − 쿨타임 1초, 여유 0.2초)는 혼자 플레이하며 맞춘 값이라 다른 사람에게는 타이밍이 어려웠고, 총알이 박스를 밀어 올리는 동작은 의도가 전달되지 않았다"
     ],
     "plans": [
       "데이터와 기능을 나누고 코드 사이의 의존을 줄여, 고치기 쉽고 늘리기 쉬운 구조로 시작한다",
@@ -129,12 +130,12 @@
         "lead": { "text": "SHIFTER는 캐릭터의 색을 흰색과 검은색으로 바꿔 가며 스테이지를 통과하는 2D 플랫포머입니다.", "verbatim": true },
         "sectionPath": ["1. 게임 소개"],
         "points": [
-          { "label": "", "text": "규칙은 하나, 캐릭터와 같은 색인 것만 실제로 존재합니다.", "verbatim": true },
-          { "label": "이유", "text": "이 게임을 만든 이유는 키 입력 한 번이 플레이 전체에 큰 영향을 주는 경험을 만들고 싶어서였습니다.", "verbatim": true },
+          { "label": "이유", "text": "이동과 공격만 있는 게임에서는 키를 눌러도 캐릭터 하나가 움직일 뿐이라, 입력에 비해 돌아오는 변화의 크기가 작다고 판단했습니다.", "verbatim": true },
+          { "label": "", "text": "목표한 경험은 \"색을 고르는 키 한 번으로 그 색의 길과 위험을 함께 떠안아, 작은 입력이 눈앞의 판 전체를 바꾸는 경험\" 입니다.", "verbatim": true },
           { "label": "", "text": "Outland에서는 내 색과 같은 총알이 무해하지만, SHIFTER는 반대로 같은 색 총알에 맞습니다.", "verbatim": true }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/outland.jpg", "w": 1920, "h": 1080, "caption": { "text": "참고한 게임 Outland의 플레이 화면. 빨간색 캐릭터 왼쪽에 파란 탄막, 오른쪽에 빨간 탄막이 있다", "verbatim": true } }
+          { "kind": "image", "src": "images/outland.jpg", "w": 1920, "h": 1080, "caption": { "text": "빨간색 캐릭터 왼쪽에 파란 탄막, 오른쪽에 빨간 탄막이 있다", "verbatim": true } }
         ]
       },
       {
@@ -147,7 +148,8 @@
         "sectionPath": ["2. 한 판의 흐름"],
         "points": [
           { "label": "", "text": "이 고리에서 Shift는 '길을 여는 열쇠'이자 '새 위험을 부르는 선택'입니다.", "verbatim": true },
-          { "label": "", "text": "쿨타임 1초 때문에 바꾼 결정을 바로 되돌릴 수도 없습니다.", "verbatim": true }
+          { "label": "", "text": "쿨타임 1초 때문에 바꾼 결정을 바로 되돌릴 수도 없습니다.", "verbatim": true },
+          { "label": "", "text": "키 한 번의 결과가 화면 전체에 미치게 하려는 목표한 경험이 이 반복에서 나옵니다.", "verbatim": true }
         ],
         "visuals": [{ "kind": "mermaid", "n": 1, "fp": "flowchart LR" }]
       },
@@ -179,81 +181,96 @@
           { "label": "", "text": "한 번 Shift한 뒤 회색으로 돌아갈 수 없게 한 것은, 회색이 어떤 총알에도 맞지 않기 때문입니다.", "verbatim": true }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/shift.gif", "w": 960, "h": 540, "caption": { "text": "STAGE 1 시작에서 Shift로 색을 바꾸며 흰 발판과 검은 발판을 번갈아 밟는 장면", "verbatim": true } },
+          { "kind": "image", "src": "images/shift.gif", "w": 960, "h": 540, "caption": { "text": "회색에서 Shift로 흰색이 되어 흰 발판에 올라서고, 검은색이 되면 그 발판이 꺼져 아래로 빠집니다", "verbatim": true } },
           { "kind": "table", "n": 1, "fp": "대상|캐릭터와 같은 색|다른 색" }
         ]
-      },
-      {
-        "key": "platform-collider",
-        "chapter": "shift",
-        "layout": "code",
-        "tab": "구현",
-        "title": { "text": "4.2 색을 바꾸고, 발판이 따라 바뀌는 코드", "verbatim": true },
-        "lead": { "text": "색은 Unity의 태그(오브젝트마다 하나씩 붙이는 이름표)로 나타냅니다.", "verbatim": true },
-        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.2 색을 바꾸고, 발판이 따라 바뀌는 코드"],
-        "points": [
-          { "label": "", "text": "다른 색 발판은 콜라이더(부딪힘을 판정하는 보이지 않는 상자)를 아예 끕니다.", "verbatim": true },
-          { "label": "", "text": "이 선택 덕분에 레이저 퍼즐이 따로 코드 없이 같은 규칙을 따릅니다(4.3).", "verbatim": true }
-        ],
-        "visuals": [{ "kind": "code", "n": 1, "lines": [9, 28], "fp": "// Shifter.cs — 흰색이면 검은색, 그 밖(회색 포함)은 흰색" }]
-      },
-      {
-        "key": "laser",
-        "chapter": "shift",
-        "layout": "visual",
-        "tab": "흐름",
-        "title": { "text": "4.3 레이저 퍼즐: 꺼진 발판은 빛도 지나간다", "verbatim": true },
-        "lead": null,
-        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.3 레이저 퍼즐: 꺼진 발판은 빛도 지나간다"],
-        "points": [
-          { "label": "", "text": "조준하는 동안 캐릭터는 움직일 수 없지만 Shift는 쓸 수 있습니다.", "verbatim": true },
-          { "label": "", "text": "레이캐스트는 꺼진 콜라이더를 보지 못하므로, 다른 색 발판은 빛에게도 '없는 것'이 됩니다.", "verbatim": true },
-          { "label": "", "text": "아래 빛 계산(`LightBeam.FireBeam`, 매 프레임)의 흐름에는 색을 확인하는 갈림길이 하나도 없습니다.", "verbatim": true }
-        ],
-        "visuals": [{ "kind": "mermaid", "n": 1, "fp": "flowchart TB" }]
       },
       {
         "key": "shift-choice",
         "chapter": "shift",
         "layout": "full",
         "tab": "선택",
-        "title": { "text": "4.4 이름표로, 콜라이더째 끄기로 정한 이유", "verbatim": true },
-        "lead": { "text": "06.25 첫 구현 때 두 방법을 견줘, 나중에 만들 기능도 콜라이더를 보기만 하면 같은 색 규칙을 따르도록 이쪽을 골랐습니다.", "verbatim": true },
-        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.4 이름표로, 콜라이더째 끄기로 정한 이유"],
+        "title": { "text": "4.2 다른 색 발판은 콜라이더째 끈다", "verbatim": true },
+        "lead": { "text": "첫 구현 때 두 방법을 견줘, 나중에 만들 기능도 콜라이더를 보기만 하면 같은 색 규칙을 따르도록 이쪽을 골랐습니다.", "verbatim": true },
+        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.2 다른 색 발판은 콜라이더째 끈다"],
         "points": [],
-        "visuals": [{ "kind": "table", "n": 2, "fp": "|발판의 콜라이더를 끔|캐릭터 쪽에서 '무엇에 부딪힐지'만 바꿈" }]
+        "visuals": [{ "kind": "table", "n": 1, "fp": "|발판의 콜라이더를 끔|캐릭터 쪽에서 '무엇에 부딪힐지'만 바꿈" }]
+      },
+      {
+        "key": "platform-collider",
+        "chapter": "shift",
+        "layout": "code",
+        "tab": "구현",
+        "title": { "text": "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만", "verbatim": true },
+        "lead": { "text": "색은 Unity의 태그로 나타냅니다.", "verbatim": true },
+        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만"],
+        "points": [
+          { "label": "", "text": "캐릭터·발판·총알이 모두 `Common`·`White`·`Black` 중 하나를 달고, 판단은 \"태그가 같은가\"(`CompareTag`) 하나로 합니다.", "verbatim": true },
+          { "label": "", "text": "발판마다 캐릭터와 태그를 비교해 콜라이더를 켜고 끕니다.", "verbatim": true }
+        ],
+        "visuals": [
+          { "kind": "code", "n": 1, "fp": "// Shifter.cs — 흰색이면 검은색, 그 밖(회색 포함)은 흰색" },
+          { "kind": "code", "n": 2, "lines": [8, 19], "fp": "// PlatformManager.cs" }
+        ]
+      },
+      {
+        "key": "laser",
+        "chapter": "shift",
+        "layout": "visual",
+        "tab": "흐름",
+        "title": { "text": "4.4 꺼진 발판은 빛도 지나간다", "verbatim": true },
+        "lead": null,
+        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.4 꺼진 발판은 빛도 지나간다"],
+        "points": [
+          { "label": "", "text": "조준하는 동안 캐릭터는 움직일 수 없지만 Shift는 쓸 수 있습니다.", "verbatim": true },
+          { "label": "", "text": "레이캐스트는 꺼진 콜라이더를 보지 못하므로, 다른 색 발판은 빛에게도 '없는 것'이 됩니다.", "verbatim": true }
+        ],
+        "visuals": [
+          { "kind": "mermaid", "n": 1, "fp": "flowchart LR" },
+          { "kind": "image", "src": "images/laser.gif", "w": 960, "h": 540, "caption": { "text": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다", "verbatim": true } }
+        ]
       },
       {
         "key": "crusher-rule",
         "chapter": "crusher-wall",
         "layout": "visual",
         "tab": "결과",
-        "title": { "text": "5.1 STAGE 2를 크러셔 벽으로 바꾼 이유", "verbatim": true },
+        "title": { "text": "5.1 같은 색이면 지나가고, 다르면 끌려간다", "verbatim": true },
         "lead": null,
-        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.1 STAGE 2를 크러셔 벽으로 바꾼 이유"],
+        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.1 같은 색이면 지나가고, 다르면 끌려간다"],
         "points": [
           { "label": "", "text": "벽과 같은 색이면 몸이 지나가고, 다른 색이면 벽에 걸려 끝 지점까지 끌려갑니다.", "verbatim": true },
           { "label": "", "text": "발판에서 익힌 \"같은 색 = 단단함\"을 마지막 구간에서 거꾸로 쓰게 하는 변주입니다.", "verbatim": true },
-          { "label": "", "text": "반투명은 '내 색과 다르다'는 표시라, 발판에서는 '지나갈 수 있다', 벽에서는 '막힌다'는 뜻이 됩니다.", "verbatim": true },
-          { "label": "", "text": "Shift를 적극적으로 써서 기믹을 풀게 하려고, 벽을 캐릭터(초당 8)보다 빠른 초당 10으로 바꿔 도망칠 수 없게 했습니다.", "verbatim": true }
+          { "label": "", "text": "Shift를 적극적으로 써서 기믹을 풀게 하려고, 벽을 캐릭터보다 빠르게 바꿔 도망칠 수 없게 했습니다.", "verbatim": true }
         ],
         "visuals": [
           { "kind": "image", "src": "images/crusher.gif", "w": 960, "h": 540, "caption": { "text": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면", "verbatim": true } }
         ]
       },
       {
+        "key": "crusher-choice",
+        "chapter": "crusher-wall",
+        "layout": "full",
+        "tab": "선택",
+        "title": { "text": "5.2 벽 콜라이더를 끄고 직접 민다", "verbatim": true },
+        "lead": { "text": "크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까?", "verbatim": true },
+        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.2 벽 콜라이더를 끄고 직접 민다"],
+        "points": [],
+        "visuals": [{ "kind": "table", "n": 1, "fp": "|벽을 Dynamic Rigidbody로 두고 물리로 밀기|벽 콜라이더를 켜고 이동 코드에 맡김|벽 콜라이더를 끄고 겹침을 직접 확인해 밀기" }]
+      },
+      {
         "key": "ts-crusher",
         "chapter": "crusher-wall",
         "layout": "problem",
         "tab": "문제 해결",
-        "title": { "text": "5.2 문제 해결: 벽과 겹치면 캐릭터가 얼어붙던 문제 (07.07)", "verbatim": true },
-        "lead": { "text": "처음에는 Shift로 콜라이더가 켜지고 꺼지는 것과 관련이 있는지 AI에게 물었고, AI가 원인을 짚었습니다.", "verbatim": true },
-        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.2 문제 해결: 벽과 겹치면 캐릭터가 얼어붙던 문제 (07.07)"],
+        "title": { "text": "5.2 벽 콜라이더를 끄고 직접 민다", "verbatim": true },
+        "lead": null,
+        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.2 벽 콜라이더를 끄고 직접 민다"],
         "points": [
-          { "label": "문제", "text": "벽의 콜라이더를 켜 두고 이동 코드에 막힘을 맡겼더니, 벽이 캐릭터와 겹치는 순간 캐릭터가 벽 속에서 꼼짝하지 못했습니다", "verbatim": false },
+          { "label": "문제", "text": "두 번째 시도에서는 벽이 움직여 캐릭터와 겹치는 순간, 캐릭터가 벽 속에서 꼼짝하지 못했습니다.", "verbatim": true },
           { "label": "원인", "text": "이미 겹쳐 있으면 어느 방향으로 재도 '바로 앞이 막힘'(거리 0)이 나와, 움직일 수 있는 거리가 늘 0이 됩니다.", "verbatim": true },
-          { "label": "", "text": "로그를 찍어 보니 벽에 있는 동안 계속 같은 값이 나와, 이 원인이 맞다는 것을 확인했습니다.", "verbatim": true },
-          { "label": "해결", "text": "벽의 콜라이더를 끄고, 겹침을 직접 확인해 벽이 움직인 만큼 캐릭터를 옮기는 방식(5.4)으로 바꿨습니다.", "verbatim": true }
+          { "label": "해결", "text": "벽 콜라이더를 끄고 겹침을 직접 확인해 밀기", "verbatim": true },
+          { "label": "결과", "text": "다른 색 벽에 걸리면 벽과 함께 끝 지점까지 밀려가고, 그 사이 Shift로 같은 색이 되면 그 자리에서 벽이 몸을 지나갑니다(5.1 GIF).", "verbatim": true }
         ],
         "visuals": []
       },
@@ -262,11 +279,12 @@
         "chapter": "crusher-wall",
         "layout": "code",
         "tab": "구현",
-        "title": { "text": "5.4 크러셔 벽: 부딪힘 판정 없이, 벽이 움직인 만큼 민다", "verbatim": true },
-        "lead": null,
-        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.4 크러셔 벽: 부딪힘 판정 없이, 벽이 움직인 만큼 민다"],
+        "title": { "text": "5.3 벽이 움직인 만큼 민다", "verbatim": true },
+        "lead": { "text": "벽이 움직일 때마다 캐릭터와 색을 비교해, 다른 색이면 벽이 움직인 만큼 캐릭터를 밀어 줍니다.", "verbatim": true },
+        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.3 벽이 움직인 만큼 민다"],
         "points": [
-          { "label": "구현", "text": "콜라이더를 끈 대신, 벽 그림과 캐릭터가 겹치면 벽이 이번에 움직인 거리(`wallDelta`)만큼 캐릭터를 밀어 줍니다.", "verbatim": true },
+          { "label": "", "text": "겹침은 그림의 사각형으로 직접 확인합니다.", "verbatim": true },
+          { "label": "", "text": "미는 힘도 이동 코드를 거칩니다.", "verbatim": true },
           { "label": "", "text": "그래서 밀려난 캐릭터가 다른 지형을 뚫지 않습니다.", "verbatim": true }
         ],
         "visuals": [{ "kind": "code", "n": 1, "fp": "// CrusherWall.cs (발췌) — 물리 계산마다, 벽 하나씩" }]
@@ -297,13 +315,24 @@
         "visuals": [{ "kind": "table", "n": 2, "fp": "운석|난사|레이저" }]
       },
       {
+        "key": "boss-interface",
+        "chapter": "boss",
+        "layout": "full",
+        "tab": "선택",
+        "title": { "text": "6.2 공격 3종을 인터페이스로 묶는다", "verbatim": true },
+        "lead": { "text": "인터페이스로 정했습니다.", "verbatim": true },
+        "sectionPath": ["6. 보스전", "6.2 공격 3종을 인터페이스로 묶는다"],
+        "points": [],
+        "visuals": [{ "kind": "table", "n": 1, "fp": "|공통 부모 클래스(추상 클래스) BossPattern|약속만 정하는 인터페이스 IBossPattern" }]
+      },
+      {
         "key": "boss-classes",
         "chapter": "boss",
         "layout": "full",
         "tab": "구조",
-        "title": { "text": "6.2 보스전을 이루는 클래스", "verbatim": true },
+        "title": { "text": "6.3 공격은 자기 총알을 스스로 치운다", "verbatim": true },
         "lead": { "text": "실선은 필드로 들고 있는 관계, 점선은 부르거나 만드는 관계입니다.", "verbatim": true },
-        "sectionPath": ["6. 보스전", "6.2 보스전을 이루는 클래스"],
+        "sectionPath": ["6. 보스전", "6.3 공격은 자기 총알을 스스로 치운다"],
         "points": [],
         "visuals": [{ "kind": "mermaid", "n": 1, "fp": "classDiagram" }]
       },
@@ -312,34 +341,39 @@
         "chapter": "boss",
         "layout": "code",
         "tab": "구현",
-        "title": { "text": "6.3 공격 교체와 그로기", "verbatim": true },
-        "lead": null,
-        "sectionPath": ["6. 보스전", "6.3 공격 교체와 그로기"],
+        "title": { "text": "6.3 공격은 자기 총알을 스스로 치운다", "verbatim": true },
+        "lead": { "text": "보스 관리자(`BossManager`)는 공격을 바꿀 때 이전 공격에게 정리만 맡기고, 세 번째 공격이 끝나면 그로기로 넘어갑니다.", "verbatim": true },
+        "sectionPath": ["6. 보스전", "6.3 공격은 자기 총알을 스스로 치운다"],
         "points": [
           { "label": "", "text": "`BossManager`는 무엇이 남았는지 모른 채 '정리해라'(`EndPattern`)만 부릅니다.", "verbatim": true },
-          { "label": "", "text": "그로기가 끝나면 다시 10초를 세므로 6.1의 '대기 10초'가 생깁니다.", "verbatim": true }
+          { "label": "", "text": "운석 15개 중 10개째를 만들던 중이어도 남은 작업과 떨어지던 운석이 함께 사라집니다.", "verbatim": true }
         ],
-        "visuals": [{ "kind": "code", "n": 1, "lines": [1, 14], "fp": "// BossManager.cs (발췌)" }]
+        "visuals": [{ "kind": "code", "n": 3, "lines": [1, 14], "fp": "// BossManager.cs (발췌)" }]
       },
       {
-        "key": "kinematic",
-        "chapter": "move",
-        "layout": "full",
-        "tab": "선택",
-        "title": { "text": "7.1 물리 엔진 대신 키네마틱 이동을 고른 이유", "verbatim": true },
-        "lead": { "text": "키네마틱 이동을 골랐습니다.", "verbatim": true },
-        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.1 물리 엔진 대신 키네마틱 이동을 고른 이유"],
-        "points": [],
-        "visuals": [{ "kind": "table", "n": 1, "fp": "|물리 엔진이 움직임 (Dynamic Rigidbody)|코드가 위치를 정함 (키네마틱 CharacterController2D)" }]
+        "key": "groggy",
+        "chapter": "boss",
+        "layout": "visual",
+        "tab": "결과",
+        "title": { "text": "6.4 공격이 멈추면 약점이 열린다", "verbatim": true },
+        "lead": { "text": "세 번째 공격이 끝나면 그로기가 시작됩니다. 남은 공격을 정리하고 약점을 켠 뒤, 5초 뒤에 저절로 풀립니다.", "verbatim": true },
+        "sectionPath": ["6. 보스전", "6.4 공격이 멈추면 약점이 열린다"],
+        "points": [
+          { "label": "", "text": "약점은 그로기 때만 켜지고, 위에서 밟을 때만 인정합니다.", "verbatim": true },
+          { "label": "", "text": "그로기 중에는 공격 시계가 멈춥니다.", "verbatim": true }
+        ],
+        "visuals": [
+          { "kind": "image", "src": "images/boss_groggy.gif", "w": 960, "h": 540, "caption": { "text": "보스 앞 발판에서 2단 점프로 약점을 밟자 보스 체력 바가 한 칸 줄어듭니다(3 → 2)", "verbatim": true } }
+        ]
       },
       {
         "key": "movement",
         "chapter": "move",
         "layout": "code",
         "tab": "구현",
-        "title": { "text": "7.2 캐릭터 이동", "verbatim": true },
-        "lead": null,
-        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.2 캐릭터 이동"],
+        "title": { "text": "7.1 점프는 늘 같은 높이로", "verbatim": true },
+        "lead": { "text": "힘·마찰로 움직이지 않아, 키를 떼면 바로 서고 점프 높이가 늘 같습니다.", "verbatim": true },
+        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.1 점프는 늘 같은 높이로"],
         "points": [
           { "label": "", "text": "움직이기 전에 캐릭터 크기의 상자를 가려는 방향으로 밀어 보고(BoxCast), 부딪히기 직전까지만 움직입니다.", "verbatim": true },
           { "label": "", "text": "크러셔 벽이 미는 양(`externalDelta`)도 키 입력과 합쳐져 같은 검사를 거칩니다.", "verbatim": true }
@@ -347,19 +381,35 @@
         "visuals": [{ "kind": "code", "n": 1, "lines": [1, 20], "fp": "// CharacterController2D.cs (발췌) — 입력과 밖에서 민 양을 합친 뒤, 가로·세로를" }]
       },
       {
+        "key": "ts-flip",
+        "chapter": "move",
+        "layout": "problem",
+        "tab": "문제 해결",
+        "title": { "text": "7.2 부모째 뒤집어 콜라이더도 함께", "verbatim": true },
+        "lead": null,
+        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.2 부모째 뒤집어 콜라이더도 함께"],
+        "points": [
+          { "label": "문제", "text": "왼쪽으로 이동하면 캐릭터 그림은 뒤집히는데, 벽·발판에 닿는 위치는 오른쪽을 볼 때 그대로라 그림과 달랐습니다.", "verbatim": true },
+          { "label": "원인", "text": "좌우 반전을 그림이 붙은 자식 오브젝트에만 했습니다.", "verbatim": true },
+          { "label": "해결", "text": "부모째 좌우로 뒤집어 그림과 콜라이더가 함께 뒤집히게 했습니다.", "verbatim": true },
+          { "label": "결과", "text": "왼쪽을 보고 벽·발판에 붙어도 그림과 닿는 위치가 맞습니다.", "verbatim": true }
+        ],
+        "visuals": [{ "kind": "code", "n": 1, "fp": "// ShifterController.cs" }]
+      },
+      {
         "key": "camera",
         "chapter": "move",
         "layout": "visual",
         "tab": "구현",
-        "title": { "text": "7.4 카메라: 위는 넓게, 아래는 좁게", "verbatim": true },
+        "title": { "text": "7.3 카메라: 위는 넓게, 아래는 좁게", "verbatim": true },
         "lead": null,
-        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.4 카메라: 위는 넓게, 아래는 좁게"],
+        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.3 카메라: 위는 넓게, 아래는 좁게"],
         "points": [
           { "label": "", "text": "반대로 떨어질 때는 1유닛만 벗어나도 따라 내려가 착지할 곳을 먼저 보여 줍니다.", "verbatim": true },
           { "label": "", "text": "Cinemachine을 쓸까도 고민했지만, 카메라를 여러 대 쓰지도 않고 특수한 촬영 기법도 필요 없다고 판단해 데드존을 직접 만들었습니다.", "verbatim": true }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/15_camera_deadzone.png", "w": 1087, "h": 531, "caption": { "text": "Scene 뷰에 그린 카메라 데드존", "verbatim": true } }
+          { "kind": "image", "src": "images/15_camera_deadzone.png", "w": 1087, "h": 531, "caption": { "text": "위쪽이 넓고 아래쪽이 좁으며, 캐릭터가 이 상자를 벗어날 때만 카메라가 움직입니다", "verbatim": true } }
         ]
       },
       {
