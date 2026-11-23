@@ -28,14 +28,14 @@
       "evidence": [
         { "text": "`IBossPattern` 인터페이스로 보스 패턴 3종의 시작·정리를 통일", "project": "Shifter" },
         { "text": "추상 클래스 `MiniGame`으로 조작이 다른 미니게임 3종의 공통 동작을 한 곳에", "project": "OverFixed" },
-        { "text": "턴 상태 22종을 정적 `Action` 이벤트로 받아 `On…State` 핸들러 하나씩으로 처리", "project": "IfIWasInMarket" }
+        { "text": "턴 상태 22종을 `TurnMessage` 하나로 묶고 상태 종류(enum)로 나눠, 상태마다 할 일을 한 함수에 모음", "project": "IfIWasInMarket" }
       ]
     },
     {
       "name": "TSV / ScriptableObject / JSON",
       "evidence": [
         { "text": "밸런스 표는 TSV 4종, 조절값은 ScriptableObject 7종, 최고 기록은 JSON으로 분리", "project": "OverFixed" },
-        { "text": "열 이름을 키로 칸을 찾는 제네릭 `TsvParser`와 `.tsv`용 `ScriptedImporter`", "project": "OverFixed" },
+        { "text": "열 이름으로 칸을 찾는 제네릭 파서 하나가 TSV 표를 모두 읽음", "project": "OverFixed" },
         { "text": "Newtonsoft.Json으로 종류(`Type`) → `TurnMessage` → `Parameter` 순서로 세 번 파싱", "project": "IfIWasInMarket" }
       ]
     }
