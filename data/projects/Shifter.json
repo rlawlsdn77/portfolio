@@ -269,38 +269,16 @@
         "visuals": [
           {
             "kind": "image",
-            "src": "images/outland.jpg",
+            "src": "images/02_ingame.png",
             "w": 1920,
             "h": 1080,
+            "sectionPath": [
+              "2. 한 판의 흐름"
+            ],
             "caption": {
-              "text": "빨간색 캐릭터 왼쪽에 파란 탄막, 오른쪽에 빨간 탄막이 있다",
+              "text": "캐릭터가 선 회색 돌 모양이 흰 발판이고, 오른쪽에 반투명하게 보이는 어두운 발판은 지금 색으로는 밟을 수 없는 검은 발판입니다",
               "verbatim": true
             }
-          }
-        ]
-      },
-      {
-        "key": "stages",
-        "chapter": "flow",
-        "layout": "full",
-        "tab": "흐름",
-        "title": {
-          "text": "2. 한 판의 흐름",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "메뉴에서 시작해 STAGE 1 → STAGE 2 → 보스전을 차례로 지나면 한 판이 끝납니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "2. 한 판의 흐름"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "table",
-            "n": 1,
-            "fp": "STAGE 1|STAGE 2|STAGE BOSS"
           }
         ]
       },
@@ -483,49 +461,6 @@
         ]
       },
       {
-        "key": "platform-collider",
-        "chapter": "shift",
-        "layout": "code",
-        "tab": "구현",
-        "title": {
-          "text": "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만",
-          "verbatim": true
-        },
-        "lead": null,
-        "sectionPath": [
-          "4. 색 규칙: Shift 한 번이 바꾸는 것",
-          "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만"
-        ],
-        "points": [
-          {
-            "label": "",
-            "text": "색은 Unity의 태그로 나타냅니다. 캐릭터·발판·총알이 모두 `Common`·`White`·`Black` 중 하나를 달고, 판단은 \"태그가 같은가\"(`CompareTag`) 하나로 합니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "발판마다 캐릭터와 태그를 비교해 콜라이더를 켜고 끕니다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [
-          {
-            "kind": "code",
-            "n": 1,
-            "fp": "// Shifter.cs — 흰색이면 검은색, 그 밖(회색 포함)은 흰색"
-          },
-          {
-            "kind": "code",
-            "n": 2,
-            "lines": [
-              8,
-              19
-            ],
-            "fp": "// PlatformManager.cs"
-          }
-        ]
-      },
-      {
         "key": "laser",
         "chapter": "shift",
         "layout": "visual",
@@ -570,32 +505,6 @@
         ]
       },
       {
-        "key": "laser-straight",
-        "chapter": "shift",
-        "layout": "full",
-        "tab": "결과",
-        "title": {
-          "text": "4.4 꺼진 발판은 빛도 지나간다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "오른쪽 직선 풀이는 의도하지 않은 배치 실수입니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "4. 색 규칙: Shift 한 번이 바꾸는 것",
-          "4.4 꺼진 발판은 빛도 지나간다"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "table",
-            "n": 1,
-            "fp": "검은색으로 수평 조준|흰색으로 같은 수평 조준"
-          }
-        ]
-      },
-      {
         "key": "crusher-rule",
         "chapter": "crusher-wall",
         "layout": "visual",
@@ -636,58 +545,6 @@
               "text": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면",
               "verbatim": true
             }
-          }
-        ]
-      },
-      {
-        "key": "stage2-choice",
-        "chapter": "crusher-wall",
-        "layout": "full",
-        "tab": "선택",
-        "title": {
-          "text": "5.1 같은 색이면 지나가고, 다르면 끌려간다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "Shift를 쓸 이유가 약해서 바꿨습니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
-          "5.1 같은 색이면 지나가고, 다르면 끌려간다"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "table",
-            "n": 1,
-            "fp": "|흰·검 총알 개수 세기|레이저 퍼즐 + 크러셔 벽"
-          }
-        ]
-      },
-      {
-        "key": "crusher-tuning",
-        "chapter": "crusher-wall",
-        "layout": "full",
-        "tab": "선택",
-        "title": {
-          "text": "5.1 같은 색이면 지나가고, 다르면 끌려간다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "Shift를 적극적으로 써서 기믹을 풀게 하려고, 벽을 캐릭터보다 빠르게 바꿔 도망칠 수 없게 했습니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
-          "5.1 같은 색이면 지나가고, 다르면 끌려간다"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "table",
-            "n": 2,
-            "fp": "|코드 기본값|플레이해 보며 맞춘 값"
           }
         ]
       },
@@ -793,32 +650,6 @@
         ]
       },
       {
-        "key": "crusher-seq",
-        "chapter": "crusher-wall",
-        "layout": "full",
-        "tab": "흐름",
-        "title": {
-          "text": "5.3 벽이 움직인 만큼 민다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "그림에서 볼 것은, 벽은 미는 거리를 넘겨 줄 뿐이고 실제로 캐릭터를 옮기는 것은 이동 코드(`CharacterController2D`)라는 점입니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
-          "5.3 벽이 움직인 만큼 민다"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "mermaid",
-            "n": 1,
-            "fp": "sequenceDiagram"
-          }
-        ]
-      },
-      {
         "key": "boss-cycle",
         "chapter": "boss",
         "layout": "visual",
@@ -849,32 +680,6 @@
             "kind": "mermaid",
             "n": 1,
             "fp": "stateDiagram-v2"
-          }
-        ]
-      },
-      {
-        "key": "boss-patterns",
-        "chapter": "boss",
-        "layout": "full",
-        "tab": "결과",
-        "title": {
-          "text": "6.1 공격 3번 → 5초 빈틈 → 약점",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "흰 총알은 그림의 원래 색 때문에 노란빛으로 보입니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "6. 보스전",
-          "6.1 공격 3번 → 5초 빈틈 → 약점"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "table",
-            "n": 2,
-            "fp": "운석|난사|레이저"
           }
         ]
       },
@@ -927,152 +732,6 @@
             "kind": "mermaid",
             "n": 1,
             "fp": "classDiagram"
-          }
-        ]
-      },
-      {
-        "key": "boss-links",
-        "chapter": "boss",
-        "layout": "full",
-        "tab": "구조",
-        "title": {
-          "text": "6.3 공격은 자기 총알을 스스로 치운다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "총알(`BossProjectile`)은 캐릭터와 같은 색일 때만 피해를 줍니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "6. 보스전",
-          "6.3 공격은 자기 총알을 스스로 치운다"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "mermaid",
-            "n": 2,
-            "fp": "classDiagram"
-          }
-        ]
-      },
-      {
-        "key": "rampage-cleanup",
-        "chapter": "boss",
-        "layout": "code",
-        "tab": "구현",
-        "title": {
-          "text": "6.3 공격은 자기 총알을 스스로 치운다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "난사 공격(`BossPattern_Rampage`)은 만든 총알을 목록에 담아 두고, 끝날 때 남은 것을 모두 지웁니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "6. 보스전",
-          "6.3 공격은 자기 총알을 스스로 치운다"
-        ],
-        "points": [
-          {
-            "label": "",
-            "text": "공격 하나는 '시작'과 '정리' 두 함수만 약속하는 인터페이스(`IBossPattern`)를 구현합니다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [
-          {
-            "kind": "code",
-            "n": 1,
-            "fp": "// IBossPattern.cs"
-          },
-          {
-            "kind": "code",
-            "n": 2,
-            "fp": "// BossPattern_Rampage.cs (발췌)"
-          }
-        ]
-      },
-      {
-        "key": "boss-pattern-change",
-        "chapter": "boss",
-        "layout": "code",
-        "tab": "구현",
-        "title": {
-          "text": "6.3 공격은 자기 총알을 스스로 치운다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "보스 관리자(`BossManager`)는 공격을 바꿀 때 이전 공격에게 정리만 맡기고, 세 번째 공격이 끝나면 그로기로 넘어갑니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "6. 보스전",
-          "6.3 공격은 자기 총알을 스스로 치운다"
-        ],
-        "points": [
-          {
-            "label": "",
-            "text": "`BossManager`는 무엇이 남았는지 모른 채 '정리해라'(`EndPattern`)만 부릅니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "운석 15개 중 10개째를 만들던 중이어도 남은 작업과 떨어지던 운석이 함께 사라집니다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [
-          {
-            "kind": "code",
-            "n": 3,
-            "lines": [
-              1,
-              14
-            ],
-            "fp": "// BossManager.cs (발췌)"
-          }
-        ]
-      },
-      {
-        "key": "groggy-start",
-        "chapter": "boss",
-        "layout": "code",
-        "tab": "구현",
-        "title": {
-          "text": "6.4 공격이 멈추면 약점이 열린다",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "세 번째 공격이 끝나면 그로기가 시작됩니다. 남은 공격을 정리하고 약점을 켠 뒤, 5초 뒤에 저절로 풀립니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "6. 보스전",
-          "6.4 공격이 멈추면 약점이 열린다"
-        ],
-        "points": [
-          {
-            "label": "",
-            "text": "그로기 중에는 공격 시계가 멈춥니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "애니메이션 신호는 쓰일 때까지 남습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "그래서 신호 3개를 지우고 서 있는 동작을 바로 재생합니다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [
-          {
-            "kind": "code",
-            "n": 1,
-            "fp": "private void StartGroggy()"
           }
         ]
       },
@@ -1157,45 +816,6 @@
         ]
       },
       {
-        "key": "resolve-axis",
-        "chapter": "move",
-        "layout": "code",
-        "tab": "구현",
-        "title": {
-          "text": "7.1 점프는 늘 같은 높이로",
-          "verbatim": true
-        },
-        "lead": null,
-        "sectionPath": [
-          "7. 캐릭터 이동과 카메라",
-          "7.1 점프는 늘 같은 높이로"
-        ],
-        "points": [
-          {
-            "label": "",
-            "text": "움직이기 전에 캐릭터 크기의 상자를 가려는 방향으로 밀어 보고(BoxCast), 부딪히기 직전까지만 움직입니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "가로와 세로를 따로 재므로 벽에 붙어도 떨어지고, 바닥 위에서도 걷습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "수치: 속도 8, 중력 −24, 점프력 11, 2단 점프.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [
-          {
-            "kind": "code",
-            "n": 2,
-            "fp": "private float ResolveAxisMovement(float move, Vector3 axis)"
-          }
-        ]
-      },
-      {
         "key": "ts-flip",
         "chapter": "move",
         "layout": "problem",
@@ -1240,48 +860,6 @@
         ]
       },
       {
-        "key": "camera-code",
-        "chapter": "move",
-        "layout": "code",
-        "tab": "구현",
-        "title": {
-          "text": "7.3 카메라: 위는 넓게, 아래는 좁게",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "캐릭터가 조금 움직일 때마다 화면이 흔들리지 않도록, 카메라가 따라가지 않는 구역(데드존)을 두고 캐릭터가 그 밖으로 나간 만큼만 따라갑니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "7. 캐릭터 이동과 카메라",
-          "7.3 카메라: 위는 넓게, 아래는 좁게"
-        ],
-        "points": [
-          {
-            "label": "",
-            "text": "점프 한 번은 약 2.5유닛, 2단 점프도 약 5유닛이라(점프력 11·중력 −24로 계산) 제자리 점프로는 카메라가 거의 움직이지 않습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "반대로 떨어질 때는 1유닛만 벗어나도 따라 내려가 착지할 곳을 먼저 보여 줍니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "보스방은 위쪽 구역을 3.5로 줄여, 2단 점프로 약점을 밟으러 올라가면 카메라가 따라 올라갑니다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [
-          {
-            "kind": "code",
-            "n": 1,
-            "fp": "// CameraController.cs (발췌)"
-          }
-        ]
-      },
-      {
         "key": "camera",
         "chapter": "move",
         "layout": "visual",
@@ -1317,31 +895,6 @@
               "text": "위쪽이 넓고 아래쪽이 좁으며, 캐릭터가 이 상자를 벗어날 때만 카메라가 움직입니다",
               "verbatim": true
             }
-          }
-        ]
-      },
-      {
-        "key": "others-table",
-        "chapter": "others",
-        "layout": "full",
-        "tab": "",
-        "title": {
-          "text": "8. 나머지 기능",
-          "verbatim": true
-        },
-        "lead": {
-          "text": "깊게 다룬 기능 외에는 대안을 따로 고민하지 않아 한 줄씩 정리합니다.",
-          "verbatim": true
-        },
-        "sectionPath": [
-          "8. 나머지 기능"
-        ],
-        "points": [],
-        "visuals": [
-          {
-            "kind": "table",
-            "n": 1,
-            "fp": "기능|구현 요점|클래스"
           }
         ]
       },
