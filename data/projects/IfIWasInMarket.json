@@ -5,124 +5,251 @@
   "title": "시장에 가면",
   "tagline": "마트에서 각자 물건을 골라 와 회의실에서 소개하며, 혼자 다른 키워드를 받은 라이어를 찾아내는 4인 온라인 추리 게임",
   "cover": "images/01_cover.jpg",
-  "team": { "type": "team", "size": "4인", "role": "라이어게임 클라이언트: 턴 상태 처리(`LiarClient`), 로비·공통·회의실 UI, 채팅, 턴별 조명·사운드 연결" },
+  "team": {
+    "type": "team",
+    "size": "4인",
+    "role": "라이어게임 클라이언트: 턴 상태 처리(`LiarClient`), 로비·공통·회의실 UI, 채팅, 턴별 조명·사운드 연결"
+  },
   "meta": [
-    { "label": "장르", "value": "4인 온라인 추리 게임" },
-    { "label": "기간", "value": "2026.08.18 ~ 2026.09.10 (본인 작업 08.22 ~ 09.10)" },
-    { "label": "인원", "value": "4인 (클라이언트 담당)" },
-    { "label": "환경", "value": "Unity 6 (6000.3.15f1), URP, C#, WebSocket" }
+    {
+      "label": "장르",
+      "value": "4인 온라인 추리 게임"
+    },
+    {
+      "label": "기간",
+      "value": "16일 (2026.08.26 ~ 2026.09.10, 그 전 준비 기간 4일)"
+    },
+    {
+      "label": "인원",
+      "value": "4인 팀 프로젝트 (클라이언트 담당)"
+    },
+    {
+      "label": "환경",
+      "value": "Unity 6 (6000.3.15f1), URP · C#"
+    }
   ],
-  "tags": ["Unity 6", "C#", "WebSocket", "UniTask", "Newtonsoft.Json", "DOTween", "uGUI"],
+  "tags": [
+    "Unity 6",
+    "C#",
+    "WebSocket",
+    "UniTask",
+    "Newtonsoft.Json",
+    "DOTween",
+    "uGUI"
+  ],
   "links": {
     "github": "https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket",
     "video": "",
     "extra": []
   },
   "intent": {
-    "text": "4명이 같은 순간에 같은 장면을 보며 함께 추리하도록, 서버를 따르는 클라이언트를 만들었습니다.",
-    "verbatim": true
+    "text": "제가 맡은 클라이언트에서 이 목표는, 서버가 다음 상태와 제한시간을 보내면 4명의 클라이언트가 같은 순간에 같은 장면으로 넘어가게 하는 일이었습니다. 4명이 같은 장면을 보며 함께 추리해야 마트에서 고른 물건·특수채팅·라밍아웃이 단서가 되기 때문입니다.",
+    "verbatim": false
   },
   "highlights": [
     {
       "title": "턴 메시지 처리",
-      "what": "서버 상태 22종을 이벤트로 받아, 상태마다 씬·팀원 시스템·조명·UI·사운드를 정해진 순서로 부른다",
-      "how": "`LiarClient.Handle`이 메시지 종류로, `ParseNetworkManager`가 턴 상태 종류로 두 번 나눠 이벤트를 부르고, 핸들러는 모두 `DoSetPhase` → 팀원 시스템 → 조명 → UI → 사운드 순서를 따른다",
-      "why": "핸들러가 메시지 객체가 아니라 필요한 값만 받아, 프로토콜 클래스가 바뀌어도 고칠 곳은 `ParseNetworkManager` 한 곳이고 새 상태 추가 비용이 enum 1 + case 1 + 핸들러 1로 정해졌다",
-      "section": "3.1 문제와 구조",
+      "what": "서버가 보낸 턴 상태 22종을 받아, 상태마다 할 일(팀원 시스템·조명·UI·사운드)을 한곳에 모아 정해진 순서로 처리한다",
+      "how": "턴 상태를 `TurnMessage` 하나(`TurnMessageType` enum + 공통 값 + `Parameter`)로 묶고, `LiarClient`가 메시지 종류로, `ParseNetworkManager`가 턴 상태 종류로 두 번 나눠 상태별 핸들러를 부른다",
+      "why": "턴 메시지가 앞으로 더 늘어날수록 서버가 보내는 `TurnMessageType` 이름 그대로 나눠 서버 코드와 한 줄씩 맞춰 볼 수 있는 쪽이 낫다고 판단했다(대안: 조건·핸들러 쌍을 순서대로 맞춰 보는 테이블 기반 매칭)",
+      "section": "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다",
       "image": null
     },
     {
-      "title": "UI 구조 리빌딩",
-      "what": "Canvas 하나가 매 프레임 상태를 묻던 구조를, 씬별 UI 매니저를 상태 진입 순간 부르는 구조로 바꿨다",
-      "how": "씬별 UI 매니저 3개(`LobbyUIManager`·`CommonUIManager`·`MeetingRoomUIManager`)를 상태 핸들러가 진입 순간 `Show…`로 부르고, `Update`에는 타이머·TAB·라밍아웃 버튼처럼 시간·입력에 따라 변하는 것만 남겼다",
-      "why": "패널을 켜고 끄는 일은 상태가 바뀌는 순간에만 일어나므로 진입 시 호출로, 한 상태 안에서도 계속 바뀌는 값만 매 프레임 읽게 나눠 \"이 상태에 무엇이 뜨는가\"가 핸들러 한 곳에 모이게 했다",
-      "section": "4.1 문제와 구조",
+      "title": "UI 구조 다시 짜기",
+      "what": "상태가 바뀌는 순간 공지 패널이 떠서, 새 규칙이 낯선 사람도 지금 무엇을 할지 안다",
+      "how": "패널을 켜고 끄는 일은 상태 핸들러가 진입 순간 씬별 UI 매니저를 불러 하고(공지는 `HideAllPanels()`로 시작), 타이머처럼 한 상태 안에서도 계속 바뀌는 값만 매 프레임 읽는다",
+      "why": "매 프레임 상태를 보고 판단하던 방식과 견줘, \"이 상태에 무엇이 뜨는가\"가 상태 핸들러 한 곳에 모이고 두 상태에 걸친 패널은 켜는 곳과 끄는 곳만 정하면 되는 쪽을 골랐다",
+      "section": "6.2 UI는 상태가 바뀌는 순간에만 부르고, 받은 값을 그리기만 한다",
       "image": null
     },
     {
       "title": "채팅 3종 자동 판별",
-      "what": "입력창은 하나, 지금 상태·발언자·첫 마디 여부로 일반/특수/키워드 채팅을 나눈다",
-      "how": "UI는 `Say(text)` 하나만 부르고, `Say`가 서버가 보낸 상태·발언자·라이어 ID와 '첫 마디' 플래그로 특수·키워드·일반 채팅을 골라 보낸다",
-      "why": "판단에 필요한 값이 모두 서버 메시지로 `LiarClient`에 기록되어 있어, 보내기 버튼과 Enter가 모두 `Say` 하나를 부르고 기획 규칙이 바뀌어도 `Say`만 고치면 된다",
-      "section": "5.1 문제와 구조",
-      "image": { "src": "images/08_chat_vote.png", "w": 720, "h": 500, "caption": "투표 상태의 회의실. 왼쪽 아래 채팅창에 [특수]·[키워드]·일반 채팅이 섞여 있다" }
+      "what": "입력창은 하나, 지금 단계와 말하는 사람으로 일반·특수·키워드 채팅을 나누고 기록을 남긴다",
+      "how": "보내기 버튼과 Enter가 모두 `Say(text)` 하나만 부르고, `Say`가 서버가 보낸 상태·발언자·라이어 값과 \"아직 안 보냄\" 플래그로 특수·키워드·일반 채팅을 골라 보낸다",
+      "why": "입력 UI가 판단하는 방식과 견줘, 판단에 필요한 값이 모두 서버 메시지로 `LiarClient`에 기록되어 있고 규칙이 한 곳에만 있어 기획 규칙이 바뀌어도 `Say`만 고치면 되는 쪽을 골랐다",
+      "section": "7. 채팅 3종 자동 판별",
+      "image": {
+        "src": "images/08_chat_vote.png",
+        "w": 720,
+        "h": 500,
+        "caption": "투표 상태의 회의실. 왼쪽 아래 채팅창에 [키워드]·[특수]·일반 채팅이 보낸 사람의 색으로 섞여 있고, 내가 보낸 줄에는 (나)가 붙는다. 가운데 투표 창은 팀원 작업"
+      }
     },
     {
       "title": "조명·사운드 연출 연결",
-      "what": "발언자·지목·라이어·최종 결과에 맞춰 스포트라이트와 BGM/SFX를 서버가 확정한 순간에 바꾼다",
-      "how": "연출은 모두 `LiarClient`의 상태 핸들러와 서버가 확정한 메시지(`OnSelect` 등)에서 부르고, 조명 함수는 진행 중인 트윈을 `DOKill`로 끊은 뒤 0에서 목표 밝기까지 `DOIntensity`로 올린다",
-      "why": "로컬 입력이 아니라 서버가 확정한 순간에 붙여 4명이 같은 순간에 같은 소리를 듣고, 팀 사운드 배치 명세서의 한 줄을 그 상태의 핸들러 한 곳에 그대로 옮길 수 있었다",
-      "section": "6.1 문제와 구조",
-      "image": null
+      "what": "상태마다 바뀌는 주인공(발언자 → 최다 지목자 → 라이어 → 우승자)을 조명과 소리로 보여 준다",
+      "how": "조명·사운드 매니저(백성현 님)의 켜는 기능을, `LiarClient`의 턴 상태 핸들러와 서버가 확정한 메시지(`OnSelect` 등)에서 언제·누구에게·무엇을 켤지 정해 부른다",
+      "why": "그 일이 일어나는 곳에서 부르는 방식과 견줘, 4명이 같은 순간에 같은 소리를 듣고 팀의 사운드 배치 명세서 한 줄을 그 상태의 핸들러 한 곳에 그대로 옮길 수 있는 쪽을 골랐다",
+      "section": "8.1 조명과 소리는 그 상태의 주인공을 따라간다",
+      "image": {
+        "src": "images/liar_out.gif",
+        "w": 800,
+        "h": 450,
+        "caption": "발언 중 라이어가 라밍아웃 버튼을 누른 순간: 라이어에게 붉은 조명, 아래에 라밍아웃 공지, 이어서 키워드 맞춤 결과와 점수"
+      }
     }
   ],
   "troubleshooting": [
     {
       "title": "지목 단계 내내 효과음이 지지직 깨지던 문제",
       "problem": "지목 단계에 들어가면 아무도 클릭하지 않아도 지목 효과음이 겹쳐 재생되면서, 소리가 지지직 찢어지듯 깨졌다(크래클링)",
-      "cause": "효과음 호출을 지목 단계 동안 매 프레임 불리는 지목 입력 함수(`PointOtherPlayer`)의 클릭 분기 밖에 넣어, 매 프레임 `PlayOneShot`이 새로 시작되며 같은 소리가 겹쳤다",
+      "cause": "효과음 호출을 지목 단계 동안 매 프레임 불리는 지목 입력 함수 끝, 클릭 분기 바깥에 넣어 매 프레임 효과음이 새로 시작되며 같은 소리의 앞부분이 겹쳤다",
       "solution": "입력 함수에서 빼고, 서버가 지목을 확정해 모두에게 보내는 `OnSelect`(취소가 아닐 때)로 옮겼다",
-      "result": "지목 한 번에 한 번, 4명 모두에게 같은 순간 울린다",
+      "result": "고친 뒤 팀 플레이 테스트에서, 모두의 화면에서 같은 순간 울리는 것을 확인했다",
       "lesson": "피드백은 확정된 사실에 붙인다",
-      "section": "9.2 문제 해결 경험"
+      "section": "8.4 소리는 서버가 확정한 순간에 한 번"
+    },
+    {
+      "title": "마트에서 돌아온 순간 띄울 회의실 UI가 없던 문제",
+      "problem": "마트 복귀 상태는 씬 전환과 동시에 시작돼, 퀘스트 결과와 장르·키워드를 부르는 시점에 회의실 UI가 아직 없었다",
+      "cause": "씬 로드는 비동기라 핸들러가 UI를 부를 때 아직 마트 씬이어서 `MeetingRoomUIManager`가 없었고, `?.`가 호출을 오류 없이 건너뛰었다",
+      "solution": "핸들러를 비동기(`async UniTask` + `.Forget()`)로 감싸 씬 로드를 기다린 뒤에 UI를 부르게 했다",
+      "result": "고친 뒤 테스트에서, 마트에서 돌아오자마자 퀘스트 결과와 장르·키워드가 회의실에 뜨는 것을 확인했다",
+      "lesson": "",
+      "section": "5.4 씬이 바뀌어도 통신은 남기고, UI는 로드 뒤에"
     },
     {
       "title": "지목이 스킵되면 각자 화면에서 '자기 캐릭터'에 조명이 켜지던 문제",
       "problem": "지목이 스킵되면 4명의 화면에서 저마다 자기 캐릭터에 스포트라이트가 켜졌다",
-      "cause": "스킵·동률이면 서버가 최다 지목자로 빈 문자열을 보내는데, `GetPointPivot`이 \"원격 플레이어 목록에 없으면 나\"를 돌려줘 빈 ID가 '나'로 해석됐다",
+      "cause": "스킵·동률이면 서버가 최다 지목자로 빈 문자열을 보내는데, 조명 위치를 주는 함수가 \"원격 플레이어 목록에 없으면 나\"를 돌려줘 빈 ID가 '나'로 해석됐다",
       "solution": "스킵이면 조명 대상을 찾지 않고 테이블 조명으로 바꿨다",
-      "result": "",
+      "result": "고친 뒤 빌드 테스트에서, 지목이 스킵되면 4명 화면 모두 테이블 조명이 켜지는 것을 확인했다",
       "lesson": "'없으면 기본값'을 돌려주는 함수는 부르는 쪽이 '없음'을 먼저 걸러야 한다",
-      "section": "9.2 문제 해결 경험"
-    },
-    {
-      "title": "마트에서 돌아온 순간 띄울 회의실 UI가 없던 문제",
-      "problem": "마트 복귀 상태는 씬 전환과 동시에 시작돼, 부르는 시점에 회의실 UI가 아직 없었다",
-      "cause": "씬 로드는 비동기라 핸들러가 UI를 부를 때 `MeetingRoomUIManager.Instance`가 null이었고, `?.`가 호출을 오류 없이 건너뛰었다",
-      "solution": "핸들러를 `async UniTask`로 감싸 `await DoLoadScene` 뒤에 UI를 부르게 했다",
-      "result": "",
-      "lesson": "순서는 기다려서 보장하고, 보장되지 않는 곳은 적어 둔다",
-      "section": "9.2 문제 해결 경험"
+      "section": "8.3 스킵이면 테이블을 비춘다"
     }
   ],
   "screenshots": [
-    { "src": "images/05_keyword_reveal.png", "w": 720, "h": 500, "caption": "장르·키워드·현재 라운드 공개 패널" },
-    { "src": "images/07_liarout_button.png", "w": 720, "h": 500, "caption": "발언 중 아래에 뜬 라밍아웃 버튼" },
-    { "src": "images/08_chat_vote.png", "w": 720, "h": 500, "caption": "투표 상태의 회의실. 왼쪽 아래 채팅창에 [특수]·[키워드]·일반 채팅이 섞여 있다" },
-    { "src": "images/06_speaker_notice.png", "w": 720, "h": 500, "caption": "발언자 공지와 왼쪽의 장르·키워드 상시 표시" },
-    { "src": "images/09_light_table.png", "w": 720, "h": 500, "caption": "테이블 전체를 비추는 지목 단계" },
-    { "src": "images/10_light_liar.png", "w": 720, "h": 500, "caption": "라밍아웃한 라이어를 비추는 붉은 조명" }
+    {
+      "src": "images/gameplay.gif",
+      "w": 720,
+      "h": 405,
+      "caption": "1라운드(약 5분)를 4초마다 한 장씩 10초로 빨리 감은 화면: 로비 → 마트 → 회의실 발언 → 지목 → 변론 → 투표 → 라이어 확정 → 점수 집계"
+    },
+    {
+      "src": "images/point_at_state.gif",
+      "w": 800,
+      "h": 450,
+      "caption": "마지막 발언자의 차례가 끝나고 지목 상태로 넘어가는 순간: 테이블 조명, 지목 안내, Skip 버튼이 함께 바뀐다"
+    },
+    {
+      "src": "images/08_chat_vote.png",
+      "w": 720,
+      "h": 500,
+      "caption": "투표 상태의 회의실. 왼쪽 아래 채팅창에 [키워드]·[특수]·일반 채팅이 보낸 사람의 색으로 섞여 있고, 내가 보낸 줄에는 (나)가 붙는다. 가운데 투표 창은 팀원 작업"
+    },
+    {
+      "src": "images/liar_out.gif",
+      "w": 800,
+      "h": 450,
+      "caption": "발언 중 라이어가 라밍아웃 버튼을 누른 순간: 라이어에게 붉은 조명, 아래에 라밍아웃 공지, 이어서 키워드 맞춤 결과와 점수"
+    },
+    {
+      "src": "images/spotlight_tween.gif",
+      "w": 800,
+      "h": 450,
+      "caption": "발언자가 바뀌는 순간: 이전 발언자의 조명이 꺼지고 다음 발언자 머리 위 스포트라이트가 0에서 밝아진다"
+    },
+    {
+      "src": "images/final_result.gif",
+      "w": 800,
+      "h": 450,
+      "caption": "최종 결과: 테이블 중앙 조명 아래 4명의 승리·패배 애니메이션과 \"당신의 패배입니다\" 문구"
+    }
   ],
   "retro": {
-    "section": "9. 결과 및 배운 점",
+    "section": "11. 돌아보며",
     "achieved": [
-      "로비 → 3라운드 → 최종 결과 → 로비 복귀까지 동작. 게임이 끝나면 점수·시작 상태를 초기화해 같은 방에서 다시 시작",
-      "턴 상태 메시지 클래스 22개 → `TurnMessage` 1개 + 파라미터 10개. 받는 쪽 분기 34개 → 14개",
-      "매 프레임 갱신 함수 12개(9개가 상태 비교) → 상태 핸들러에서 호출. `Update`에는 시간·입력에 따라 바뀌는 것만 남김",
-      "BGM 7종 전부와 SFX 8종을 턴 상태·서버 메시지 핸들러에 연결. 조명 3가지(발언자·테이블·라이어)를 상태 7곳에 연결"
+      "플레이 테스트에서 마트에서 키워드에 맞는 아이템을 집으려 뛰어다니고 다른 사람을 밀치는 상호작용이 신선하다는 피드백을 받았다",
+      "라밍아웃이 점수를 역전할 기회가 되었다는 피드백을 받았지만, 라이어가 아닌 사람이 누르면 점수가 깎여 서로 잘 누르지 않는 판도 있었다",
+      "4명이 함께 추리한다는 느낌이 든 순간은 어두운 회의실에서 테이블에 조명이 비췄을 때였고, 이 조명의 크기·색·개수·위치와 턴에 맞는 조명 배치는 내가 맡은 부분이다",
+      "로비 → 3라운드 → 최종 결과 → 로비 복귀까지 동작. 게임이 끝나면 점수·시작 상태를 초기화해 같은 방에서 다시 시작"
     ],
     "regrets": [
-      "`LiarClient` 한 클래스(1,674줄)에 송수신·상태 22종·씬 전환·UI 호출 46곳·연출 호출 26곳·마트 응답이 모여 있다",
+      "`LiarClient` 한 클래스(1,674줄)에 송수신·상태 22종·씬 전환·UI 호출 46곳·연출 호출 26곳·마트 응답이 모여, 병합 충돌의 절반 이상이 이 파일에서 났다",
+      "라이어가 누구인지 라운드 시작부터 모든 클라이언트가 받아, 로그나 메모리를 보면 알 수 있다",
       "씬 로드 중 도착한 다음 상태의 UI 호출은 `?.`로 조용히 건너뛰어진다",
       "채팅 종류 판단이 클라이언트에만 있다"
     ],
     "plans": [
       "송수신(소켓)·상태 기록·상태별 처리를 나눈다. UI·연출은 '상태가 바뀌었다' 이벤트를 각자 구독한다",
+      "서버(김민성 님)와 함께 프로토콜을 바꿔, 라이어 정보는 라이어 확정·라밍아웃 상태에서만 보낸다",
       "받은 상태를 큐에 넣고, 씬 전환이 끝난 뒤 순서대로 적용한다",
       "서버가 상태·발언자·첫 마디 규칙으로 검증한다"
     ]
   },
   "deck": {
     "chapters": [
-      {"key": "overview", "title": "프로젝트 개요", "sectionPath": ["1. 프로젝트 개요"]},
-      {"key": "structure", "title": "시스템 구조", "sectionPath": ["2. 시스템 구조"]},
-      {"key": "turn", "title": "턴 메시지 처리", "sectionPath": ["3. 턴 메시지 처리"]},
-      {"key": "ui", "title": "UI 구조 리빌딩", "sectionPath": ["4. UI 구조 리빌딩"]},
-      {"key": "chat", "title": "채팅 3종 자동 판별", "sectionPath": ["5. 채팅 3종 자동 판별"]},
-      {"key": "fx", "title": "조명·사운드 연출 연결", "sectionPath": ["6. 조명·사운드 연출 연결"]},
-      {"key": "misc", "title": "기타 구현", "sectionPath": ["7. 기타 구현"]},
-      {"key": "collab", "title": "협업과 병합", "sectionPath": ["8. 협업과 병합"]},
-      {"key": "result", "title": "결과 및 배운 점", "sectionPath": ["9. 결과 및 배운 점"]}
+      {
+        "key": "overview",
+        "title": "게임 소개",
+        "sectionPath": [
+          "1. 게임 소개"
+        ]
+      },
+      {
+        "key": "flow",
+        "title": "한 판의 흐름",
+        "sectionPath": [
+          "2. 한 판의 흐름"
+        ]
+      },
+      {
+        "key": "team",
+        "title": "팀 구성과 내 담당",
+        "sectionPath": [
+          "3. 팀 구성과 내 담당"
+        ]
+      },
+      {
+        "key": "structure",
+        "title": "전체 구조",
+        "sectionPath": [
+          "4. 전체 구조"
+        ]
+      },
+      {
+        "key": "turn",
+        "title": "턴 메시지 처리",
+        "sectionPath": [
+          "5. 턴 메시지 처리"
+        ]
+      },
+      {
+        "key": "ui",
+        "title": "UI 구조 다시 짜기",
+        "sectionPath": [
+          "6. UI 구조 다시 짜기"
+        ]
+      },
+      {
+        "key": "chat",
+        "title": "채팅 3종 자동 판별",
+        "sectionPath": [
+          "7. 채팅 3종 자동 판별"
+        ]
+      },
+      {
+        "key": "fx",
+        "title": "조명·사운드 연출 연결",
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결"
+        ]
+      },
+      {
+        "key": "misc",
+        "title": "나머지 기능",
+        "sectionPath": [
+          "9. 나머지 기능"
+        ]
+      },
+      {
+        "key": "collab",
+        "title": "협업과 병합",
+        "sectionPath": [
+          "10. 협업과 병합"
+        ]
+      }
     ],
     "slides": [
       {
@@ -130,651 +257,1283 @@
         "chapter": "overview",
         "layout": "overview",
         "tab": "개요",
-        "title": {"text": "1.1 무엇을 만들었나 (What)", "verbatim": true},
-        "lead": {"text": "시장에 가면은 4명이 한 방에 모여 3라운드를 진행하는 온라인 라이어게임입니다.", "verbatim": true},
-        "sectionPath": ["1. 프로젝트 개요", "1.1 무엇을 만들었나 (What)"],
+        "title": {
+          "text": "1. 게임 소개",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "시장에 가면은 4명이 한 방에 모여 3라운드를 진행하는 온라인 라이어게임입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "1. 게임 소개"
+        ],
         "points": [
-          {"label": "", "text": "라운드가 시작되면 모두 같은 장르와 키워드를 받는데, 단 한 명 라이어만 다른 키워드를 받습니다.", "verbatim": true},
+          {
+            "label": "",
+            "text": "라운드가 시작되면 모두 같은 장르와 키워드를 받는데, 단 한 명 라이어만 다른 키워드를 받습니다.",
+            "verbatim": true
+          },
           {
             "label": "",
             "text": "플레이어들은 마트에 흩어져 카테고리마다 키워드에 어울리는 물건을 하나씩 고르고, 회의실로 돌아와 차례대로 고른 물건을 보여 주며 발언합니다.",
             "verbatim": true
           },
-          {"label": "", "text": "마트 장면(왼쪽·가운데)은 팀원 담당입니다.", "verbatim": true}
+          {
+            "label": "",
+            "text": "발언자의 첫 마디(특수채팅)는 기록으로 남고, 이를 근거로 라이어를 지목·투표합니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "라이어로 확정되면 라이어는 시민의 키워드를 맞혀 역전을 노립니다.",
+            "verbatim": true
+          }
         ],
-        "visuals": [{"kind": "table", "n": 1, "fp": "마트: 카테고리별 물건 고르기|마트: 밀치기|회의실: 라이어 지목"}]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "마트: 카테고리별 물건 고르기|마트: 밀치기|회의실: 라이어 지목"
+          }
+        ]
       },
       {
-        "key": "my-scope",
+        "key": "reference",
         "chapter": "overview",
-        "layout": "full",
-        "tab": "개요",
-        "title": {"text": "1.3 내 담당 범위", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["1. 프로젝트 개요", "1.3 내 담당 범위"],
-        "points": [],
-        "visuals": [{"kind": "table", "n": 1, "fp": "구분|내가 한 것|팀원 작업과의 경계"}]
-      },
-      {
-        "key": "why",
-        "chapter": "overview",
-        "layout": "full",
-        "tab": "개요",
-        "title": {"text": "1.4 왜 이렇게 만들었나 (Why)", "verbatim": true},
-        "lead": {"text": "이 게임의 진행은 서버가 정하고, 클라이언트는 따라갑니다.", "verbatim": true},
-        "sectionPath": ["1. 프로젝트 개요", "1.4 왜 이렇게 만들었나 (Why)"],
-        "points": [],
-        "visuals": [{"kind": "table", "n": 1, "fp": "문제|구체적 상황|해결 방향"}]
-      },
-      {
-        "key": "architecture",
-        "chapter": "structure",
         "layout": "visual",
-        "tab": "구조",
-        "title": {"text": "2.2 아키텍처", "verbatim": true},
+        "tab": "개요",
+        "title": {
+          "text": "참고한 게임",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["2. 시스템 구조", "2.2 아키텍처"],
-        "points": [
-          {"label": "", "text": "실선은 직접 호출, 점선은 이벤트(구독한 쪽이 받음)입니다.", "verbatim": true},
-          {"label": "", "text": "서버와 주고받는 길은 `LiarClient` 하나뿐이고, UI·연출·팀원 시스템은 서버를 직접 알지 않습니다.", "verbatim": true}
+        "sectionPath": [
+          "1. 게임 소개"
         ],
-        "visuals": [{"kind": "mermaid", "n": 1, "fp": "flowchart TB"}]
+        "points": [
+          {
+            "label": "",
+            "text": "Steam의 Liar Game에서 한 명만 다른 정보를 가진 채 대화로 서로를 추리하고, 지목·투표로 찾아내는 규칙을 참고했습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "이 프로젝트에서 다른 점은, 키워드를 말로만 설명하지 않고 마트에서 고른 물건을 보여 주며 설명한다는 것입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "라이어도 시민과 다른 키워드를 받고, 라밍아웃으로 판을 뒤집을 수 있습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "image",
+            "src": "images/ref_liargame_steam.jpg",
+            "w": 1920,
+            "h": 1080,
+            "caption": {
+              "text": "참고한 게임 Liar Game의 투표 장면(Steam 상점 스크린샷)",
+              "verbatim": false
+            }
+          }
+        ]
       },
       {
-        "key": "rules",
-        "chapter": "structure",
+        "key": "goal",
+        "chapter": "overview",
         "layout": "overview",
-        "tab": "구조",
-        "title": {"text": "2.3 설계 규칙", "verbatim": true},
-        "lead": {"text": "구조 전체를 관통하는 규칙은 네 가지입니다.", "verbatim": true},
-        "sectionPath": ["2. 시스템 구조", "2.3 설계 규칙"],
+        "tab": "개요",
+        "title": {
+          "text": "기획 의도와 목표한 경험",
+          "verbatim": false
+        },
+        "lead": {
+          "text": "팀장 백성현 님이 정한 기획 의도는 두 가지였습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "1. 게임 소개"
+        ],
         "points": [
           {
-            "label": "On · Do · Request로 나눈다",
-            "text": "`LiarClient`의 함수는 서버에서 온 것을 처리하는 `On…`, 클라이언트 안에서 처리하는 `Do…`, 서버로 보내는 `Request…` 셋 중 하나다",
-            "verbatim": false
-          },
-          {
-            "label": "진행은 서버가 정하고, 상태 값은 한 곳에서만 쓴다",
-            "text": "현재 상태·제한시간·사이클·라운드는 `{ get; private set; }`이고, 쓰는 곳은 `DoSetPhase` 하나다.",
+            "label": "",
+            "text": "기존 라이어게임의 선형적인 흐름(키워드 받기 → 발언 → 지목 → 투표 → 결과)에 마트를 더해, 유리한 아이템을 선점하거나 다른 플레이어를 밀치는 상호작용으로 플레이를 다양하게 하는 것.",
             "verbatim": true
           },
           {
-            "label": "UI는 상태가 바뀌는 순간에만 부른다",
-            "text": "매 프레임 읽는 것은 시간·입력에 따라 변하는 것(타이머, TAB, 라밍아웃 버튼의 '남은 3초' 조건)뿐이다.",
+            "label": "",
+            "text": "그리고 자신이 라이어인지 추측해 누르는 '라밍아웃 버튼'으로 큰 점수 차를 뒤집을 기회를 주는 것입니다.",
             "verbatim": true
           },
           {
-            "label": "연출은 서버가 확정한 순간에 붙인다",
-            "text": "조명·BGM·SFX는 로컬 입력이 아니라 서버 메시지 핸들러에서 부른다. 4명이 같은 순간에 같은 연출을 본다.",
+            "label": "",
+            "text": "목표한 경험은 플레이한 사람이 끝나고 \"기존 라이어 게임보다 신선한 게임이다\" 라고 말하는 것이었습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "제가 맡은 클라이언트에서 이 목표는, 서버가 다음 상태와 제한시간을 보내면 4명의 클라이언트가 같은 순간에 같은 장면으로 넘어가게 하는 일이었습니다.",
             "verbatim": true
           }
         ],
         "visuals": []
       },
       {
-        "key": "dispatch",
-        "chapter": "turn",
+        "key": "scenes-map",
+        "chapter": "flow",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {
+          "text": "2. 한 판의 흐름",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "2. 한 판의 흐름"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "00. LobbyRoom|02. Mart|01. MeetingRoom"
+          }
+        ]
+      },
+      {
+        "key": "loop",
+        "chapter": "flow",
         "layout": "visual",
         "tab": "흐름",
-        "title": {"text": "3.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "받은 메시지는 두 번 나뉩니다.", "verbatim": true},
-        "sectionPath": ["3. 턴 메시지 처리", "3.1 문제와 구조"],
+        "title": {
+          "text": "2. 한 판의 흐름",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "한 판은 아래 고리를 3라운드 되풀이합니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "2. 한 판의 흐름"
+        ],
         "points": [
           {
             "label": "",
-            "text": "09.02에 서버(김민성 님)가 턴 상태를 `TurnMessage` 하나로 통합했고, 저는 클라이언트를 이 구조에 맞춰 다시 짰습니다",
-            "verbatim": false
+            "text": "발언은 카테고리마다 한 바퀴(사이클)씩, 한 라운드에 3사이클 돕니다.",
+            "verbatim": true
           },
-          {"label": "09.01까지", "text": "`Handle`의 한글 문자열 `case` 34개", "verbatim": true},
           {
-            "label": "09.02부터",
-            "text": "`Handle`은 메시지 종류 14개만, 턴 상태는 `ParseNetworkManager`가 enum으로 분기",
+            "label": "",
+            "text": "사이클 1·2의 지목은 건너뛸 수 있어 다음 카테고리 발언으로 넘어가고, 마지막 사이클은 반드시 지목해야 합니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "발언 중에는 모두에게 '라밍아웃' 버튼이 보입니다. 라이어가 누르면 정체가 모두에게 공개되고 바로 라이어 발언 단계(키워드 맞춤)로 넘어갑니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "점수는 투표 성공, 라이어의 키워드 맞춤, 라밍아웃, 개인 퀘스트 성공 여부를 서버가 합산합니다.",
             "verbatim": true
           }
         ],
-        "visuals": [{"kind": "mermaid", "n": 1, "fp": "flowchart LR"}]
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          }
+        ]
+      },
+      {
+        "key": "gameplay",
+        "chapter": "flow",
+        "layout": "visual",
+        "tab": "결과",
+        "title": {
+          "text": "2. 한 판의 흐름",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "2. 한 판의 흐름"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "키워드와 직접 연관된 아이템이 나올 확률은 낮지만, 계속되는 발언 단계의 추론을 통해 각 플레이어의 발언 스타일을 학습해 참·거짓을 유추할 수 있습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "image",
+            "src": "images/gameplay.gif",
+            "w": 720,
+            "h": 405,
+            "caption": {
+              "text": "1라운드(약 5분)를 4초마다 한 장씩 10초로 빨리 감은 화면: 로비 → 마트 → 회의실 발언 → 지목 → 변론 → 투표 → 라이어 확정 → 점수 집계",
+              "verbatim": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "controls",
+        "chapter": "flow",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {
+          "text": "2. 한 판의 흐름",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "2. 한 판의 흐름"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "상황|입력|동작"
+          }
+        ]
+      },
+      {
+        "key": "members",
+        "chapter": "team",
+        "layout": "full",
+        "tab": "개요",
+        "title": {
+          "text": "3. 팀 구성과 내 담당",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "팀원 네 명이 맡은 부분은 아래와 같습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "3. 팀 구성과 내 담당"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "GitHub 조직 저장소에 사람별 작업 브랜치를 올리고 Git 클라이언트 Fork로 병합·충돌을 처리했으며, 할 일과 진행 상황은 Asana 카드로 나눴습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "팀원|맡은 부분"
+          }
+        ]
+      },
+      {
+        "key": "my-scope",
+        "chapter": "team",
+        "layout": "full",
+        "tab": "개요",
+        "title": {
+          "text": "3. 팀 구성과 내 담당",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "제가 한 것과 팀원 작업의 경계는 아래와 같습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "3. 팀 구성과 내 담당"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "`SingletonBase<T>`, `SimpleInput`(Input System 래퍼), WebSocket 예제 `RoomClient`(접속·수신 루프·전송 잠금)는 강의에서 배운 코드입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "`LiarClient`는 `RoomClient`를 바탕으로 라이어게임 메시지 처리를 더한 것입니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "구분|내가 한 것|팀원 작업과의 경계"
+          }
+        ]
+      },
+      {
+        "key": "schedule",
+        "chapter": "team",
+        "layout": "full",
+        "tab": "개요",
+        "title": {
+          "text": "3. 팀 구성과 내 담당",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "작업 순서는 아래와 같습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "3. 팀 구성과 내 담당"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 3,
+            "fp": "단계|기간|작업"
+          }
+        ]
+      },
+      {
+        "key": "why",
+        "chapter": "structure",
+        "layout": "full",
+        "tab": "구조",
+        "title": {
+          "text": "4. 전체 구조",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "4명이 같은 순간에 같은 장면을 보며 함께 추리하도록, 서버를 따르는 클라이언트를 만들었습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 전체 구조"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "기술 목표는 개발 마감까지 3라운드 한 판이 끝까지 돌고, 서버 프로토콜이 바뀌어도 클라이언트가 따라갈 수 있는 구조를 만드는 것이었습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "핵심 기능|부딪힌 문제|이렇게 풀었다"
+          }
+        ]
+      },
+      {
+        "key": "architecture",
+        "chapter": "structure",
+        "layout": "visual",
+        "tab": "구조",
+        "title": {
+          "text": "4. 전체 구조",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "아래 그림에서 볼 것은 서버와 주고받는 길이 `LiarClient` 하나뿐이라는 점입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 전체 구조"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "실선은 직접 호출, 점선은 이벤트(구독한 쪽이 받는 알림)입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "UI·연출·팀원 시스템은 서버를 직접 알지 않습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          }
+        ]
+      },
+      {
+        "key": "rules",
+        "chapter": "structure",
+        "layout": "overview",
+        "tab": "구조",
+        "title": {
+          "text": "4. 전체 구조",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "구조 전체를 관통하는 규칙은 네 가지입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 전체 구조"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "On · Do · Request로 나눈다. `LiarClient`의 함수는 서버에서 온 것을 처리하는 `On…`, 클라이언트 안에서 처리하는 `Do…`, 서버로 보내는 `Request…` 셋 중 하나다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "진행은 서버가 정하고, 상태 값은 한 곳에서만 쓴다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "UI는 상태가 바뀌는 순간에만 부른다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "연출은 서버가 확정한 순간에 붙인다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": []
+      },
+      {
+        "key": "classes",
+        "chapter": "structure",
+        "layout": "full",
+        "tab": "구조",
+        "title": {
+          "text": "4. 전체 구조",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "4. 전체 구조"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "클래스|책임|작성"
+          }
+        ]
+      },
+      {
+        "key": "scene-flow",
+        "chapter": "structure",
+        "layout": "visual",
+        "tab": "흐름",
+        "title": {
+          "text": "4. 전체 구조",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "씬은 서버가 보낸 상태에 따라 아래처럼 바뀝니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 전체 구조"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "씬 전환은 `LiarClient`의 씬 전환 함수 한 곳에서만 합니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "새 씬을 Additive(지금 씬을 둔 채 새 씬을 겹쳐 불러오는 방식)로 불러 활성 씬으로 바꾼 뒤 이전 씬을 내립니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "라운드가 바뀔 때는 로비를 거치지 않고 회의실에서 바로 다음 장르·키워드를 받습니다(연출·마감 단계에서 바꿈).",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 2,
+            "fp": "stateDiagram-v2"
+          }
+        ]
+      },
+      {
+        "key": "turn-intro",
+        "chapter": "turn",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {
+          "text": "5. 턴 메시지 처리",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "기존 라이어 게임에 없는 마트 단계와 회의실 단계를 씬 전환으로 잇는 흐름을 만듭니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "image",
+            "src": "images/point_at_state.gif",
+            "w": 800,
+            "h": 450,
+            "caption": {
+              "text": "마지막 발언자의 차례가 끝나고 지목 상태로 넘어가는 순간: 테이블 조명, 지목 안내, Skip 버튼이 함께 바뀐다",
+              "verbatim": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "state-todo",
+        "chapter": "turn",
+        "layout": "full",
+        "tab": "구현",
+        "title": {
+          "text": "5.1 턴 상태 22종은 서버가 보낸 차례대로 넘어간다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "서버는 상태가 바뀔 때마다 \"지금은 이 상태, 제한시간은 N ms\"를 4명 모두에게 보내고, 클라이언트는 받은 순간 그 상태에 맞는 화면으로 넘어가야 합니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.1 턴 상태 22종은 서버가 보낸 차례대로 넘어간다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "상태는 22종이고, 하나를 받으면 할 일이 여러 가지입니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "받은 상태 (예)|클라이언트가 할 일"
+          }
+        ]
+      },
+      {
+        "key": "turn-flow",
+        "chapter": "turn",
+        "layout": "visual",
+        "tab": "흐름",
+        "title": {
+          "text": "5.1 턴 상태 22종은 서버가 보낸 차례대로 넘어간다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "게임 시작 뒤 라운드를 3번 되풀이하고 최종 결과로 갑니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.1 턴 상태 22종은 서버가 보낸 차례대로 넘어간다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "한 라운드 안에서 턴 상태는 서버가 보낸 차례대로 아래처럼 넘어갑니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "그림에서 볼 것은 발언과 지목 사이를 사이클마다 오가다가, 투표나 라밍아웃 어느 쪽으로든 라이어 확정에 닿는다는 점입니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "stateDiagram-v2"
+          }
+        ]
       },
       {
         "key": "handler",
         "chapter": "turn",
         "layout": "code",
         "tab": "구현",
-        "title": {"text": "3.2 사용법", "verbatim": true},
-        "lead": {"text": "핸들러는 모두 같은 순서를 따릅니다.", "verbatim": true},
-        "sectionPath": ["3. 턴 메시지 처리", "3.2 사용법"],
+        "title": {
+          "text": "5.2 상태마다 할 일을 한 함수에 모은다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "핸들러는 같은 순서를 따릅니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.2 상태마다 할 일을 한 함수에 모은다"
+        ],
         "points": [
-          {"label": "", "text": "① `DoSetPhase`로 공통 값 기록 → ② 팀원 시스템 → ③ 조명 → ④ UI → ⑤ 사운드.", "verbatim": true},
           {
             "label": "",
-            "text": "`LiarClient`에 `On…State` 핸들러를 만들고, `SubAllEvents`·`UnSubAllEvents`에 구독·해제를 한 줄씩 넣는다.",
+            "text": "① 공통 값 기록(`DoSetPhase`) → ② 팀원 시스템 → ③ 조명 → ④ UI → ⑤ 사운드.",
             "verbatim": true
-          }
-        ],
-        "visuals": [{"kind": "code", "n": 1, "fp": "// LiarClient.cs — 지목 상태. 이 상태가 할 일을 정해진 순서로 부른다"}]
-      },
-      {
-        "key": "phase-record",
-        "chapter": "turn",
-        "layout": "code",
-        "tab": "구현",
-        "title": {"text": "② 상태 기록과 남은 시간: `DoSetPhase` 한 곳", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["3. 턴 메시지 처리", "3.3 핵심 동작"],
-        "points": [
-          {"label": "", "text": "모든 핸들러가 `DoSetPhase`로 시작하므로, \"지금 무슨 상태인가\"를 바꾸는 길이 하나뿐입니다.", "verbatim": true},
+          },
+          {
+            "label": "",
+            "text": "모든 핸들러가 상태 기록을 거치므로, \"지금 무슨 상태인가\"를 바꾸는 길이 하나뿐입니다.",
+            "verbatim": true
+          },
           {
             "label": "",
             "text": "서버는 제한시간을 상태가 시작될 때 한 번만 보냅니다. 클라이언트는 받은 시각을 기억해 남은 시간을 직접 계산하므로, 매초 시간을 주고받지 않습니다.",
             "verbatim": true
-          },
-          {"label": "", "text": "대가로, 클라이언트마다 메시지를 받은 시각 기준이라 네트워크 지연만큼 표시가 조금씩 어긋납니다.", "verbatim": true}
+          }
         ],
-        "visuals": [{"kind": "code", "n": 2, "fp": "// LiarClient.cs (발췌) — 서버가 보낸 상태는 여기서만 기록한다. 밖에서는 읽기만"}],
-        "edited": true
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// LiarClient.cs — 지목 상태. 이 상태가 할 일을 정해진 순서로 부른다"
+          }
+        ]
+      },
+      {
+        "key": "turn-message",
+        "chapter": "turn",
+        "layout": "full",
+        "tab": "선택",
+        "title": {
+          "text": "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "늘어나는 턴 메시지를 어떻게 나눠 받을지 두 방법을 견줬습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "턴 메시지를 `TurnMessage` 하나로 묶는 쪽(B)을 골랐습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "턴 메시지가 앞으로 더 늘어날 수 있다고 봤고, 그럴수록 서버 코드와 한 줄씩 맞춰 볼 수 있는 쪽이 낫다고 판단했기 때문입니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|A. 테이블 기반 매칭 (규칙·조건 표)|B. 턴 상태를 TurnMessage 하나로 통합하고, 상태 종류(TurnMessageType enum)로 나눈다 ✓"
+          }
+        ]
+      },
+      {
+        "key": "refactor-diff",
+        "chapter": "turn",
+        "layout": "full",
+        "tab": "결과",
+        "title": {
+          "text": "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "리팩터링 전에는 상태마다 메시지 클래스가 따로 있었고, 종류가 \"게임 시작 상태\" 같은 한글 문자열이었습니다(개수는 아래 전후 비교 표).",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "|리팩터링 전|리팩터링 뒤"
+          }
+        ]
+      },
+      {
+        "key": "dispatch",
+        "chapter": "turn",
+        "layout": "visual",
+        "tab": "흐름",
+        "title": {
+          "text": "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "받은 메시지는 두 번 나뉩니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "`LiarClient`가 메시지 종류로 한 번, `ParseNetworkManager`가 턴 상태 종류로 한 번입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "핸들러는 메시지 객체가 아니라 필요한 값만 받습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "새 상태를 추가하는 비용이 'enum 값 1 + case 1 + 핸들러 1'로 정해졌습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          }
+        ]
       },
       {
         "key": "turn-choice",
         "chapter": "turn",
-        "layout": "overview",
+        "layout": "full",
         "tab": "선택",
-        "title": {"text": "3.4 고민과 선택", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["3. 턴 메시지 처리", "3.4 고민과 선택"],
+        "title": {
+          "text": "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "서버와 다른 JSON 라이브러리를 쓸지도 이때 견줬습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.3 턴 메시지를 하나로 묶고, 너그럽게 읽는다"
+        ],
         "points": [
           {
-            "label": "결정 1 · 씬이 바뀌어도 LiarClient를 어떻게 살려 둘까?",
-            "text": "살아남는 객체를 `LiarClient`·`CommonUIManager`·`SoundManager`로 한정하고 나머지를 씬과 함께 버리는 쪽이 단순했습니다.",
+            "label": "",
+            "text": "Newtonsoft.Json(B)을 골랐습니다.",
             "verbatim": true
           },
           {
-            "label": "결정 2 · 서버와 다른 JSON 라이브러리를 쓸까?",
-            "text": "클라이언트는 서버가 보내는 여러 모양의 메시지를 받아 읽는 쪽이라, 엄격하게 읽기보다 유연하게 파싱하는 쪽이 맞다고 판단했습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "결정 2 · 근거",
-            "text": "이 프로토콜은 사용자 ID 하나에도 `ID`·`Id`·`UserID`·`UserId`·`senderId`처럼 표기가 다섯 가지로 섞여 있어, 서버나 클라이언트 한쪽에서 대소문자만 달라져도 System.Text.Json 기본값이면 값이 조용히 빠집니다.",
+            "label": "",
+            "text": "이 프로토콜은 사용자 ID 하나에도 `ID`·`Id`·`UserID`·`UserId`·`senderId`처럼 표기가 다섯 가지로 섞여 있어, 대소문자만 달라져도 System.Text.Json 기본값이면 값이 조용히 빠집니다.",
             "verbatim": true
           }
         ],
-        "visuals": [],
-        "edited": true
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 3,
+            "fp": "|A. 서버와 같은 System.Text.Json|B. 클라이언트는 Newtonsoft.Json (Unity 공식 패키지) ✓"
+          }
+        ]
       },
       {
-        "key": "ui-history",
-        "chapter": "ui",
+        "key": "survive-choice",
+        "chapter": "turn",
         "layout": "full",
-        "tab": "구조",
-        "title": {"text": "4.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "UI 구조는 두 번 바뀌었습니다.", "verbatim": true},
-        "sectionPath": ["4. UI 구조 리빌딩", "4.1 문제와 구조"],
+        "tab": "선택",
+        "title": {
+          "text": "5.4 씬이 바뀌어도 통신은 남기고, UI는 로드 뒤에",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "씬이 바뀌어도 `LiarClient`를 어떻게 살려 둘지는 첫 구현 때 두 방법을 견줬습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.4 씬이 바뀌어도 통신은 남기고, UI는 로드 뒤에"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "`LiarClient`를 씬 밖에 두는 쪽(B)을 골랐습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "로비만 내릴 수 없다는 예외가 씬 전환 코드에 남는 것보다, 살아남는 객체를 `LiarClient`·`CommonUIManager`·`SoundManager`로 한정하는 쪽이 단순했습니다.",
+            "verbatim": false
+          },
+          {
+            "label": "",
+            "text": "대가인 재연결은 씬 로드가 끝난 뒤 한 곳에서 처리하고, 씬 UI 매니저는 파괴될 때 자기 참조를 비워 사라진 UI를 부르지 않게 했습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|A. 로비 씬을 계속 띄워 두고, 마트·회의실 씬만 그 위에 Additive로 얹는다 (첫 구현)|B. LiarClient를 DontDestroyOnLoad로 씬 밖에 두고, 모든 씬을 같은 방식으로 바꾼다 (바로 바꿈) ✓"
+          }
+        ]
+      },
+      {
+        "key": "scene-load",
+        "chapter": "turn",
+        "layout": "problem",
+        "tab": "문제 해결",
+        "title": {
+          "text": "5.4 씬이 바뀌어도 통신은 남기고, UI는 로드 뒤에",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.4 씬이 바뀌어도 통신은 남기고, UI는 로드 뒤에"
+        ],
+        "points": [
+          {
+            "label": "문제",
+            "text": "마트 복귀 상태에 들어오자마자 퀘스트 결과와 장르·키워드를 회의실에 띄워야 하는데, 이 상태는 씬 전환과 동시에 시작돼 부르는 시점에 회의실 UI가 아직 없었습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "원인",
+            "text": "핸들러가 UI를 부를 때는 아직 마트 씬이라 회의실 UI 매니저(`MeetingRoomUIManager`)가 없었고, `?.`(대상이 없으면 부르지 않는 연산자)가 호출을 오류 없이 건너뛰었습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "해결",
+            "text": "핸들러를 비동기로 감싸 씬 로드를 기다린 뒤에 UI를 부르게 했습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "결과",
+            "text": "고친 뒤 테스트에서, 마트에서 돌아오자마자 퀘스트 결과와 장르·키워드가 회의실에 뜨는 것을 확인했습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "sequenceDiagram"
+          }
+        ]
+      },
+      {
+        "key": "fallback",
+        "chapter": "turn",
+        "layout": "full",
+        "tab": "구현",
+        "title": {
+          "text": "5.5 모르는 메시지는 로그만 남기고, 없는 UI는 건너뛴다",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "5. 턴 메시지 처리",
+          "5.5 모르는 메시지는 로그만 남기고, 없는 UI는 건너뛴다"
+        ],
         "points": [],
-        "visuals": [{"kind": "table", "n": 1, "fp": "시기|방식|한계"}]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "상황|처리|이렇게 한 이유"
+          }
+        ]
       },
       {
         "key": "ui-screens",
         "chapter": "ui",
         "layout": "full",
         "tab": "결과",
-        "title": {"text": "4.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "라이어게임의 UI는 거의 전부 '지금 상태'에 따라 켜지고 꺼집니다.", "verbatim": true},
-        "sectionPath": ["4. UI 구조 리빌딩", "4.1 문제와 구조"],
+        "title": {
+          "text": "6. UI 구조 다시 짜기",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "상태가 바뀌는 순간 공지 패널이 떠서, 새 규칙(마트·특수채팅·라밍아웃)이 낯선 사람도 지금 무엇을 할지 압니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. UI 구조 다시 짜기"
+        ],
         "points": [],
         "visuals": [
           {
             "kind": "table",
-            "n": 2,
+            "n": 1,
             "fp": "장르·키워드 공개 (CommonUIManager)|발언자 공지 (MeetingRoomUIManager)|라밍아웃 버튼 (MeetingRoomUIManager)"
           }
-        ],
-        "edited": true
-      },
-      {
-        "key": "ui-choice",
-        "chapter": "ui",
-        "layout": "overview",
-        "tab": "선택",
-        "title": {"text": "4.4 고민과 선택", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["4. UI 구조 리빌딩", "4.4 고민과 선택"],
-        "points": [
-          {
-            "label": "결정 1 · UI를 언제 갱신할까?",
-            "text": "패널을 켜고 끄는 일은 상태가 바뀌는 순간에만 부르고, 타이머처럼 한 상태 안에서도 계속 바뀌는 값만 매 프레임 읽게 남겼습니다.",
-            "verbatim": false
-          },
-          {
-            "label": "결정 2 · UI를 어떻게 묶을까?",
-            "text": "타이머·채팅처럼 장면을 넘어 이어져야 하는 것만 공통으로 두고, 나머지는 쓰는 씬에 넣었습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "결정 3 · UI는 표시할 값을 어디서 얻을까?",
-            "text": "UI는 받은 값을 그리기만 한다. 같은 값을 어디서 가공할지가 `LiarClient` 한 곳으로 정해진다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [],
-        "edited": true
-      },
-      {
-        "key": "chat-flow",
-        "chapter": "chat",
-        "layout": "full",
-        "tab": "흐름",
-        "title": {"text": "5.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "입력창은 하나입니다(팀 기획 규칙). 플레이어가 종류를 고르지 않아도, 같은 Enter가 상황에 따라 다른 채팅이 되어야 합니다.", "verbatim": true},
-        "sectionPath": ["5. 채팅 3종 자동 판별", "5.1 문제와 구조"],
-        "points": [],
-        "visuals": [{"kind": "mermaid", "n": 1, "fp": "sequenceDiagram"}]
-      },
-      {
-        "key": "chat-say",
-        "chapter": "chat",
-        "layout": "code",
-        "tab": "구현",
-        "title": {"text": "① `Say`: 보낼 때 종류를 정한다", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["5. 채팅 3종 자동 판별", "5.3 핵심 동작"],
-        "points": [
-          {
-            "label": "",
-            "text": "판단에 쓰는 값(`CurrentState`, `CurrentOwnerID`, `LiarId`)은 모두 서버가 보낸 값입니다. 클라이언트가 따로 추측하지 않습니다.",
-            "verbatim": true
-          },
-          {"label": "", "text": "보내는 순간 플래그를 세우므로, 서버 응답을 기다리는 사이 Enter를 연달아 눌러도 두 번째부터는 일반채팅이 됩니다.", "verbatim": true}
-        ],
-        "visuals": [
-          {
-            "kind": "code",
-            "n": 1,
-            "lines": [7, 24],
-            "fp": "// LiarClient.cs — 지금이 어떤 채팅을 보낼 차례인지 알아서 판단해서 보낸다. 로비가 이거 하"
-          }
         ]
-      },
-      {
-        "key": "special-chat",
-        "chapter": "chat",
-        "layout": "code",
-        "tab": "구현",
-        "title": {"text": "② `OnSpecialChat`: 받을 때 세 곳에 쓴다", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["5. 채팅 3종 자동 판별", "5.3 핵심 동작"],
-        "points": [
-          {"label": "", "text": "기록에 그 사람이 이번 카테고리에 소개한 물건을 함께 붙입니다.", "verbatim": true},
-          {"label": "", "text": "TAB을 누르면 \"누가 무엇을 들고 무슨 말을 했는지\"를 한 줄씩 비교할 수 있습니다.", "verbatim": true},
-          {"label": "", "text": "색은 보낸 사람 기준으로 여기서 한 번만 입힙니다.", "verbatim": true}
-        ],
-        "visuals": [{"kind": "code", "n": 2, "fp": "// LiarClient.cs (발췌) — 발언자의 특수채팅. 채팅창, 발언 종료 공지, TAB 기록에 각각"}],
-        "edited": true
-      },
-      {
-        "key": "fx-screens",
-        "chapter": "fx",
-        "layout": "full",
-        "tab": "결과",
-        "title": {"text": "6.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "연출은 모두 `LiarClient`의 상태 핸들러와 서버가 확정한 메시지에서 부릅니다.", "verbatim": true},
-        "sectionPath": ["6. 조명·사운드 연출 연결", "6.1 문제와 구조"],
-        "points": [],
-        "visuals": [{"kind": "table", "n": 2, "fp": "발언자|지목 (스킵 버튼)|라이어 (라밍아웃)"}]
-      },
-      {
-        "key": "fx-light",
-        "chapter": "fx",
-        "layout": "code",
-        "tab": "구현",
-        "title": {"text": "조명 전환: 이전 트윈을 끊고 0에서 다시", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["6. 조명·사운드 연출 연결", "6.3 핵심 동작"],
-        "points": [
-          {"label": "", "text": "모든 조명 함수는 시작할 때 `DOKill()`부터 부릅니다.", "verbatim": true},
-          {
-            "label": "",
-            "text": "발언자는 몇 초마다 바뀌고 지목이 스킵되면 상태가 빠르게 넘어가는데, 이전 트윈이 살아 있으면 새 대상의 밝기를 덮어쓰기 때문입니다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [{"kind": "code", "n": 1, "fp": "// LightManager.cs (발췌, 본인 추가) — 주변을 어둡게 하고, 대상 위 스포트라이트를 0"}],
-        "edited": true
-      },
-      {
-        "key": "fx-choice",
-        "chapter": "fx",
-        "layout": "overview",
-        "tab": "선택",
-        "title": {"text": "6.4 고민과 선택", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["6. 조명·사운드 연출 연결", "6.4 고민과 선택"],
-        "points": [
-          {
-            "label": "결정 1 · BGM·SFX를 어디서 부를까?",
-            "text": "팀의 사운드 배치 명세서가 '어느 턴 상태에서 어떤 BGM·SFX를 트는가'로 정리되어 있어, 명세서의 한 줄을 그 상태의 핸들러 한 곳에 그대로 옮기는 것이 가장 자연스러웠습니다",
-            "verbatim": true
-          },
-          {
-            "label": "결과",
-            "text": "그렇게 하자 4명이 같은 순간에 같은 소리를 듣게 됐고, 같은 날 지목 효과음 버그를 고치면서 지목 효과음도 서버가 확정한 지목(`OnSelect`)으로 옮겼습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "결정 2 · 최종 결과에서 누구를 비출까?",
-            "text": "최종 결과의 볼거리는 우승자 한 명이 아니라 4명의 승패 애니메이션이 동시에 갈리는 장면이라고 봤습니다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [],
-        "edited": true
-      },
-      {
-        "key": "misc",
-        "chapter": "misc",
-        "layout": "overview",
-        "tab": "구현",
-        "title": {"text": "7. 기타 구현", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["7. 기타 구현"],
-        "points": [
-          {"label": "라밍아웃", "text": "발언 상태 + 남은 시간 3초 초과 + 이번 라운드에 아직 안 누름일 때만 버튼이 보인다.", "verbatim": true},
-          {
-            "label": "최종 결과 → 로비",
-            "text": "`Invoke(\"…\")` 대신 `UniTask.Delay`(+ `destroyCancellationToken`)로 기다린다.",
-            "verbatim": true
-          },
-          {"label": "방장 판정", "text": "welcome을 받을 때 방에 아무도 없었으면 방장. 게임 시작 요청은 방장만 보낸다", "verbatim": true}
-        ],
-        "visuals": []
-      },
-      {
-        "key": "merge-case",
-        "chapter": "collab",
-        "layout": "problem",
-        "tab": "문제 해결",
-        "title": {"text": "8.3 사례: 08.30 병합 이력 정리", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["8. 협업과 병합", "8.3 사례: 08.30 병합 이력 정리"],
-        "points": [
-          {"label": "문제", "text": "되돌리기가 겹치면서 어느 시점의 파일이 맞는지 알 수 없을 만큼 이력이 꼬였습니다.", "verbatim": false},
-          {"label": "원인", "text": "① 서로의 개인 브랜치를 직접 합쳐, 상대의 '작업 중'인 변경까지 함께 들어왔습니다.", "verbatim": true},
-          {"label": "해결", "text": "꼬인 병합 구간을 이력에서 걷어 내고, 파일 상태를 문제가 생기기 전의 한 시점과 똑같이 맞췄습니다.", "verbatim": true},
-          {"label": "결과", "text": "이후 되돌리기가 필요한 병합은 없었지만, 충돌 자체는 계속 났습니다(8.4).", "verbatim": true}
-        ],
-        "visuals": [{"kind": "table", "n": 1, "fp": "기간|방식|결과", "sectionPath": ["8. 협업과 병합", "8.2 브랜치 운영의 변화"]}]
-      },
-      {
-        "key": "ts-light",
-        "chapter": "result",
-        "layout": "problem",
-        "tab": "문제 해결",
-        "title": {"text": "지목이 스킵되면 각자 화면에서 '자기 캐릭터'에 조명이 켜지던 문제", "verbatim": false},
-        "lead": null,
-        "sectionPath": ["9. 결과 및 배운 점", "9.2 문제 해결 경험"],
-        "points": [
-          {"label": "문제", "text": "지목이 스킵되면 4명의 화면에서 저마다 자기 캐릭터에 스포트라이트가 켜졌습니다.", "verbatim": true},
-          {
-            "label": "원인",
-            "text": "조명 위치를 주는 `GetPointPivot`은 \"원격 플레이어 목록에 없으면 나\"를 돌려주게 되어 있어, 빈 ID가 '나'로 해석됐습니다.",
-            "verbatim": false
-          },
-          {"label": "해결", "text": "스킵이면 조명 대상을 찾지 않고 테이블 조명으로 바꿨습니다.", "verbatim": true},
-          {"label": "배운 점", "text": "'없으면 기본값'을 돌려주는 함수는 부르는 쪽이 '없음'을 먼저 걸러야 합니다.", "verbatim": true}
-        ],
-        "visuals": [{"kind": "code", "n": 1, "fp": "// 수정 전 — 스킵이면 mostSelectedId == \"\" → GetPointPivot(\"\")이 내 p"}]
-      },
-      {
-        "key": "ts-sfx",
-        "chapter": "result",
-        "layout": "problem",
-        "tab": "문제 해결",
-        "title": {"text": "지목 단계 내내 효과음이 지지직 깨지던 문제", "verbatim": false},
-        "lead": null,
-        "sectionPath": ["9. 결과 및 배운 점", "9.2 문제 해결 경험"],
-        "points": [
-          {
-            "label": "문제",
-            "text": "지목 단계에 들어가면 아무도 클릭하지 않아도 지목 효과음이 겹쳐 재생되면서, 소리가 지지직 찢어지듯 깨졌습니다(크래클링).",
-            "verbatim": true
-          },
-          {
-            "label": "원인",
-            "text": "같은 날 오후 제가 효과음 호출을 지목 입력 함수(`PointOtherPlayer`) 끝에 넣었는데, 이 함수는 지목 단계 동안 `Update`에서 매 프레임 불립니다.",
-            "verbatim": true
-          },
-          {"label": "해결", "text": "입력 함수에서 빼고, 서버가 지목을 확정해 모두에게 보내는 `OnSelect`(취소가 아닐 때)로 옮겼습니다.", "verbatim": true},
-          {"label": "결과", "text": "지목 한 번에 한 번, 4명 모두에게 같은 순간 울립니다.", "verbatim": true}
-        ],
-        "visuals": [{"kind": "code", "n": 2, "lines": [1, 19], "fp": "// 수정 전 — Vote_System.cs. 지목 단계 동안 Update가 매 프레임 부르는 함수"}]
-      }
-    ],
-    "base": [
-      {
-        "key": "what",
-        "chapter": "overview",
-        "layout": "overview",
-        "tab": "개요",
-        "title": {"text": "1.1 무엇을 만들었나 (What)", "verbatim": true},
-        "lead": {"text": "시장에 가면은 4명이 한 방에 모여 3라운드를 진행하는 온라인 라이어게임입니다.", "verbatim": true},
-        "sectionPath": ["1. 프로젝트 개요", "1.1 무엇을 만들었나 (What)"],
-        "points": [
-          {"label": "", "text": "라운드가 시작되면 모두 같은 장르와 키워드를 받는데, 단 한 명 라이어만 다른 키워드를 받습니다.", "verbatim": true},
-          {
-            "label": "",
-            "text": "플레이어들은 마트에 흩어져 카테고리마다 키워드에 어울리는 물건을 하나씩 고르고, 회의실로 돌아와 차례대로 고른 물건을 보여 주며 발언합니다.",
-            "verbatim": true
-          },
-          {"label": "", "text": "마트 장면(왼쪽·가운데)은 팀원 담당입니다.", "verbatim": true}
-        ],
-        "visuals": [{"kind": "table", "n": 1, "fp": "마트: 카테고리별 물건 고르기|마트: 밀치기|회의실: 라이어 지목"}]
-      },
-      {
-        "key": "my-scope",
-        "chapter": "overview",
-        "layout": "full",
-        "tab": "개요",
-        "title": {"text": "1.3 내 담당 범위", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["1. 프로젝트 개요", "1.3 내 담당 범위"],
-        "points": [],
-        "visuals": [{"kind": "table", "n": 1, "fp": "구분|내가 한 것|팀원 작업과의 경계"}]
-      },
-      {
-        "key": "why",
-        "chapter": "overview",
-        "layout": "full",
-        "tab": "개요",
-        "title": {"text": "1.4 왜 이렇게 만들었나 (Why)", "verbatim": true},
-        "lead": {"text": "이 게임의 진행은 서버가 정하고, 클라이언트는 따라갑니다.", "verbatim": true},
-        "sectionPath": ["1. 프로젝트 개요", "1.4 왜 이렇게 만들었나 (Why)"],
-        "points": [],
-        "visuals": [{"kind": "table", "n": 1, "fp": "문제|구체적 상황|해결 방향"}]
-      },
-      {
-        "key": "architecture",
-        "chapter": "structure",
-        "layout": "visual",
-        "tab": "구조",
-        "title": {"text": "2.2 아키텍처", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["2. 시스템 구조", "2.2 아키텍처"],
-        "points": [
-          {"label": "", "text": "실선은 직접 호출, 점선은 이벤트(구독한 쪽이 받음)입니다.", "verbatim": true},
-          {"label": "", "text": "서버와 주고받는 길은 `LiarClient` 하나뿐이고, UI·연출·팀원 시스템은 서버를 직접 알지 않습니다.", "verbatim": true}
-        ],
-        "visuals": [{"kind": "mermaid", "n": 1, "fp": "flowchart TB"}]
-      },
-      {
-        "key": "rules",
-        "chapter": "structure",
-        "layout": "overview",
-        "tab": "구조",
-        "title": {"text": "2.3 설계 규칙", "verbatim": true},
-        "lead": {"text": "구조 전체를 관통하는 규칙은 네 가지입니다.", "verbatim": true},
-        "sectionPath": ["2. 시스템 구조", "2.3 설계 규칙"],
-        "points": [
-          {
-            "label": "On · Do · Request로 나눈다",
-            "text": "`LiarClient`의 함수는 서버에서 온 것을 처리하는 `On…`, 클라이언트 안에서 처리하는 `Do…`, 서버로 보내는 `Request…` 셋 중 하나다",
-            "verbatim": false
-          },
-          {
-            "label": "진행은 서버가 정하고, 상태 값은 한 곳에서만 쓴다",
-            "text": "현재 상태·제한시간·사이클·라운드는 `{ get; private set; }`이고, 쓰는 곳은 `DoSetPhase` 하나다.",
-            "verbatim": true
-          },
-          {
-            "label": "UI는 상태가 바뀌는 순간에만 부른다",
-            "text": "매 프레임 읽는 것은 시간·입력에 따라 변하는 것(타이머, TAB, 라밍아웃 버튼의 '남은 3초' 조건)뿐이다.",
-            "verbatim": true
-          },
-          {
-            "label": "연출은 서버가 확정한 순간에 붙인다",
-            "text": "조명·BGM·SFX는 로컬 입력이 아니라 서버 메시지 핸들러에서 부른다. 4명이 같은 순간에 같은 연출을 본다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": []
-      },
-      {
-        "key": "dispatch",
-        "chapter": "turn",
-        "layout": "visual",
-        "tab": "흐름",
-        "title": {"text": "3.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "받은 메시지는 두 번 나뉩니다.", "verbatim": true},
-        "sectionPath": ["3. 턴 메시지 처리", "3.1 문제와 구조"],
-        "points": [
-          {
-            "label": "",
-            "text": "09.02에 서버(김민성 님)가 턴 상태를 `TurnMessage` 하나로 통합했고, 저는 클라이언트를 이 구조에 맞춰 다시 짰습니다",
-            "verbatim": false
-          },
-          {"label": "09.01까지", "text": "`Handle`의 한글 문자열 `case` 34개", "verbatim": true},
-          {
-            "label": "09.02부터",
-            "text": "`Handle`은 메시지 종류 14개만, 턴 상태는 `ParseNetworkManager`가 enum으로 분기",
-            "verbatim": true
-          }
-        ],
-        "visuals": [{"kind": "mermaid", "n": 1, "fp": "flowchart LR"}]
-      },
-      {
-        "key": "handler",
-        "chapter": "turn",
-        "layout": "code",
-        "tab": "구현",
-        "title": {"text": "3.2 사용법", "verbatim": true},
-        "lead": {"text": "핸들러는 모두 같은 순서를 따릅니다.", "verbatim": true},
-        "sectionPath": ["3. 턴 메시지 처리", "3.2 사용법"],
-        "points": [
-          {"label": "", "text": "① `DoSetPhase`로 공통 값 기록 → ② 팀원 시스템 → ③ 조명 → ④ UI → ⑤ 사운드.", "verbatim": true},
-          {
-            "label": "",
-            "text": "`LiarClient`에 `On…State` 핸들러를 만들고, `SubAllEvents`·`UnSubAllEvents`에 구독·해제를 한 줄씩 넣는다.",
-            "verbatim": true
-          }
-        ],
-        "visuals": [{"kind": "code", "n": 1, "fp": "// LiarClient.cs — 지목 상태. 이 상태가 할 일을 정해진 순서로 부른다"}]
-      },
-      {
-        "key": "turn-choice",
-        "chapter": "turn",
-        "layout": "overview",
-        "tab": "선택",
-        "title": {"text": "3.4 고민과 선택", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["3. 턴 메시지 처리", "3.4 고민과 선택"],
-        "points": [
-          {
-            "label": "결정 1. 씬이 바뀌어도 `LiarClient`를 어떻게 살려 둘까? (08.28)",
-            "text": "살아남는 객체를 `LiarClient`·`CommonUIManager`·`SoundManager`로 한정하고 나머지를 씬과 함께 버리는 쪽이 단순했습니다.",
-            "verbatim": false
-          },
-          {
-            "label": "결정 2. 서버와 다른 JSON 라이브러리를 쓸까? (09.02)",
-            "text": "클라이언트는 서버가 보내는 여러 모양의 메시지를 받아 읽는 쪽이라, 엄격하게 읽기보다 유연하게 파싱하는 쪽이 맞다고 판단했습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "이유",
-            "text": "이 프로토콜은 사용자 ID 하나에도 `ID`·`Id`·`UserID`·`UserId`·`senderId`처럼 표기가 다섯 가지로 섞여 있어",
-            "verbatim": false
-          }
-        ],
-        "visuals": []
       },
       {
         "key": "ui-history",
         "chapter": "ui",
         "layout": "full",
         "tab": "구조",
-        "title": {"text": "4.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "UI 구조는 두 번 바뀌었습니다.", "verbatim": true},
-        "sectionPath": ["4. UI 구조 리빌딩", "4.1 문제와 구조"],
-        "points": [],
-        "visuals": [{"kind": "table", "n": 1, "fp": "시기|방식|한계"}]
+        "title": {
+          "text": "6.1 공통 UI만 씬을 넘고, 나머지는 씬과 함께 생기고 사라진다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "UI 구조는 두 번 바뀌었습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. UI 구조 다시 짜기",
+          "6.1 공통 UI만 씬을 넘고, 나머지는 씬과 함께 생기고 사라진다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "Canvas 하나로는 씬마다 UI를 끄는 조건이 계속 늘어, 타이머·채팅처럼 장면을 넘어 이어져야 하는 것만 공통 UI로 두고 나머지는 쓰는 씬에 넣었습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "단계 (§3 일정 표)|방식|한계"
+          }
+        ]
+      },
+      {
+        "key": "ui-managers",
+        "chapter": "ui",
+        "layout": "visual",
+        "tab": "구조",
+        "title": {
+          "text": "6.1 공통 UI만 씬을 넘고, 나머지는 씬과 함께 생기고 사라진다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "회의실 상태 17종의 화면은 모두 `MeetingRoomUIManager`가 맡습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. UI 구조 다시 짜기",
+          "6.1 공통 UI만 씬을 넘고, 나머지는 씬과 함께 생기고 사라진다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "라이어게임의 UI는 거의 전부 '지금 상태'에 따라 켜지고 꺼집니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          }
+        ]
       },
       {
         "key": "ui-choice",
         "chapter": "ui",
-        "layout": "overview",
+        "layout": "full",
         "tab": "선택",
-        "title": {"text": "4.4 고민과 선택", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["4. UI 구조 리빌딩", "4.4 고민과 선택"],
+        "title": {
+          "text": "6.2 UI는 상태가 바뀌는 순간에만 부르고, 받은 값을 그리기만 한다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "UI를 언제 갱신할지 두 방법을 견줬습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. UI 구조 다시 짜기",
+          "6.2 UI는 상태가 바뀌는 순간에만 부르고, 받은 값을 그리기만 한다"
+        ],
         "points": [
           {
-            "label": "결정 1. UI를 언제 갱신할까?",
-            "text": "패널을 켜고 끄는 일은 상태가 바뀌는 순간에만 일어나므로 대안 B로, 타이머처럼 한 상태 안에서도 계속 바뀌는 값은 대안 A로 남겼습니다",
+            "label": "",
+            "text": "패널을 켜고 끄는 일은 상태가 바뀌는 순간에만 일어나므로 대안 B로, 타이머처럼 한 상태 안에서도 계속 바뀌는 값은 대안 A로 남겼습니다.",
             "verbatim": true
           },
           {
-            "label": "결정 2. UI를 어떻게 묶을까?",
-            "text": "타이머·채팅처럼 장면을 넘어 이어져야 하는 것만 공통으로 두고, 나머지는 쓰는 씬에 넣었습니다.",
+            "label": "",
+            "text": "한 번에 하나만 보이는 공지는 모두 '모든 공지 끄기'(`HideAllPanels()`)로 시작해 이전 공지를 끄는 것을 잊을 수 없게 했습니다.",
+            "verbatim": false
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|A. 매 프레임 상태를 보고 판단한다 (폴링, 리팩터링 전)|B. 상태에 들어오는 순간 UI 함수를 부른다 (리팩터링 뒤)"
+          }
+        ]
+      },
+      {
+        "key": "score-tally",
+        "chapter": "ui",
+        "layout": "visual",
+        "tab": "흐름",
+        "title": {
+          "text": "6.2 UI는 상태가 바뀌는 순간에만 부르고, 받은 값을 그리기만 한다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "점수 목록은 '키워드 맞춤 종료'부터 '점수 집계'까지 두 상태에 걸쳐 보여야 합니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. UI 구조 다시 짜기",
+          "6.2 UI는 상태가 바뀌는 순간에만 부르고, 받은 값을 그리기만 한다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "두 상태에 걸치는 패널은 '켜는 상태'와 '끄는 상태'만 정하면 됩니다.",
             "verbatim": true
           },
           {
-            "label": "결정 3. UI는 표시할 값을 어디서 얻을까? (09.08 ~ 09.09)",
-            "text": "UI는 받은 값을 그리기만 한다. 같은 값을 어디서 가공할지가 `LiarClient` 한 곳으로 정해진다.",
+            "label": "",
+            "text": "매 프레임 비교하던 조건식이 사라지고, 점수 정렬도 점수가 도착하는 두 상태에서 한 번씩만 합니다.",
             "verbatim": true
           }
         ],
-        "visuals": []
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "sequenceDiagram"
+          }
+        ]
+      },
+      {
+        "key": "tab-info",
+        "chapter": "ui",
+        "layout": "problem",
+        "tab": "문제 해결",
+        "title": {
+          "text": "6.3 TAB 정보창은 뒤집지 않고 매번 계산한다",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "6. UI 구조 다시 짜기",
+          "6.3 TAB 정보창은 뒤집지 않고 매번 계산한다"
+        ],
+        "points": [
+          {
+            "label": "문제",
+            "text": "가끔 TAB을 누르지 않았는데도 정보창이 켜진 채 남았습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "원인",
+            "text": "누름·뗌 중 하나만 놓쳐도 그때부터 켜짐·꺼짐이 반대로 고정됩니다.",
+            "verbatim": true
+          },
+          {
+            "label": "해결",
+            "text": "상태를 쌓지 않고, 매 프레임 '지금 TAB이 눌려 있는가'로 계산합니다.",
+            "verbatim": true
+          },
+          {
+            "label": "결과",
+            "text": "고친 뒤로 같은 문제가 다시 생기지 않았습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// 수정 전 — 누를 때 뒤집고, 뗄 때 다시 뒤집는다 (한 번만 놓쳐도 반대로 고정)"
+          }
+        ]
       },
       {
         "key": "chat-flow",
         "chapter": "chat",
         "layout": "full",
-        "tab": "흐름",
-        "title": {"text": "5.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "입력창은 하나입니다(팀 기획 규칙). 플레이어가 종류를 고르지 않아도, 같은 Enter가 상황에 따라 다른 채팅이 되어야 합니다.", "verbatim": true},
-        "sectionPath": ["5. 채팅 3종 자동 판별", "5.1 문제와 구조"],
+        "tab": "구조",
+        "title": {
+          "text": "7. 채팅 3종 자동 판별",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "발언·지목·라이어 발언처럼 상황에 맞게 채팅 종류를 나누고 그 기록을 남겨, 다른 플레이어가 무슨 말을 했는지 다시 볼 수 있게 했습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "7. 채팅 3종 자동 판별"
+        ],
         "points": [],
-        "visuals": [{"kind": "mermaid", "n": 1, "fp": "sequenceDiagram"}]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "종류|언제 · 누가|보이는 곳|기록"
+          }
+        ]
+      },
+      {
+        "key": "chat-screen",
+        "chapter": "chat",
+        "layout": "visual",
+        "tab": "결과",
+        "title": {
+          "text": "7. 채팅 3종 자동 판별",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "7. 채팅 3종 자동 판별"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "입력창은 하나이고, 보내기 버튼과 Enter가 모두 `Say(text)` 하나만 부릅니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "입력창 하나에서 '발언자의 첫 마디 = 특수채팅', '라이어의 첫 마디 = 키워드채팅'이 되는 것은 팀 기획 규칙이고, 제가 정한 것은 이 규칙을 어디에서 판단할지였습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "image",
+            "src": "images/08_chat_vote.png",
+            "w": 720,
+            "h": 500,
+            "caption": {
+              "text": "투표 상태의 회의실. 왼쪽 아래 채팅창에 [키워드]·[특수]·일반 채팅이 보낸 사람의 색으로 섞여 있고, 내가 보낸 줄에는 (나)가 붙는다. 가운데 투표 창은 팀원 작업",
+              "verbatim": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "chat-choice",
+        "chapter": "chat",
+        "layout": "full",
+        "tab": "선택",
+        "title": {
+          "text": "7. 채팅 3종 자동 판별",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "두 곳을 견줬습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "7. 채팅 3종 자동 판별"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "`Say` 한 곳에서 판단하는 쪽(B)을 골랐습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "보내기 버튼과 Enter가 모두 `Say` 하나를 부르고, 기획 규칙이 바뀌어도 `Say`만 고치면 됩니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "|A. 입력 UI가 판단한다 (CommonUIManager가 상태를 보고 보낼 함수를 고른다)|B. LiarClient.Say 한 곳에서 판단한다 (UI는 글만 넘긴다) ✓"
+          }
+        ]
       },
       {
         "key": "chat-say",
         "chapter": "chat",
         "layout": "code",
         "tab": "구현",
-        "title": {"text": "① `Say`: 보낼 때 종류를 정한다", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["5. 채팅 3종 자동 판별", "5.3 핵심 동작"],
+        "title": {
+          "text": "7. 채팅 3종 자동 판별",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "`Say` 앞부분은 세 조건(발언 상태 · 내가 발언자 · 아직 안 보냄)이 모두 맞으면 특수채팅으로 보냅니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "7. 채팅 3종 자동 판별"
+        ],
         "points": [
           {
             "label": "",
-            "text": "판단에 쓰는 값(`CurrentState`, `CurrentOwnerID`, `LiarId`)은 모두 서버가 보낸 값입니다. 클라이언트가 따로 추측하지 않습니다.",
+            "text": "판단에 쓰는 값(지금 상태, 발언자, 라이어)은 모두 서버가 보낸 값입니다.",
             "verbatim": true
           },
-          {"label": "", "text": "보내는 순간 플래그를 세우므로, 서버 응답을 기다리는 사이 Enter를 연달아 눌러도 두 번째부터는 일반채팅이 됩니다.", "verbatim": true}
+          {
+            "label": "",
+            "text": "보내는 순간 플래그를 세우므로, 서버 응답을 기다리는 사이 Enter를 연달아 눌러도 두 번째부터는 일반채팅이 됩니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "이어지는 부분은 같은 모양으로 키워드채팅 조건(키워드 맞춤 상태 · 내가 라이어 · 아직 안 보냄)을 확인하고, 어느 조건에도 맞지 않으면 일반채팅으로 보냅니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
           {
             "kind": "code",
             "n": 1,
-            "lines": [7, 24],
             "fp": "// LiarClient.cs — 지금이 어떤 채팅을 보낼 차례인지 알아서 판단해서 보낸다. 로비가 이거 하"
+          }
+        ]
+      },
+      {
+        "key": "fx-map",
+        "chapter": "fx",
+        "layout": "full",
+        "tab": "구조",
+        "title": {
+          "text": "8.1 조명과 소리는 그 상태의 주인공을 따라간다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "조명·사운드 매니저(백성현 님)는 '어떻게 켜는지'를 갖고 있었고, 저는 언제, 누구에게, 무엇을 켤지를 턴 흐름에 맞춰 연결했습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.1 조명과 소리는 그 상태의 주인공을 따라간다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "연출은 모두 `LiarClient`의 상태 핸들러와 서버가 확정한 메시지에서 부릅니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "받은 상태 · 메시지|조명|BGM|SFX"
           }
         ]
       },
@@ -783,75 +1542,153 @@
         "chapter": "fx",
         "layout": "full",
         "tab": "결과",
-        "title": {"text": "6.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "연출은 모두 `LiarClient`의 상태 핸들러와 서버가 확정한 메시지에서 부릅니다.", "verbatim": true},
-        "sectionPath": ["6. 조명·사운드 연출 연결", "6.1 문제와 구조"],
+        "title": {
+          "text": "8.1 조명과 소리는 그 상태의 주인공을 따라간다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "회의실에서는 4명이 한 테이블에 둘러앉아 있어, 화면만 봐서는 지금 누가 말하는지, 누가 지목됐는지 알기 어렵습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.1 조명과 소리는 그 상태의 주인공을 따라간다"
+        ],
         "points": [],
-        "visuals": [{"kind": "table", "n": 2, "fp": "발언자|지목 (스킵 버튼)|라이어 (라밍아웃)"}]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "발언자|지목 (스킵 버튼)|라이어 (라밍아웃)"
+          }
+        ]
       },
       {
-        "key": "misc",
-        "chapter": "misc",
-        "layout": "overview",
+        "key": "spotlight",
+        "chapter": "fx",
+        "layout": "visual",
         "tab": "구현",
-        "title": {"text": "7. 기타 구현", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["7. 기타 구현"],
+        "title": {
+          "text": "8.2 조명은 바뀔 때마다 0에서 다시 밝아진다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "조명 함수는 주변을 어둡게 한 뒤, 대상 위 스포트라이트를 밝기 0에서 목표 밝기(650)까지 올립니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.2 조명은 바뀔 때마다 0에서 다시 밝아진다"
+        ],
         "points": [
-          {"label": "라밍아웃", "text": "발언 상태 + 남은 시간 3초 초과 + 이번 라운드에 아직 안 누름일 때만 버튼이 보인다.", "verbatim": true},
           {
-            "label": "최종 결과 → 로비",
-            "text": "`Invoke(\"…\")` 대신 `UniTask.Delay`(+ `destroyCancellationToken`)로 기다린다.",
+            "label": "",
+            "text": "모든 조명 함수는 시작할 때 진행 중인 트윈부터 끊습니다.",
             "verbatim": true
           },
-          {"label": "방장 판정", "text": "welcome을 받을 때 방에 아무도 없었으면 방장. 게임 시작 요청은 방장만 보낸다", "verbatim": true}
+          {
+            "label": "",
+            "text": "발언자는 몇 초마다 바뀌고 지목이 스킵되면 상태가 빠르게 넘어가는데, 이전 트윈이 살아 있으면 새 대상의 밝기를 덮어쓰기 때문입니다.",
+            "verbatim": true
+          }
         ],
-        "visuals": []
+        "visuals": [
+          {
+            "kind": "image",
+            "src": "images/spotlight_tween.gif",
+            "w": 800,
+            "h": 450,
+            "caption": {
+              "text": "발언자가 바뀌는 순간: 이전 발언자의 조명이 꺼지고 다음 발언자 머리 위 스포트라이트가 0에서 밝아진다",
+              "verbatim": true
+            }
+          }
+        ]
       },
       {
-        "key": "merge-case",
-        "chapter": "collab",
-        "layout": "problem",
-        "tab": "문제 해결",
-        "title": {"text": "8.3 사례: 08.30 병합 이력 정리", "verbatim": true},
-        "lead": null,
-        "sectionPath": ["8. 협업과 병합", "8.3 사례: 08.30 병합 이력 정리"],
-        "points": [
-          {"label": "문제", "text": "되돌리기가 겹치면서 어느 시점의 파일이 맞는지 알 수 없을 만큼 이력이 꼬였습니다.", "verbatim": false},
-          {"label": "원인", "text": "① 서로의 개인 브랜치를 직접 합쳐, 상대의 '작업 중'인 변경까지 함께 들어왔습니다.", "verbatim": true},
-          {"label": "해결", "text": "꼬인 병합 구간을 이력에서 걷어 내고, 파일 상태를 문제가 생기기 전의 한 시점과 똑같이 맞췄습니다.", "verbatim": true},
-          {"label": "결과", "text": "이후 되돌리기가 필요한 병합은 없었지만, 충돌 자체는 계속 났습니다(8.4).", "verbatim": true}
+        "key": "light-values",
+        "chapter": "fx",
+        "layout": "full",
+        "tab": "선택",
+        "title": {
+          "text": "8.2 조명은 바뀔 때마다 0에서 다시 밝아진다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "테이블 조명과 라이어 조명(본인 추가)도 같은 틀에서 위치·반경·색·목표 밝기만 다릅니다(값은 아래 표).",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.2 조명은 바뀔 때마다 0에서 다시 밝아진다"
         ],
-        "visuals": [{"kind": "table", "n": 1, "fp": "기간|방식|결과", "sectionPath": ["8. 협업과 병합", "8.2 브랜치 운영의 변화"]}]
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "조절값 (LightManager 인스펙터)|값|이렇게 정한 이유"
+          }
+        ]
       },
       {
         "key": "ts-light",
-        "chapter": "result",
+        "chapter": "fx",
         "layout": "problem",
         "tab": "문제 해결",
-        "title": {"text": "지목이 스킵되면 각자 화면에서 '자기 캐릭터'에 조명이 켜지던 문제", "verbatim": false},
+        "title": {
+          "text": "8.3 스킵이면 테이블을 비춘다",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["9. 결과 및 배운 점", "9.2 문제 해결 경험"],
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.3 스킵이면 테이블을 비춘다"
+        ],
         "points": [
-          {"label": "문제", "text": "지목이 스킵되면 4명의 화면에서 저마다 자기 캐릭터에 스포트라이트가 켜졌습니다.", "verbatim": true},
+          {
+            "label": "문제",
+            "text": "지목이 스킵되면 4명의 화면에서 저마다 자기 캐릭터에 스포트라이트가 켜졌습니다.",
+            "verbatim": true
+          },
           {
             "label": "원인",
-            "text": "조명 위치를 주는 `GetPointPivot`은 \"원격 플레이어 목록에 없으면 나\"를 돌려주게 되어 있어, 빈 ID가 '나'로 해석됐습니다.",
-            "verbatim": false
+            "text": "지목이 스킵되거나 동률이면 서버는 최다 지목자로 빈 문자열을 보냅니다. 그런데 조명 위치를 주는 함수는 \"원격 플레이어 목록에 없으면 나\"를 돌려주게 되어 있어, 빈 ID가 '나'로 해석됐습니다.",
+            "verbatim": true
           },
-          {"label": "해결", "text": "스킵이면 조명 대상을 찾지 않고 테이블 조명으로 바꿨습니다.", "verbatim": true},
-          {"label": "배운 점", "text": "'없으면 기본값'을 돌려주는 함수는 부르는 쪽이 '없음'을 먼저 걸러야 합니다.", "verbatim": true}
+          {
+            "label": "해결",
+            "text": "스킵이면 조명 대상을 찾지 않고 테이블 조명으로 바꿨습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "결과",
+            "text": "고친 뒤 빌드 테스트에서, 지목이 스킵되면 4명 화면 모두 테이블 조명이 켜지는 것을 확인했습니다.",
+            "verbatim": true
+          }
         ],
-        "visuals": [{"kind": "code", "n": 1, "fp": "// 수정 전 — 스킵이면 mostSelectedId == \"\" → GetPointPivot(\"\")이 내 p"}]
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// 수정 전 — 스킵이면 mostSelectedId == \"\" → GetPointPivot(\"\")이 내 p"
+          }
+        ]
       },
       {
         "key": "ts-sfx",
-        "chapter": "result",
+        "chapter": "fx",
         "layout": "problem",
         "tab": "문제 해결",
-        "title": {"text": "지목 단계 내내 효과음이 지지직 깨지던 문제", "verbatim": false},
+        "title": {
+          "text": "8.4 소리는 서버가 확정한 순간에 한 번",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["9. 결과 및 배운 점", "9.2 문제 해결 경험"],
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.4 소리는 서버가 확정한 순간에 한 번"
+        ],
         "points": [
           {
             "label": "문제",
@@ -860,15 +1697,213 @@
           },
           {
             "label": "원인",
-            "text": "같은 날 오후 제가 효과음 호출을 지목 입력 함수(`PointOtherPlayer`) 끝에 넣었는데, 이 함수는 지목 단계 동안 `Update`에서 매 프레임 불립니다.",
+            "text": "제가 효과음 호출을 지목 입력 함수 끝에 넣었는데, 이 함수는 지목 단계 동안 매 프레임 불립니다.",
             "verbatim": true
           },
-          {"label": "해결", "text": "입력 함수에서 빼고, 서버가 지목을 확정해 모두에게 보내는 `OnSelect`(취소가 아닐 때)로 옮겼습니다.", "verbatim": true},
-          {"label": "결과", "text": "지목 한 번에 한 번, 4명 모두에게 같은 순간 울립니다.", "verbatim": true}
+          {
+            "label": "해결",
+            "text": "입력 함수에서 빼고, 서버가 지목을 확정해 모두에게 보내는 `OnSelect`(취소가 아닐 때)로 옮겼습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "결과",
+            "text": "고친 뒤 팀 플레이 테스트에서, 모두의 화면에서 같은 순간 울리는 것을 확인했습니다.",
+            "verbatim": true
+          }
         ],
-        "visuals": [{"kind": "code", "n": 2, "lines": [1, 19], "fp": "// 수정 전 — Vote_System.cs. 지목 단계 동안 Update가 매 프레임 부르는 함수"}]
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "sequenceDiagram"
+          }
+        ]
+      },
+      {
+        "key": "fx-choice",
+        "chapter": "fx",
+        "layout": "full",
+        "tab": "선택",
+        "title": {
+          "text": "8.4 소리는 서버가 확정한 순간에 한 번",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "이 버그를 계기로 BGM·SFX를 어디서 부를지 두 방법을 견줬습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.4 소리는 서버가 확정한 순간에 한 번"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "상태 핸들러와 서버가 확정한 메시지에서 부르는 쪽(B)을 골랐습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "팀의 사운드 배치 명세서가 '어느 턴 상태에서 어떤 BGM·SFX를 트는가'로 정리되어 있어, 명세서의 한 줄을 그 상태의 핸들러 한 곳에 그대로 옮기는 것이 가장 자연스러웠습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|A. 그 일이 일어나는 곳에서 부른다 (예: 지목 클릭을 처리하는 함수가 직접 효과음을 낸다)|B. 턴 상태 핸들러와 서버가 확정한 메시지에서 부른다 (On…State, OnSelect 등) ✓"
+          }
+        ]
+      },
+      {
+        "key": "final-light",
+        "chapter": "fx",
+        "layout": "visual",
+        "tab": "선택",
+        "title": {
+          "text": "8.5 최종 결과는 우승자가 아니라 테이블 중앙을 비춘다",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "8. 조명·사운드 연출 연결",
+          "8.5 최종 결과는 우승자가 아니라 테이블 중앙을 비춘다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "우승자 조명(동점이면 조명을 복제해 여러 명)을 먼저 만들었는데, 패배한 플레이어가 어둠 속에 남아 같은 순간 재생되는 패배 애니메이션이 보이지 않아 이틀 뒤 테이블 중앙의 넓은 조명으로 바꿨습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "최종 결과의 볼거리는 우승자 한 명이 아니라 4명의 승패 애니메이션이 동시에 갈리는 장면이라고 봤습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "약해진 우승자 강조는 승패 문구와, 내 결과에 따라 갈리는 승리/패배 BGM으로 채웠습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "image",
+            "src": "images/final_result.gif",
+            "w": 800,
+            "h": 450,
+            "caption": {
+              "text": "최종 결과: 테이블 중앙 조명 아래 4명의 승리·패배 애니메이션과 \"당신의 패배입니다\" 문구",
+              "verbatim": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "misc",
+        "chapter": "misc",
+        "layout": "full",
+        "tab": "구현",
+        "title": {
+          "text": "9. 나머지 기능",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "9. 나머지 기능"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "기능|구현 요점|이렇게 한 이유"
+          }
+        ]
+      },
+      {
+        "key": "merge-case",
+        "chapter": "collab",
+        "layout": "problem",
+        "tab": "문제 해결",
+        "title": {
+          "text": "10.1 개인 브랜치를 서로 합치면 작업 중인 변경도 들어온다",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "10. 협업과 병합",
+          "10.1 개인 브랜치를 서로 합치면 작업 중인 변경도 들어온다"
+        ],
+        "points": [
+          {
+            "label": "문제",
+            "text": "되돌리기가 겹치면서 어느 시점의 파일이 맞는지 알 수 없을 만큼 이력이 꼬였습니다.",
+            "verbatim": false
+          },
+          {
+            "label": "원인",
+            "text": "① 서로의 개인 브랜치를 직접 합쳐, 상대의 '작업 중'인 변경까지 함께 들어왔습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "해결",
+            "text": "꼬인 병합 구간을 이력에서 걷어 내고, 파일 상태를 문제가 생기기 전의 한 시점과 똑같이 맞췄습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "이후",
+            "text": "다음 날부터 팀은 작업 단위 브랜치를 `main`에 합치는 방식으로 바꿨고, 저는 한 브랜치에 한 가지 작업만 담았습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          }
+        ]
+      },
+      {
+        "key": "merge-lessons",
+        "chapter": "collab",
+        "layout": "overview",
+        "tab": "",
+        "title": {
+          "text": "10.2 영역을 나눠도 파일이 하나면 충돌은 남는다",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "10. 협업과 병합",
+          "10.2 영역을 나눠도 파일이 하나면 충돌은 남는다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "`LiarClient.cs`는 서버 메시지가 모두 지나가는 곳이라, 팀원도 자기 기능의 수신 처리를 이 파일에 넣었습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "브랜치 방식을 바꾼 뒤에도 병합 세 번에 한 번꼴로 충돌이 났고, 그 절반 이상이 `LiarClient.cs`였습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "브랜치 전략만으로는 부족하고 파일의 책임을 나눠야 한다는 뜻이라, 11장 과제 표의 첫 과제로 남겼습니다.",
+            "verbatim": false
+          },
+          {
+            "label": "",
+            "text": "필드 이름이 곧 계약이라, 향후에는 프로토콜 정의를 서버·클라이언트가 함께 참조하는 공용 프로젝트(또는 패키지) 하나로 두는 것이 맞다고 봅니다.",
+            "verbatim": false
+          }
+        ],
+        "visuals": []
       }
-    ],
-    "applied": "08c7bba7fa611a65"
+    ]
   }
 }

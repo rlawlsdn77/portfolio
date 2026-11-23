@@ -5,14 +5,38 @@
   "title": "SHIFTER",
   "tagline": "Shift 키 하나로 캐릭터의 색을 흰색 ↔ 검은색으로 바꾸면, 밟을 수 있는 발판과 맞는 총알이 한꺼번에 뒤집히는 2D 퍼즐 플랫포머",
   "cover": "images/01_cover.png",
-  "team": { "type": "solo", "size": "1인", "role": "" },
+  "team": {
+    "type": "solo",
+    "size": "1인",
+    "role": ""
+  },
   "meta": [
-    { "label": "장르", "value": "2D 퍼즐 플랫포머" },
-    { "label": "기간", "value": "2026.06.24 ~ 2026.07.10" },
-    { "label": "인원", "value": "1인 개인 프로젝트" },
-    { "label": "환경", "value": "Unity 6 (6000.3.15f1), URP 2D · C#" }
+    {
+      "label": "장르",
+      "value": "2D 퍼즐 플랫포머"
+    },
+    {
+      "label": "기간",
+      "value": "2026.06.24 ~ 2026.07.10"
+    },
+    {
+      "label": "인원",
+      "value": "1인 개인 프로젝트"
+    },
+    {
+      "label": "환경",
+      "value": "Unity 6 (6000.3.15f1), URP 2D · C#"
+    }
   ],
-  "tags": ["Unity 6", "C#", "URP 2D", "Physics2D", "키네마틱 이동", "레이캐스트", "Input System"],
+  "tags": [
+    "Unity 6",
+    "C#",
+    "URP 2D",
+    "Physics2D",
+    "키네마틱 이동",
+    "레이캐스트",
+    "Input System"
+  ],
   "links": {
     "github": "https://github.com/rlawlsdn77/Unity-2D-Shifter",
     "video": "",
@@ -37,7 +61,12 @@
       "how": "매 프레임 레이캐스트로 경로를 이어 붙이고 거울에 맞으면 반사해 다시 쏜다. 레이캐스트는 꺼진 콜라이더를 보지 못해, 색을 확인하는 갈림길 없이 색 규칙을 따른다",
       "why": "빛 알갱이를 날려 물리로 튕기게 하면 같은 각도로 쏴도 경로가 달라질 수 있어 레이캐스트로 경로를 이어 붙였고, 센서에 닿았는지도 경로의 끝점만 보면 된다",
       "section": "4.4 꺼진 발판은 빛도 지나간다",
-      "image": { "src": "images/laser.gif", "w": 960, "h": 540, "caption": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다" }
+      "image": {
+        "src": "images/laser.gif",
+        "w": 960,
+        "h": 540,
+        "caption": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다"
+      }
     },
     {
       "title": "거꾸로 쓰는 색 규칙: 크러셔 벽",
@@ -45,7 +74,12 @@
       "how": "벽은 초당 10유닛으로 캐릭터(초당 8)보다 빨라 도망칠 수 없고, Shift 쿨타임 1초가 벽 간격 1.2초보다 짧아 벽마다 색을 맞출 수는 있다(코드 기본값 초당 3 · 0.7초 · 2초에서 플레이해 보며 맞춘 값)",
       "why": "처음 코드 기본값에서는 벽이 느려 피해 달아날 수 있어, Shift를 적극적으로 써서 기믹을 풀게 하려고 벽을 캐릭터보다 빠르게 바꿔 도망칠 수 없게 했다",
       "section": "5.1 같은 색이면 지나가고, 다르면 끌려간다",
-      "image": { "src": "images/crusher.gif", "w": 960, "h": 540, "caption": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면" }
+      "image": {
+        "src": "images/crusher.gif",
+        "w": 960,
+        "h": 540,
+        "caption": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면"
+      }
     },
     {
       "title": "공격은 자기 총알을 스스로 치운다",
@@ -64,7 +98,7 @@
       "solution": "벽 콜라이더를 끄고 그림의 사각형으로 겹침을 직접 확인해, 벽이 움직인 만큼 `AddExternalMovement`로 캐릭터를 밀게 했다. 실제 이동은 `CharacterController2D`가 막힘을 잰 뒤에 한다",
       "result": "다른 색 벽에 걸리면 벽과 함께 끝 지점까지 밀려가고, 그 사이 Shift로 같은 색이 되면 그 자리에서 벽이 몸을 지나간다(플레이로 확인)",
       "lesson": "",
-      "section": "5.2 벽 콜라이더를 끄고 직접 민다"
+      "section": "5.2 벽에 걸린 캐릭터는 벽이 직접 민다"
     },
     {
       "title": "왼쪽을 보면 닿는 위치가 그림과 어긋나던 문제",
@@ -73,7 +107,7 @@
       "solution": "부모째 좌우로 뒤집어 그림과 콜라이더가 함께 뒤집히게 했다",
       "result": "왼쪽을 보고 벽·발판에 붙어도 그림과 닿는 위치가 맞는다(플레이로 확인)",
       "lesson": "",
-      "section": "7.2 부모째 뒤집어 콜라이더도 함께"
+      "section": "7.2 왼쪽을 보면 닿는 위치가 어긋나던 문제"
     },
     {
       "title": "고친 빌드 에러가 리팩토링에서 되살아난 문제",
@@ -86,12 +120,42 @@
     }
   ],
   "screenshots": [
-    { "src": "images/02_ingame.png", "w": 1920, "h": 1080, "caption": "STAGE 2, 흰색 상태" },
-    { "src": "images/shift.gif", "w": 960, "h": 540, "caption": "회색에서 Shift로 흰색이 되어 흰 발판에 올라서고, 검은색이 되면 그 발판이 꺼져 아래로 빠집니다" },
-    { "src": "images/laser.gif", "w": 960, "h": 540, "caption": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다" },
-    { "src": "images/crusher.gif", "w": 960, "h": 540, "caption": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면" },
-    { "src": "images/boss_eruption.gif", "w": 640, "h": 360, "caption": "운석 공격" },
-    { "src": "images/boss_groggy.gif", "w": 960, "h": 540, "caption": "보스 앞 발판에서 2단 점프로 약점을 밟자 보스 체력 바가 한 칸 줄어듭니다(3 → 2)" }
+    {
+      "src": "images/02_ingame.png",
+      "w": 1920,
+      "h": 1080,
+      "caption": "STAGE 2, 흰색 상태"
+    },
+    {
+      "src": "images/shift.gif",
+      "w": 960,
+      "h": 540,
+      "caption": "회색에서 Shift로 흰색이 되어 흰 발판에 올라서고, 검은색이 되면 그 발판이 꺼져 아래로 빠집니다"
+    },
+    {
+      "src": "images/laser.gif",
+      "w": 960,
+      "h": 540,
+      "caption": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다"
+    },
+    {
+      "src": "images/crusher.gif",
+      "w": 960,
+      "h": 540,
+      "caption": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면"
+    },
+    {
+      "src": "images/boss_eruption.gif",
+      "w": 640,
+      "h": 360,
+      "caption": "운석 공격"
+    },
+    {
+      "src": "images/boss_groggy.gif",
+      "w": 960,
+      "h": 540,
+      "caption": "보스 앞 발판에서 2단 점프로 약점을 밟자 보스 체력 바가 한 칸 줄어듭니다(3 → 2)"
+    }
   ],
   "retro": {
     "section": "9. 돌아보며",
@@ -111,14 +175,62 @@
   },
   "deck": {
     "chapters": [
-      { "key": "overview", "title": "게임 소개", "sectionPath": ["1. 게임 소개"] },
-      { "key": "flow", "title": "한 판의 흐름", "sectionPath": ["2. 한 판의 흐름"] },
-      { "key": "structure", "title": "전체 구조", "sectionPath": ["3. 전체 구조"] },
-      { "key": "shift", "title": "색 규칙: Shift 한 번이 바꾸는 것", "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것"] },
-      { "key": "crusher-wall", "title": "거꾸로 쓰는 색 규칙: 크러셔 벽", "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽"] },
-      { "key": "boss", "title": "보스전", "sectionPath": ["6. 보스전"] },
-      { "key": "move", "title": "캐릭터 이동과 카메라", "sectionPath": ["7. 캐릭터 이동과 카메라"] },
-      { "key": "others", "title": "나머지 기능", "sectionPath": ["8. 나머지 기능"] }
+      {
+        "key": "overview",
+        "title": "게임 소개",
+        "sectionPath": [
+          "1. 게임 소개"
+        ]
+      },
+      {
+        "key": "flow",
+        "title": "한 판의 흐름",
+        "sectionPath": [
+          "2. 한 판의 흐름"
+        ]
+      },
+      {
+        "key": "structure",
+        "title": "전체 구조",
+        "sectionPath": [
+          "3. 전체 구조"
+        ]
+      },
+      {
+        "key": "shift",
+        "title": "색 규칙: Shift 한 번이 바꾸는 것",
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것"
+        ]
+      },
+      {
+        "key": "crusher-wall",
+        "title": "거꾸로 쓰는 색 규칙: 크러셔 벽",
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽"
+        ]
+      },
+      {
+        "key": "boss",
+        "title": "보스전",
+        "sectionPath": [
+          "6. 보스전"
+        ]
+      },
+      {
+        "key": "move",
+        "title": "캐릭터 이동과 카메라",
+        "sectionPath": [
+          "7. 캐릭터 이동과 카메라"
+        ]
+      },
+      {
+        "key": "others",
+        "title": "나머지 기능",
+        "sectionPath": [
+          "8. 나머지 기능"
+        ]
+      }
     ],
     "slides": [
       {
@@ -126,16 +238,70 @@
         "chapter": "overview",
         "layout": "overview",
         "tab": "개요",
-        "title": { "text": "1. 게임 소개", "verbatim": true },
-        "lead": { "text": "SHIFTER는 캐릭터의 색을 흰색과 검은색으로 바꿔 가며 스테이지를 통과하는 2D 플랫포머입니다.", "verbatim": true },
-        "sectionPath": ["1. 게임 소개"],
+        "title": {
+          "text": "1. 게임 소개",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "SHIFTER는 캐릭터의 색을 흰색과 검은색으로 바꿔 가며 스테이지를 통과하는 2D 플랫포머입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "1. 게임 소개"
+        ],
         "points": [
-          { "label": "이유", "text": "이동과 공격만 있는 게임에서는 키를 눌러도 캐릭터 하나가 움직일 뿐이라, 입력에 비해 돌아오는 변화의 크기가 작다고 판단했습니다.", "verbatim": true },
-          { "label": "", "text": "목표한 경험은 \"색을 고르는 키 한 번으로 그 색의 길과 위험을 함께 떠안아, 작은 입력이 눈앞의 판 전체를 바꾸는 경험\" 입니다.", "verbatim": true },
-          { "label": "", "text": "Outland에서는 내 색과 같은 총알이 무해하지만, SHIFTER는 반대로 같은 색 총알에 맞습니다.", "verbatim": true }
+          {
+            "label": "이유",
+            "text": "이동과 공격만 있는 게임에서는 키를 눌러도 캐릭터 하나가 움직일 뿐이라, 입력에 비해 돌아오는 변화의 크기가 작다고 판단했습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "목표한 경험은 \"색을 고르는 키 한 번으로 그 색의 길과 위험을 함께 떠안아, 작은 입력이 눈앞의 판 전체를 바꾸는 경험\" 입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "Outland에서는 내 색과 같은 총알이 무해하지만, SHIFTER는 반대로 같은 색 총알에 맞습니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/outland.jpg", "w": 1920, "h": 1080, "caption": { "text": "빨간색 캐릭터 왼쪽에 파란 탄막, 오른쪽에 빨간 탄막이 있다", "verbatim": true } }
+          {
+            "kind": "image",
+            "src": "images/outland.jpg",
+            "w": 1920,
+            "h": 1080,
+            "caption": {
+              "text": "빨간색 캐릭터 왼쪽에 파란 탄막, 오른쪽에 빨간 탄막이 있다",
+              "verbatim": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "stages",
+        "chapter": "flow",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {
+          "text": "2. 한 판의 흐름",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "메뉴에서 시작해 STAGE 1 → STAGE 2 → 보스전을 차례로 지나면 한 판이 끝납니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "2. 한 판의 흐름"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "STAGE 1|STAGE 2|STAGE BOSS"
+          }
         ]
       },
       {
@@ -143,46 +309,125 @@
         "chapter": "flow",
         "layout": "visual",
         "tab": "흐름",
-        "title": { "text": "2. 한 판의 흐름", "verbatim": true },
-        "lead": { "text": "플레이어가 되풀이하는 행동은 아래 고리입니다.", "verbatim": true },
-        "sectionPath": ["2. 한 판의 흐름"],
-        "points": [
-          { "label": "", "text": "이 고리에서 Shift는 '길을 여는 열쇠'이자 '새 위험을 부르는 선택'입니다.", "verbatim": true },
-          { "label": "", "text": "쿨타임 1초 때문에 바꾼 결정을 바로 되돌릴 수도 없습니다.", "verbatim": true },
-          { "label": "", "text": "키 한 번의 결과가 화면 전체에 미치게 하려는 목표한 경험이 이 반복에서 나옵니다.", "verbatim": true }
+        "title": {
+          "text": "2. 한 판의 흐름",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "플레이어가 되풀이하는 행동은 아래 고리입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "2. 한 판의 흐름"
         ],
-        "visuals": [{ "kind": "mermaid", "n": 1, "fp": "flowchart LR" }]
+        "points": [
+          {
+            "label": "",
+            "text": "이 고리에서 Shift는 '길을 여는 열쇠'이자 '새 위험을 부르는 선택'입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "쿨타임 1초 때문에 바꾼 결정을 바로 되돌릴 수도 없습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "키 한 번의 결과가 화면 전체에 미치게 하려는 목표한 경험이 이 반복에서 나옵니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          }
+        ]
       },
       {
         "key": "architecture",
         "chapter": "structure",
         "layout": "visual",
         "tab": "구조",
-        "title": { "text": "3. 전체 구조", "verbatim": true },
-        "lead": { "text": "실선은 직접 부르는 관계, 점선은 값을 읽기만 하는 관계입니다.", "verbatim": true },
-        "sectionPath": ["3. 전체 구조"],
-        "points": [
-          { "label": "", "text": "캐릭터의 색을 바꾸는 곳은 `Shifter.ShiftTag()` 하나.", "verbatim": true },
-          { "label": "", "text": "캐릭터 이동은 `CharacterController2D`만 맡는다.", "verbatim": true },
-          { "label": "", "text": "보스 공격은 자기가 만든 총알을 스스로 치운다.", "verbatim": true }
+        "title": {
+          "text": "3. 전체 구조",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "실선은 직접 부르는 관계, 점선은 값을 읽기만 하는 관계입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "3. 전체 구조"
         ],
-        "visuals": [{ "kind": "mermaid", "n": 1, "fp": "flowchart TB" }]
+        "points": [
+          {
+            "label": "",
+            "text": "캐릭터의 색을 바꾸는 곳은 `Shifter.ShiftTag()` 하나.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "캐릭터 이동은 `CharacterController2D`만 맡는다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "보스 공격은 자기가 만든 총알을 스스로 치운다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart TB"
+          }
+        ]
       },
       {
         "key": "shift-rules",
         "chapter": "shift",
         "layout": "visual",
         "tab": "구조",
-        "title": { "text": "4.1 같은 색이면 실체, 다른 색이면 허상", "verbatim": true },
+        "title": {
+          "text": "4.1 같은 색이면 실체, 다른 색이면 허상",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.1 같은 색이면 실체, 다른 색이면 허상"],
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것",
+          "4.1 같은 색이면 실체, 다른 색이면 허상"
+        ],
         "points": [
-          { "label": "", "text": "회색으로 시작하게 한 것은 Shift를 쓰게 하려는 것입니다.", "verbatim": true },
-          { "label": "", "text": "한 번 Shift한 뒤 회색으로 돌아갈 수 없게 한 것은, 회색이 어떤 총알에도 맞지 않기 때문입니다.", "verbatim": true }
+          {
+            "label": "",
+            "text": "회색으로 시작하게 한 것은 Shift를 쓰게 하려는 것입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "한 번 Shift한 뒤 회색으로 돌아갈 수 없게 한 것은, 회색이 어떤 총알에도 맞지 않기 때문입니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/shift.gif", "w": 960, "h": 540, "caption": { "text": "회색에서 Shift로 흰색이 되어 흰 발판에 올라서고, 검은색이 되면 그 발판이 꺼져 아래로 빠집니다", "verbatim": true } },
-          { "kind": "table", "n": 1, "fp": "대상|캐릭터와 같은 색|다른 색" }
+          {
+            "kind": "image",
+            "src": "images/shift.gif",
+            "w": 960,
+            "h": 540,
+            "caption": {
+              "text": "회색에서 Shift로 흰색이 되어 흰 발판에 올라서고, 검은색이 되면 그 발판이 꺼져 아래로 빠집니다",
+              "verbatim": true
+            }
+          },
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "대상|캐릭터와 같은 색|다른 색"
+          }
         ]
       },
       {
@@ -190,27 +435,94 @@
         "chapter": "shift",
         "layout": "full",
         "tab": "선택",
-        "title": { "text": "4.2 다른 색 발판은 콜라이더째 끈다", "verbatim": true },
-        "lead": { "text": "첫 구현 때 두 방법을 견줘, 나중에 만들 기능도 콜라이더를 보기만 하면 같은 색 규칙을 따르도록 이쪽을 골랐습니다.", "verbatim": true },
-        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.2 다른 색 발판은 콜라이더째 끈다"],
+        "title": {
+          "text": "4.2 다른 색 발판은 아예 없는 것이 된다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "첫 구현 때 두 방법을 견줘, 나중에 만들 기능도 콜라이더를 보기만 하면 같은 색 규칙을 따르도록 이쪽을 골랐습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것",
+          "4.2 다른 색 발판은 아예 없는 것이 된다"
+        ],
         "points": [],
-        "visuals": [{ "kind": "table", "n": 1, "fp": "|발판의 콜라이더를 끔|캐릭터 쪽에서 '무엇에 부딪힐지'만 바꿈" }]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|발판의 콜라이더를 끔|캐릭터 쪽에서 '무엇에 부딪힐지'만 바꿈"
+          }
+        ]
+      },
+      {
+        "key": "color-read",
+        "chapter": "shift",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {
+          "text": "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "Shift가 바꾸는 것은 캐릭터의 색 하나뿐이고, 발판·총알·벽·화면 표시는 각자 필요한 때에 그 색을 읽기만 합니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것",
+          "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          }
+        ]
       },
       {
         "key": "platform-collider",
         "chapter": "shift",
         "layout": "code",
         "tab": "구현",
-        "title": { "text": "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만", "verbatim": true },
-        "lead": { "text": "색은 Unity의 태그로 나타냅니다.", "verbatim": true },
-        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만"],
+        "title": {
+          "text": "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것",
+          "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만"
+        ],
         "points": [
-          { "label": "", "text": "캐릭터·발판·총알이 모두 `Common`·`White`·`Black` 중 하나를 달고, 판단은 \"태그가 같은가\"(`CompareTag`) 하나로 합니다.", "verbatim": true },
-          { "label": "", "text": "발판마다 캐릭터와 태그를 비교해 콜라이더를 켜고 끕니다.", "verbatim": true }
+          {
+            "label": "",
+            "text": "색은 Unity의 태그로 나타냅니다. 캐릭터·발판·총알이 모두 `Common`·`White`·`Black` 중 하나를 달고, 판단은 \"태그가 같은가\"(`CompareTag`) 하나로 합니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "발판마다 캐릭터와 태그를 비교해 콜라이더를 켜고 끕니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
-          { "kind": "code", "n": 1, "fp": "// Shifter.cs — 흰색이면 검은색, 그 밖(회색 포함)은 흰색" },
-          { "kind": "code", "n": 2, "lines": [8, 19], "fp": "// PlatformManager.cs" }
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// Shifter.cs — 흰색이면 검은색, 그 밖(회색 포함)은 흰색"
+          },
+          {
+            "kind": "code",
+            "n": 2,
+            "lines": [
+              8,
+              19
+            ],
+            "fp": "// PlatformManager.cs"
+          }
         ]
       },
       {
@@ -218,16 +530,69 @@
         "chapter": "shift",
         "layout": "visual",
         "tab": "흐름",
-        "title": { "text": "4.4 꺼진 발판은 빛도 지나간다", "verbatim": true },
+        "title": {
+          "text": "4.4 꺼진 발판은 빛도 지나간다",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["4. 색 규칙: Shift 한 번이 바꾸는 것", "4.4 꺼진 발판은 빛도 지나간다"],
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것",
+          "4.4 꺼진 발판은 빛도 지나간다"
+        ],
         "points": [
-          { "label": "", "text": "조준하는 동안 캐릭터는 움직일 수 없지만 Shift는 쓸 수 있습니다.", "verbatim": true },
-          { "label": "", "text": "레이캐스트는 꺼진 콜라이더를 보지 못하므로, 다른 색 발판은 빛에게도 '없는 것'이 됩니다.", "verbatim": true }
+          {
+            "label": "",
+            "text": "조준하는 동안 캐릭터는 움직일 수 없지만 Shift는 쓸 수 있습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "레이캐스트는 꺼진 콜라이더를 보지 못하므로, 다른 색 발판은 빛에게도 '없는 것'이 됩니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
-          { "kind": "mermaid", "n": 1, "fp": "flowchart LR" },
-          { "kind": "image", "src": "images/laser.gif", "w": 960, "h": 540, "caption": { "text": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다", "verbatim": true } }
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "flowchart LR"
+          },
+          {
+            "kind": "image",
+            "src": "images/laser.gif",
+            "w": 960,
+            "h": 540,
+            "caption": {
+              "text": "검은색으로 수평 조준하면 검은 발판에 막히고, 위로 옮기면 거울 3개를 거쳐 오른쪽 센서에 닿습니다",
+              "verbatim": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "laser-straight",
+        "chapter": "shift",
+        "layout": "full",
+        "tab": "결과",
+        "title": {
+          "text": "4.4 꺼진 발판은 빛도 지나간다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "오른쪽 직선 풀이는 의도하지 않은 배치 실수입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것",
+          "4.4 꺼진 발판은 빛도 지나간다"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "검은색으로 수평 조준|흰색으로 같은 수평 조준"
+          }
         ]
       },
       {
@@ -235,16 +600,95 @@
         "chapter": "crusher-wall",
         "layout": "visual",
         "tab": "결과",
-        "title": { "text": "5.1 같은 색이면 지나가고, 다르면 끌려간다", "verbatim": true },
+        "title": {
+          "text": "5.1 같은 색이면 지나가고, 다르면 끌려간다",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.1 같은 색이면 지나가고, 다르면 끌려간다"],
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
+          "5.1 같은 색이면 지나가고, 다르면 끌려간다"
+        ],
         "points": [
-          { "label": "", "text": "벽과 같은 색이면 몸이 지나가고, 다른 색이면 벽에 걸려 끝 지점까지 끌려갑니다.", "verbatim": true },
-          { "label": "", "text": "발판에서 익힌 \"같은 색 = 단단함\"을 마지막 구간에서 거꾸로 쓰게 하는 변주입니다.", "verbatim": true },
-          { "label": "", "text": "Shift를 적극적으로 써서 기믹을 풀게 하려고, 벽을 캐릭터보다 빠르게 바꿔 도망칠 수 없게 했습니다.", "verbatim": true }
+          {
+            "label": "",
+            "text": "벽과 같은 색이면 몸이 지나가고, 다른 색이면 벽에 걸려 끝 지점까지 끌려갑니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "발판에서 익힌 \"같은 색 = 단단함\"을 마지막 구간에서 거꾸로 쓰게 하는 변주입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "반투명은 '내 색과 다르다'는 표시라, 발판에서는 '지나갈 수 있다', 벽에서는 '막힌다'는 뜻이 됩니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/crusher.gif", "w": 960, "h": 540, "caption": { "text": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면", "verbatim": true } }
+          {
+            "kind": "image",
+            "src": "images/crusher.gif",
+            "w": 960,
+            "h": 540,
+            "caption": {
+              "text": "흰 벽에 밀리다가 Shift로 흰색이 되어 통과하고, 다음 검은 벽도 색을 맞춰 통과하는 장면",
+              "verbatim": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "stage2-choice",
+        "chapter": "crusher-wall",
+        "layout": "full",
+        "tab": "선택",
+        "title": {
+          "text": "5.1 같은 색이면 지나가고, 다르면 끌려간다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "Shift를 쓸 이유가 약해서 바꿨습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
+          "5.1 같은 색이면 지나가고, 다르면 끌려간다"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|흰·검 총알 개수 세기|레이저 퍼즐 + 크러셔 벽"
+          }
+        ]
+      },
+      {
+        "key": "crusher-tuning",
+        "chapter": "crusher-wall",
+        "layout": "full",
+        "tab": "선택",
+        "title": {
+          "text": "5.1 같은 색이면 지나가고, 다르면 끌려간다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "Shift를 적극적으로 써서 기믹을 풀게 하려고, 벽을 캐릭터보다 빠르게 바꿔 도망칠 수 없게 했습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
+          "5.1 같은 색이면 지나가고, 다르면 끌려간다"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "|코드 기본값|플레이해 보며 맞춘 값"
+          }
         ]
       },
       {
@@ -252,25 +696,62 @@
         "chapter": "crusher-wall",
         "layout": "full",
         "tab": "선택",
-        "title": { "text": "5.2 벽 콜라이더를 끄고 직접 민다", "verbatim": true },
-        "lead": { "text": "크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까?", "verbatim": true },
-        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.2 벽 콜라이더를 끄고 직접 민다"],
+        "title": {
+          "text": "5.2 벽에 걸린 캐릭터는 벽이 직접 민다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까?",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
+          "5.2 벽에 걸린 캐릭터는 벽이 직접 민다"
+        ],
         "points": [],
-        "visuals": [{ "kind": "table", "n": 1, "fp": "|벽을 Dynamic Rigidbody로 두고 물리로 밀기|벽 콜라이더를 켜고 이동 코드에 맡김|벽 콜라이더를 끄고 겹침을 직접 확인해 밀기" }]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|벽을 Dynamic Rigidbody로 두고 물리로 밀기|벽 콜라이더를 켜고 이동 코드에 맡김|벽 콜라이더를 끄고 겹침을 직접 확인해 밀기"
+          }
+        ]
       },
       {
         "key": "ts-crusher",
         "chapter": "crusher-wall",
         "layout": "problem",
         "tab": "문제 해결",
-        "title": { "text": "5.2 벽 콜라이더를 끄고 직접 민다", "verbatim": true },
+        "title": {
+          "text": "5.2 벽에 걸린 캐릭터는 벽이 직접 민다",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.2 벽 콜라이더를 끄고 직접 민다"],
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
+          "5.2 벽에 걸린 캐릭터는 벽이 직접 민다"
+        ],
         "points": [
-          { "label": "문제", "text": "두 번째 시도에서는 벽이 움직여 캐릭터와 겹치는 순간, 캐릭터가 벽 속에서 꼼짝하지 못했습니다.", "verbatim": true },
-          { "label": "원인", "text": "이미 겹쳐 있으면 어느 방향으로 재도 '바로 앞이 막힘'(거리 0)이 나와, 움직일 수 있는 거리가 늘 0이 됩니다.", "verbatim": true },
-          { "label": "해결", "text": "벽 콜라이더를 끄고 겹침을 직접 확인해 밀기", "verbatim": true },
-          { "label": "결과", "text": "다른 색 벽에 걸리면 벽과 함께 끝 지점까지 밀려가고, 그 사이 Shift로 같은 색이 되면 그 자리에서 벽이 몸을 지나갑니다(5.1 GIF).", "verbatim": true }
+          {
+            "label": "문제",
+            "text": "두 번째 시도에서는 벽이 움직여 캐릭터와 겹치는 순간, 캐릭터가 벽 속에서 꼼짝하지 못했습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "원인",
+            "text": "이미 겹쳐 있으면 어느 방향으로 재도 '바로 앞이 막힘'(거리 0)이 나와, 움직일 수 있는 거리가 늘 0이 됩니다.",
+            "verbatim": true
+          },
+          {
+            "label": "해결",
+            "text": "벽 콜라이더를 끄고 겹침을 직접 확인해 밀기",
+            "verbatim": true
+          },
+          {
+            "label": "결과",
+            "text": "다른 색 벽에 걸리면 벽과 함께 끝 지점까지 밀려가고, 그 사이 Shift로 같은 색이 되면 그 자리에서 벽이 몸을 지나갑니다(5.1 GIF).",
+            "verbatim": true
+          }
         ],
         "visuals": []
       },
@@ -279,91 +760,354 @@
         "chapter": "crusher-wall",
         "layout": "code",
         "tab": "구현",
-        "title": { "text": "5.3 벽이 움직인 만큼 민다", "verbatim": true },
-        "lead": { "text": "벽이 움직일 때마다 캐릭터와 색을 비교해, 다른 색이면 벽이 움직인 만큼 캐릭터를 밀어 줍니다.", "verbatim": true },
-        "sectionPath": ["5. 거꾸로 쓰는 색 규칙: 크러셔 벽", "5.3 벽이 움직인 만큼 민다"],
-        "points": [
-          { "label": "", "text": "겹침은 그림의 사각형으로 직접 확인합니다.", "verbatim": true },
-          { "label": "", "text": "미는 힘도 이동 코드를 거칩니다.", "verbatim": true },
-          { "label": "", "text": "그래서 밀려난 캐릭터가 다른 지형을 뚫지 않습니다.", "verbatim": true }
+        "title": {
+          "text": "5.3 벽이 움직인 만큼 민다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "벽이 움직일 때마다 캐릭터와 색을 비교해, 다른 색이면 벽이 움직인 만큼 캐릭터를 밀어 줍니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
+          "5.3 벽이 움직인 만큼 민다"
         ],
-        "visuals": [{ "kind": "code", "n": 1, "fp": "// CrusherWall.cs (발췌) — 물리 계산마다, 벽 하나씩" }]
+        "points": [
+          {
+            "label": "",
+            "text": "겹침은 그림의 사각형으로 직접 확인합니다.",
+            "verbatim": true
+          },
+          {
+            "label": "`Rigidbody2D`를 붙이는 이유",
+            "text": "그대로 두면 `PlatformManager`가 태그를 보고 콜라이더를 다시 켜므로, '`Rigidbody2D`가 있으면 건너뛴다'는 규칙에 걸리게 했습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// CrusherWall.cs (발췌) — 물리 계산마다, 벽 하나씩"
+          }
+        ]
+      },
+      {
+        "key": "crusher-seq",
+        "chapter": "crusher-wall",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {
+          "text": "5.3 벽이 움직인 만큼 민다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "그림에서 볼 것은, 벽은 미는 거리를 넘겨 줄 뿐이고 실제로 캐릭터를 옮기는 것은 이동 코드(`CharacterController2D`)라는 점입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
+          "5.3 벽이 움직인 만큼 민다"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "sequenceDiagram"
+          }
+        ]
       },
       {
         "key": "boss-cycle",
         "chapter": "boss",
         "layout": "visual",
         "tab": "흐름",
-        "title": { "text": "6.1 공격 3번 → 5초 빈틈 → 약점", "verbatim": true },
+        "title": {
+          "text": "6.1 공격 3번 → 5초 빈틈 → 약점",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["6. 보스전", "6.1 공격 3번 → 5초 빈틈 → 약점"],
-        "points": [
-          { "label": "", "text": "보스는 10초마다 공격을 무작위로 바꾸고, 3번 공격한 뒤 5초 동안 멈춰 약점을 드러냅니다(그로기).", "verbatim": true },
-          { "label": "", "text": "흰·검 발판은 총알을 막지 않으므로, 발판 뒤에 숨는 대신 다가오는 총알과 다른 색이 되어 몸으로 흘려보내는 것이 회피 방법입니다.", "verbatim": true }
+        "sectionPath": [
+          "6. 보스전",
+          "6.1 공격 3번 → 5초 빈틈 → 약점"
         ],
-        "visuals": [{ "kind": "mermaid", "n": 1, "fp": "stateDiagram-v2" }]
+        "points": [
+          {
+            "label": "",
+            "text": "보스는 10초마다 공격을 무작위로 바꾸고, 3번 공격한 뒤 5초 동안 멈춰 약점을 드러냅니다(그로기).",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "흰·검 발판은 총알을 막지 않으므로, 발판 뒤에 숨는 대신 다가오는 총알과 다른 색이 되어 몸으로 흘려보내는 것이 회피 방법입니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "stateDiagram-v2"
+          }
+        ]
       },
       {
         "key": "boss-patterns",
         "chapter": "boss",
         "layout": "full",
         "tab": "결과",
-        "title": { "text": "6.1 공격 3번 → 5초 빈틈 → 약점", "verbatim": true },
-        "lead": { "text": "흰 총알은 그림의 원래 색 때문에 노란빛으로 보입니다.", "verbatim": true },
-        "sectionPath": ["6. 보스전", "6.1 공격 3번 → 5초 빈틈 → 약점"],
+        "title": {
+          "text": "6.1 공격 3번 → 5초 빈틈 → 약점",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "흰 총알은 그림의 원래 색 때문에 노란빛으로 보입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.1 공격 3번 → 5초 빈틈 → 약점"
+        ],
         "points": [],
-        "visuals": [{ "kind": "table", "n": 2, "fp": "운석|난사|레이저" }]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "운석|난사|레이저"
+          }
+        ]
       },
       {
         "key": "boss-interface",
         "chapter": "boss",
         "layout": "full",
         "tab": "선택",
-        "title": { "text": "6.2 공격 3종을 인터페이스로 묶는다", "verbatim": true },
-        "lead": { "text": "인터페이스로 정했습니다.", "verbatim": true },
-        "sectionPath": ["6. 보스전", "6.2 공격 3종을 인터페이스로 묶는다"],
+        "title": {
+          "text": "6.2 공격 3종을 인터페이스로 묶는다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "인터페이스로 정했습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.2 공격 3종을 인터페이스로 묶는다"
+        ],
         "points": [],
-        "visuals": [{ "kind": "table", "n": 1, "fp": "|공통 부모 클래스(추상 클래스) BossPattern|약속만 정하는 인터페이스 IBossPattern" }]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "|공통 부모 클래스(추상 클래스) BossPattern|약속만 정하는 인터페이스 IBossPattern"
+          }
+        ]
       },
       {
         "key": "boss-classes",
         "chapter": "boss",
         "layout": "full",
         "tab": "구조",
-        "title": { "text": "6.3 공격은 자기 총알을 스스로 치운다", "verbatim": true },
-        "lead": { "text": "실선은 필드로 들고 있는 관계, 점선은 부르거나 만드는 관계입니다.", "verbatim": true },
-        "sectionPath": ["6. 보스전", "6.3 공격은 자기 총알을 스스로 치운다"],
+        "title": {
+          "text": "6.3 공격은 자기 총알을 스스로 치운다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "실선은 필드로 들고 있는 관계, 점선은 부르거나 만드는 관계입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.3 공격은 자기 총알을 스스로 치운다"
+        ],
         "points": [],
-        "visuals": [{ "kind": "mermaid", "n": 1, "fp": "classDiagram" }]
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 1,
+            "fp": "classDiagram"
+          }
+        ]
+      },
+      {
+        "key": "boss-links",
+        "chapter": "boss",
+        "layout": "full",
+        "tab": "구조",
+        "title": {
+          "text": "6.3 공격은 자기 총알을 스스로 치운다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "총알(`BossProjectile`)은 캐릭터와 같은 색일 때만 피해를 줍니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.3 공격은 자기 총알을 스스로 치운다"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "mermaid",
+            "n": 2,
+            "fp": "classDiagram"
+          }
+        ]
+      },
+      {
+        "key": "rampage-cleanup",
+        "chapter": "boss",
+        "layout": "code",
+        "tab": "구현",
+        "title": {
+          "text": "6.3 공격은 자기 총알을 스스로 치운다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "난사 공격(`BossPattern_Rampage`)은 만든 총알을 목록에 담아 두고, 끝날 때 남은 것을 모두 지웁니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.3 공격은 자기 총알을 스스로 치운다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "공격 하나는 '시작'과 '정리' 두 함수만 약속하는 인터페이스(`IBossPattern`)를 구현합니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// IBossPattern.cs"
+          },
+          {
+            "kind": "code",
+            "n": 2,
+            "fp": "// BossPattern_Rampage.cs (발췌)"
+          }
+        ]
       },
       {
         "key": "boss-pattern-change",
         "chapter": "boss",
         "layout": "code",
         "tab": "구현",
-        "title": { "text": "6.3 공격은 자기 총알을 스스로 치운다", "verbatim": true },
-        "lead": { "text": "보스 관리자(`BossManager`)는 공격을 바꿀 때 이전 공격에게 정리만 맡기고, 세 번째 공격이 끝나면 그로기로 넘어갑니다.", "verbatim": true },
-        "sectionPath": ["6. 보스전", "6.3 공격은 자기 총알을 스스로 치운다"],
-        "points": [
-          { "label": "", "text": "`BossManager`는 무엇이 남았는지 모른 채 '정리해라'(`EndPattern`)만 부릅니다.", "verbatim": true },
-          { "label": "", "text": "운석 15개 중 10개째를 만들던 중이어도 남은 작업과 떨어지던 운석이 함께 사라집니다.", "verbatim": true }
+        "title": {
+          "text": "6.3 공격은 자기 총알을 스스로 치운다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "보스 관리자(`BossManager`)는 공격을 바꿀 때 이전 공격에게 정리만 맡기고, 세 번째 공격이 끝나면 그로기로 넘어갑니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.3 공격은 자기 총알을 스스로 치운다"
         ],
-        "visuals": [{ "kind": "code", "n": 3, "lines": [1, 14], "fp": "// BossManager.cs (발췌)" }]
+        "points": [
+          {
+            "label": "",
+            "text": "`BossManager`는 무엇이 남았는지 모른 채 '정리해라'(`EndPattern`)만 부릅니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "운석 15개 중 10개째를 만들던 중이어도 남은 작업과 떨어지던 운석이 함께 사라집니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 3,
+            "lines": [
+              1,
+              14
+            ],
+            "fp": "// BossManager.cs (발췌)"
+          }
+        ]
+      },
+      {
+        "key": "groggy-start",
+        "chapter": "boss",
+        "layout": "code",
+        "tab": "구현",
+        "title": {
+          "text": "6.4 공격이 멈추면 약점이 열린다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "세 번째 공격이 끝나면 그로기가 시작됩니다. 남은 공격을 정리하고 약점을 켠 뒤, 5초 뒤에 저절로 풀립니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.4 공격이 멈추면 약점이 열린다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "그로기 중에는 공격 시계가 멈춥니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "애니메이션 신호는 쓰일 때까지 남습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "그래서 신호 3개를 지우고 서 있는 동작을 바로 재생합니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "private void StartGroggy()"
+          }
+        ]
       },
       {
         "key": "groggy",
         "chapter": "boss",
         "layout": "visual",
         "tab": "결과",
-        "title": { "text": "6.4 공격이 멈추면 약점이 열린다", "verbatim": true },
-        "lead": { "text": "세 번째 공격이 끝나면 그로기가 시작됩니다. 남은 공격을 정리하고 약점을 켠 뒤, 5초 뒤에 저절로 풀립니다.", "verbatim": true },
-        "sectionPath": ["6. 보스전", "6.4 공격이 멈추면 약점이 열린다"],
+        "title": {
+          "text": "6.4 공격이 멈추면 약점이 열린다",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "6. 보스전",
+          "6.4 공격이 멈추면 약점이 열린다"
+        ],
         "points": [
-          { "label": "", "text": "약점은 그로기 때만 켜지고, 위에서 밟을 때만 인정합니다.", "verbatim": true },
-          { "label": "", "text": "그로기 중에는 공격 시계가 멈춥니다.", "verbatim": true }
+          {
+            "label": "",
+            "text": "약점은 그로기 때만 켜지고, 위에서 밟을 때만 인정합니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/boss_groggy.gif", "w": 960, "h": 540, "caption": { "text": "보스 앞 발판에서 2단 점프로 약점을 밟자 보스 체력 바가 한 칸 줄어듭니다(3 → 2)", "verbatim": true } }
+          {
+            "kind": "image",
+            "src": "images/boss_groggy.gif",
+            "w": 960,
+            "h": 540,
+            "caption": {
+              "text": "보스 앞 발판에서 2단 점프로 약점을 밟자 보스 체력 바가 한 칸 줄어듭니다(3 → 2)",
+              "verbatim": true
+            }
+          }
         ]
       },
       {
@@ -371,45 +1115,209 @@
         "chapter": "move",
         "layout": "code",
         "tab": "구현",
-        "title": { "text": "7.1 점프는 늘 같은 높이로", "verbatim": true },
-        "lead": { "text": "힘·마찰로 움직이지 않아, 키를 떼면 바로 서고 점프 높이가 늘 같습니다.", "verbatim": true },
-        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.1 점프는 늘 같은 높이로"],
-        "points": [
-          { "label": "", "text": "움직이기 전에 캐릭터 크기의 상자를 가려는 방향으로 밀어 보고(BoxCast), 부딪히기 직전까지만 움직입니다.", "verbatim": true },
-          { "label": "", "text": "크러셔 벽이 미는 양(`externalDelta`)도 키 입력과 합쳐져 같은 검사를 거칩니다.", "verbatim": true }
+        "title": {
+          "text": "7.1 점프는 늘 같은 높이로",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "힘·마찰로 움직이지 않아, 키를 떼면 바로 서고 점프 높이가 늘 같습니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "7. 캐릭터 이동과 카메라",
+          "7.1 점프는 늘 같은 높이로"
         ],
-        "visuals": [{ "kind": "code", "n": 1, "lines": [1, 20], "fp": "// CharacterController2D.cs (발췌) — 입력과 밖에서 민 양을 합친 뒤, 가로·세로를" }]
+        "points": [
+          {
+            "label": "",
+            "text": "크러셔 벽이 미는 양(`externalDelta`)도 키 입력과 합쳐져 같은 검사를 거칩니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "3장 원칙 2의 실체가 이 함수입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "쓰다 보니 점프 높이와 거리가 늘 같아 발판 간격을 맞추기 쉬웠고, 그때 이 게임에 맞는 방식이라는 것을 알게 됐습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "lines": [
+              1,
+              20
+            ],
+            "fp": "// CharacterController2D.cs (발췌) — 입력과 밖에서 민 양을 합친 뒤, 가로·세로를"
+          }
+        ]
+      },
+      {
+        "key": "resolve-axis",
+        "chapter": "move",
+        "layout": "code",
+        "tab": "구현",
+        "title": {
+          "text": "7.1 점프는 늘 같은 높이로",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "7. 캐릭터 이동과 카메라",
+          "7.1 점프는 늘 같은 높이로"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "움직이기 전에 캐릭터 크기의 상자를 가려는 방향으로 밀어 보고(BoxCast), 부딪히기 직전까지만 움직입니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "가로와 세로를 따로 재므로 벽에 붙어도 떨어지고, 바닥 위에서도 걷습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "수치: 속도 8, 중력 −24, 점프력 11, 2단 점프.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 2,
+            "fp": "private float ResolveAxisMovement(float move, Vector3 axis)"
+          }
+        ]
       },
       {
         "key": "ts-flip",
         "chapter": "move",
         "layout": "problem",
         "tab": "문제 해결",
-        "title": { "text": "7.2 부모째 뒤집어 콜라이더도 함께", "verbatim": true },
+        "title": {
+          "text": "7.2 왼쪽을 보면 닿는 위치가 어긋나던 문제",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.2 부모째 뒤집어 콜라이더도 함께"],
-        "points": [
-          { "label": "문제", "text": "왼쪽으로 이동하면 캐릭터 그림은 뒤집히는데, 벽·발판에 닿는 위치는 오른쪽을 볼 때 그대로라 그림과 달랐습니다.", "verbatim": true },
-          { "label": "원인", "text": "좌우 반전을 그림이 붙은 자식 오브젝트에만 했습니다.", "verbatim": true },
-          { "label": "해결", "text": "부모째 좌우로 뒤집어 그림과 콜라이더가 함께 뒤집히게 했습니다.", "verbatim": true },
-          { "label": "결과", "text": "왼쪽을 보고 벽·발판에 붙어도 그림과 닿는 위치가 맞습니다.", "verbatim": true }
+        "sectionPath": [
+          "7. 캐릭터 이동과 카메라",
+          "7.2 왼쪽을 보면 닿는 위치가 어긋나던 문제"
         ],
-        "visuals": [{ "kind": "code", "n": 1, "fp": "// ShifterController.cs" }]
+        "points": [
+          {
+            "label": "문제",
+            "text": "왼쪽으로 이동하면 캐릭터 그림은 뒤집히는데, 벽·발판에 닿는 위치는 오른쪽을 볼 때 그대로라 그림과 달랐습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "원인",
+            "text": "좌우 반전을 그림이 붙은 자식 오브젝트에만 했습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "해결",
+            "text": "부모째 좌우로 뒤집어 그림과 콜라이더가 함께 뒤집히게 했습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "결과",
+            "text": "왼쪽을 보고 벽·발판에 붙어도 그림과 닿는 위치가 맞습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// ShifterController.cs"
+          }
+        ]
+      },
+      {
+        "key": "camera-code",
+        "chapter": "move",
+        "layout": "code",
+        "tab": "구현",
+        "title": {
+          "text": "7.3 카메라: 위는 넓게, 아래는 좁게",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "캐릭터가 조금 움직일 때마다 화면이 흔들리지 않도록, 카메라가 따라가지 않는 구역(데드존)을 두고 캐릭터가 그 밖으로 나간 만큼만 따라갑니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "7. 캐릭터 이동과 카메라",
+          "7.3 카메라: 위는 넓게, 아래는 좁게"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "점프 한 번은 약 2.5유닛, 2단 점프도 약 5유닛이라(점프력 11·중력 −24로 계산) 제자리 점프로는 카메라가 거의 움직이지 않습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "반대로 떨어질 때는 1유닛만 벗어나도 따라 내려가 착지할 곳을 먼저 보여 줍니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "보스방은 위쪽 구역을 3.5로 줄여, 2단 점프로 약점을 밟으러 올라가면 카메라가 따라 올라갑니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// CameraController.cs (발췌)"
+          }
+        ]
       },
       {
         "key": "camera",
         "chapter": "move",
         "layout": "visual",
         "tab": "구현",
-        "title": { "text": "7.3 카메라: 위는 넓게, 아래는 좁게", "verbatim": true },
+        "title": {
+          "text": "7.3 카메라: 위는 넓게, 아래는 좁게",
+          "verbatim": true
+        },
         "lead": null,
-        "sectionPath": ["7. 캐릭터 이동과 카메라", "7.3 카메라: 위는 넓게, 아래는 좁게"],
+        "sectionPath": [
+          "7. 캐릭터 이동과 카메라",
+          "7.3 카메라: 위는 넓게, 아래는 좁게"
+        ],
         "points": [
-          { "label": "", "text": "반대로 떨어질 때는 1유닛만 벗어나도 따라 내려가 착지할 곳을 먼저 보여 줍니다.", "verbatim": true },
-          { "label": "", "text": "Cinemachine을 쓸까도 고민했지만, 카메라를 여러 대 쓰지도 않고 특수한 촬영 기법도 필요 없다고 판단해 데드존을 직접 만들었습니다.", "verbatim": true }
+          {
+            "label": "",
+            "text": "Cinemachine을 쓸까도 고민했지만, 카메라를 여러 대 쓰지도 않고 특수한 촬영 기법도 필요 없다고 판단해 데드존을 직접 만들었습니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "데드존 상자를 에디터 화면에 그리게 해(`OnDrawGizmos`), 위 5·아래 1을 눈으로 보며 맞췄습니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
-          { "kind": "image", "src": "images/15_camera_deadzone.png", "w": 1087, "h": 531, "caption": { "text": "위쪽이 넓고 아래쪽이 좁으며, 캐릭터가 이 상자를 벗어날 때만 카메라가 움직입니다", "verbatim": true } }
+          {
+            "kind": "image",
+            "src": "images/15_camera_deadzone.png",
+            "w": 1087,
+            "h": 531,
+            "caption": {
+              "text": "위쪽이 넓고 아래쪽이 좁으며, 캐릭터가 이 상자를 벗어날 때만 카메라가 움직입니다",
+              "verbatim": true
+            }
+          }
         ]
       },
       {
@@ -417,11 +1325,47 @@
         "chapter": "others",
         "layout": "full",
         "tab": "",
-        "title": { "text": "8. 나머지 기능", "verbatim": true },
-        "lead": { "text": "깊게 다룬 기능 외에는 대안을 따로 고민하지 않아 한 줄씩 정리합니다.", "verbatim": true },
-        "sectionPath": ["8. 나머지 기능"],
+        "title": {
+          "text": "8. 나머지 기능",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "깊게 다룬 기능 외에는 대안을 따로 고민하지 않아 한 줄씩 정리합니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "8. 나머지 기능"
+        ],
         "points": [],
-        "visuals": [{ "kind": "table", "n": 1, "fp": "기능|구현 요점|클래스" }]
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "기능|구현 요점|클래스"
+          }
+        ]
+      },
+      {
+        "key": "ui-screens",
+        "chapter": "others",
+        "layout": "full",
+        "tab": "결과",
+        "title": {
+          "text": "8. 나머지 기능",
+          "verbatim": true
+        },
+        "lead": null,
+        "sectionPath": [
+          "8. 나머지 기능"
+        ],
+        "points": [],
+        "visuals": [
+          {
+            "kind": "table",
+            "n": 2,
+            "fp": "메뉴|게임오버|일시정지"
+          }
+        ]
       }
     ]
   }
