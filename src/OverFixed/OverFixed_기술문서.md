@@ -194,8 +194,8 @@ flowchart LR
 | 항목 | 내용 |
 |---|---|
 | 문제 | 드물게 재료(또는 사고) 종류를 하나도 고르지 못했습니다 |
-| 원인 | `Random.Range`에 실수(float)를 넣으면 끝값 10.2도 나올 수 있습니다(정수를 넣으면 끝값은 나오지 않습니다). 10.2가 나오면 어느 칸에도 떨어지지 않아, 끝까지 찾고도 고른 재료가 없었습니다 |
-| 해결 | 끝까지 못 고르면 비중이 있는 마지막 재료(크리스탈)를 돌려주게 했습니다. 이때 비중 0인 맨 뒤 4종은 건너뛰어, 그 재료가 대신 나오지 않게 했습니다 |
+| 원인 | `Random.Range`에 실수를 넣으면 끝값(10.2)도 나옵니다(정수는 끝값 제외). 10.2는 어느 칸에도 떨어지지 않아 고른 재료가 없었습니다 |
+| 해결 | 끝까지 못 고르면 비중이 있는 마지막 재료(크리스탈)를 돌려주고, 비중 0인 맨 뒤 4종은 건너뛰게 했습니다 |
 | 결과 | 이제 늘 비중이 있는 재료 하나가 나옵니다. 플레이 중 비중이 0인 재료 4종이 한 번도 나오지 않는 것을 확인했습니다 |
 
 - 전체 코드: [SpawnManager.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/SpawnManager.cs) (풀과 흐름) · [WeightedRandom.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/WeightedRandom.cs) (비중 뽑기)
@@ -310,8 +310,8 @@ currentMiniGame.Succeeded -= accidentPanel.AddSuccess;              // Close
 | 항목 | 내용 |
 |---|---|
 | 문제 | 전선 잇기 화면을 열자마자 단자를 클릭하면, 전선이 단자가 아닌 엉뚱한 위치에서 시작했습니다 |
-| 원인 | 단자를 담은 Layout Group은 자식 위치를 프레임 끝에 계산해서, 만든 바로 그 프레임에는 단자 위치가 아직 정렬 전 값이었습니다 |
-| 해결 | 단자를 만든 직후 정렬을 즉시 계산하게(`LayoutRebuilder.ForceRebuildLayoutImmediate`) 고쳤습니다 |
+| 원인 | 단자를 늘어놓는 Layout Group은 위치를 프레임이 끝날 때 계산합니다. 그래서 단자를 막 만든 프레임에는 아직 제자리가 아니라, 전선이 엉뚱한 곳에서 시작했습니다 |
+| 해결 | 단자를 만든 직후 위치를 바로 계산하게(`LayoutRebuilder.ForceRebuildLayoutImmediate`) 고쳤습니다 |
 | 결과 | 화면을 열자마자 눌러도 전선이 단자에서 시작합니다. 플레이로 확인했습니다 |
 
 ---
@@ -393,10 +393,10 @@ public void ChangeStability(float amount)
 
 | 항목 | 내용 |
 |---|---|
-| 문제 | 실행 순서에 따라 `GameManager`가 `DontDestroyOnLoad`에 등록되지 않았습니다. 그래서 정비 씬으로 넘어갈 때 파괴되고, 그 씬의 `GameManager`가 새로 시작해 크레딧·안정도가 처음 값으로 돌아갔습니다 |
-| 원인 | 배운 `SingletonBase`는 instance를 두 곳에서 정하는데, `DontDestroyOnLoad`를 거는 조건이 다릅니다(`Awake`: 비어 있으면 자기 자신으로 정하며 건다 / `Instance` 게터: 씬에서 찾은 오브젝트로 정하고, 새로 만든 경우에만 건다). 다른 스크립트가 `GameManager.Awake`보다 먼저 `Instance`를 부르면 → 게터가 씬의 `GameManager`를 instance로 정함(등록 없음) → 뒤이은 `Awake`는 이미 instance가 자기 자신이라 등록을 건너뜀 |
-| 해결 | `GameManager.Awake`에서 자기 자신이 instance이면 한 번 더 등록합니다. 실행 순서를 `[DefaultExecutionOrder]`로 앞당기는 방법도 있었지만, 지켜야 할 순서 규칙을 하나 늘리는 대신 순서와 상관없이 항상 성립하는 쪽을 택했습니다 |
-| 결과 | 플레이하며 하이어라키에서 확인했습니다 |
+| 문제 | 정비 씬으로 넘어가면 크레딧·안정도가 처음 값으로 돌아갔습니다. 스크립트 실행 순서에 따라 `GameManager`가 씬과 함께 파괴됐기 때문입니다 |
+| 원인 | 씬을 넘어 남으려면 `DontDestroyOnLoad`를 걸어야 하는데, 배운 `SingletonBase`는 거는 조건이 두 곳에서 달랐습니다. 깨어날 때(`Awake`)는 걸지만, 다른 코드가 먼저 찾으면(`Instance`) 씬의 것을 걸지 않은 채 정해 버리고, 뒤이은 `Awake`는 '이미 정해짐'이라며 건너뛰었습니다 |
+| 해결 | `Awake`에서 자기가 이미 하나뿐인 매니저로 정해져 있으면 한 번 더 겁니다. 실행 순서를 앞당기는 방법(`[DefaultExecutionOrder]`)은 지킬 순서 규칙이 늘어나, 순서와 상관없는 쪽을 골랐습니다 |
+| 결과 | 정비 씬으로 넘어가도 하이어라키의 DontDestroyOnLoad 아래에 `GameManager`가 남아 있는 것을 플레이하며 확인했습니다 |
 
 ```csharp
 // GameManager.cs
@@ -412,8 +412,8 @@ protected override void Awake()
 | 항목 | 내용 |
 |---|---|
 | 문제 | 안정도가 "100%"로 보이는데 구매 버튼이 켜져 있었고, 사면 60 크레딧을 내고 안정도는 0.02%만 올랐습니다 |
-| 원인 | 안정도는 매초 조금씩 줄어 99.98%처럼 소수가 되는데, 화면은 올림해 "100%"로 보여 주고 구매 가능 여부는 실제 값(99.98 < 100)으로 판정했습니다. 화면 표기와 판정의 기준이 달랐습니다 |
-| 해결 | '가득 참' 판정을 화면과 같은 올림 기준으로 맞췄습니다. 보이는 값과 판정이 어긋나지 않습니다 |
+| 원인 | 안정도는 매초 줄어 99.98%처럼 소수가 되는데, 화면은 올려서 "100%"로 보여 주고 구매 버튼은 실제 값(99.98 < 100)을 보고 '덜 찼다'고 했습니다 |
+| 해결 | '가득 참'도 화면처럼 올린 값으로 따지게 맞췄습니다 |
 | 결과 | 안정도가 100%로 보일 때 눌러도 크레딧이 나가지 않습니다. 플레이로 확인했습니다 |
 
 ```csharp
