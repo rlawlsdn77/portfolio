@@ -103,7 +103,7 @@ flowchart LR
 |---|---|---|
 | ![정산 화면. 할당량을 다 내고 도착하면 뜨고, 다음을 누르면 정비 씬으로 넘어간다](images/02_settlement.png) | ![정비 씬. 크레딧·코어 안정도·다음 할당량이 위에 있고, 안정화 물질(60 크레딧, 코어 안정도 +10%)을 사거나 다음 항해를 시작한다](images/03_planet.png) | ![게임오버 화면. 안정도가 0%가 되면 완료한 항해 수와 최고 기록이 뜬다](images/04_gameover.png) |
 
-세 화면의 값은 모두 씬을 넘어 살아 있는 `GameManager` 하나에서 읽습니다.
+세 화면이 읽는 값을 어디에 두는지는 [6.1](#61-씬을-넘는-값을-어디에-둘까)에 있습니다.
 
 ### 2.3 참고한 게임
 
@@ -303,7 +303,7 @@ currentMiniGame.Succeeded -= accidentPanel.AddSuccess;              // Close
 
 - 전체 코드: [AccidentPanel.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/AccidentPanel.cs) (사고 상태와 판정) · [MiniGameUI.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/UI/MiniGameUI.cs) (열기·닫기)
 
-### 5.4 미니게임을 연 첫 프레임에 전선이 엉뚱한 곳에서 시작하던 문제
+### 5.4 전선 잇기를 열자마자 누르면 전선이 엉뚱한 곳에서 시작하던 문제
 
 | 항목 | 내용 |
 |---|---|
@@ -357,7 +357,7 @@ flowchart LR
 | | static 클래스 | ScriptableObject에 런타임 값 저장 | `DontDestroyOnLoad` 싱글톤 MonoBehaviour |
 |---|---|---|---|
 | 장점 | 가장 단순하고 씬과 무관하다 | 씬과 무관하고 인스펙터에서 값이 보인다 | `Update`로 항해 시간과 안정도 감소를 진행하고, `sceneLoaded`를 구독하고, 설정 ScriptableObject를 인스펙터로 연결한다 |
-| 단점 | MonoBehaviour가 아니라 `Update`로 시간을 진행할 수 없고, 설정 ScriptableObject를 인스펙터로 연결할 수 없다 | 에디터에서는 플레이 중 바뀐 값이 에셋에 남아 매번 초기화를 관리해야 하고, 시간을 진행할 MonoBehaviour가 따로 필요하다 | 어디서든 접근할 수 있어 결합도(한 코드가 다른 코드에 얽힌 정도)가 높아지고, 만들어지고 등록되는 순서에 따른 함정이 있다 ([6.3](#63-씬을-넘기면-gamemanager가-사라질-수-있었던-문제)) |
+| 단점 | MonoBehaviour가 아니라 `Update`로 시간을 진행할 수 없고, 설정 ScriptableObject를 인스펙터로 연결할 수 없다 | 에디터에서는 플레이 중 바뀐 값이 에셋에 남아 매번 초기화를 관리해야 하고, 시간을 진행할 MonoBehaviour가 따로 필요하다 | 어디서든 접근할 수 있어 결합도(한 코드가 다른 코드에 얽힌 정도)가 높아지고, 만들어지고 등록되는 순서에 따른 함정이 있다 ([6.3](#63-정비-씬으로-넘어가면-크레딧안정도가-처음-값으로-돌아가던-문제)) |
 
 싱글톤을 골랐습니다. 이 게임의 값은 '보관'만 되는 것이 아니라 매 프레임 '진행'되어야 했습니다(안정도 감소, 도착까지 남은 시간). 대가인 결합도는 "값은 `private set`, 바꾸는 길은 `GameManager` 함수뿐" 규칙으로 줄였습니다.
 
@@ -388,7 +388,7 @@ public void ChangeStability(float amount)
 
 화면이 값을 알아내는 방법은 둘로 나눠 썼습니다. 계속 변하는 값(안정도·남은 시간·주문 시간)은 HUD와 터미널이 매 프레임 읽고(폴링), 한 번만 일어나는 사건(도착·게임오버)은 이벤트로 알려 화면이 정확히 한 번 열리게 했습니다. 판단 기준은 **"그 값이 얼마나 자주 바뀌는가"** 였습니다. 폴링의 비용(매 프레임 문자열 생성)은 [9.2](#92-남은-문제)에 개선 과제로 남겼습니다.
 
-### 6.3 씬을 넘기면 GameManager가 사라질 수 있었던 문제
+### 6.3 정비 씬으로 넘어가면 크레딧·안정도가 처음 값으로 돌아가던 문제
 
 | 항목 | 내용 |
 |---|---|

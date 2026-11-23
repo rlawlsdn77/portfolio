@@ -226,11 +226,22 @@ private void OnPointAtSuspectState(float timerMs, int cycle, int round)
 | 결과 | 고친 뒤 테스트에서, 마트에서 돌아오자마자 퀘스트 결과와 장르·키워드가 회의실에 뜨는 것을 확인했습니다 |
 | 남은 것 | 씬을 불러오는 도중 다음 상태 메시지가 먼저 오면, 그 화면은 여전히 안 뜰 수 있습니다(→ [12장](#124-남은-문제)) |
 
+그림에서 볼 것은 회의실 씬을 다 불러온 **뒤에야** 회의실 UI를 부른다는 점입니다.
+
 ```mermaid
-flowchart LR
-    A["마트 복귀 상태<br/>(MartReturnState)"] --> B["회의실 씬 로드<br/>끝날 때까지 기다림"]
-    B --> C["회의실 UI 생김<br/>(MeetingRoomUIManager)"]
-    C --> D["퀘스트 결과 ·<br/>장르/키워드 표시"]
+sequenceDiagram
+    participant LC as LiarClient
+    participant SM as SceneManager (Unity)
+    participant UI as MeetingRoomUIManager
+    Note over LC: 마트 복귀 상태(MartReturnState)를 받음
+    LC->>SM: 회의실 씬 불러오기 (Additive)
+    activate SM
+    SM-->>LC: 다 불러옴 (await)
+    deactivate SM
+    Note over UI: 회의실 씬과 함께 생김
+    LC->>SM: 마트 씬 내리기 (await)
+    LC->>UI: 퀘스트 결과 표시 (ShowQuestResult)
+    LC->>UI: 장르·키워드 표시 (ShowGenreKeyword)
 ```
 
 ---
