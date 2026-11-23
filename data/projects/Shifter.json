@@ -98,7 +98,7 @@
       "solution": "벽 콜라이더를 끄고 그림의 사각형으로 겹침을 직접 확인해, 벽이 움직인 만큼 `AddExternalMovement`로 캐릭터를 밀게 했다. 실제 이동은 `CharacterController2D`가 막힘을 잰 뒤에 한다",
       "result": "다른 색 벽에 걸리면 벽과 함께 끝 지점까지 밀려가고, 그 사이 Shift로 같은 색이 되면 그 자리에서 벽이 몸을 지나간다(플레이로 확인)",
       "lesson": "",
-      "section": "5.2 벽에 걸린 캐릭터는 벽이 직접 민다"
+      "section": "5.2 크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까"
     },
     {
       "title": "왼쪽을 보면 닿는 위치가 그림과 어긋나던 문제",
@@ -258,6 +258,11 @@
         ],
         "points": [
           {
+            "label": "",
+            "text": "규칙은 하나, 캐릭터와 같은 색인 것만 실제로 존재합니다.",
+            "verbatim": true
+          },
+          {
             "label": "이유",
             "text": "이동과 공격만 있는 게임에서는 키를 눌러도 캐릭터 하나가 움직일 뿐이라, 입력에 비해 돌아오는 변화의 크기가 작다고 판단했습니다.",
             "verbatim": true
@@ -265,11 +270,6 @@
           {
             "label": "",
             "text": "목표한 경험은 \"색을 고르는 키 한 번으로 그 색의 길과 위험을 함께 떠안아, 작은 입력이 눈앞의 판 전체를 바꾸는 경험\" 입니다.",
-            "verbatim": true
-          },
-          {
-            "label": "",
-            "text": "Outland에서는 내 색과 같은 총알이 무해하지만, SHIFTER는 반대로 같은 색 총알에 맞습니다.",
             "verbatim": true
           }
         ],
@@ -421,7 +421,7 @@
         "layout": "full",
         "tab": "선택",
         "title": {
-          "text": "4.2 다른 색 발판은 아예 없는 것이 된다",
+          "text": "4.2 다른 색 발판을 어떻게 없는 것으로 만들까",
           "verbatim": true
         },
         "lead": {
@@ -430,7 +430,7 @@
         },
         "sectionPath": [
           "4. 색 규칙: Shift 한 번이 바꾸는 것",
-          "4.2 다른 색 발판은 아예 없는 것이 된다"
+          "4.2 다른 색 발판을 어떻게 없는 것으로 만들까"
         ],
         "points": [],
         "visuals": [
@@ -464,6 +464,44 @@
             "kind": "mermaid",
             "n": 1,
             "fp": "flowchart LR"
+          }
+        ]
+      },
+      {
+        "key": "color-code",
+        "chapter": "shift",
+        "layout": "code",
+        "tab": "구현",
+        "title": {
+          "text": "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "발판마다 캐릭터와 태그를 비교해 콜라이더를 켜고 끕니다. 판단은 \"태그가 같은가\"(`CompareTag`) 하나입니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "4. 색 규칙: Shift 한 번이 바꾸는 것",
+          "4.3 색을 바꾸는 곳은 하나, 발판은 읽기만"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "새 발판은 흰·검 발판 프리팹을 놓기만 하면 됩니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "`PlatformManager`가 태그로 발판을 찾아 관리하므로, STAGE 2의 발판 20개(흰 9 · 검 11)를 코드 수정 없이 넣었습니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "lines": [2, 21],
+            "fp": "// PlatformManager.cs"
           }
         ]
       },
@@ -561,16 +599,16 @@
         "layout": "full",
         "tab": "선택",
         "title": {
-          "text": "5.2 벽에 걸린 캐릭터는 벽이 직접 민다",
+          "text": "5.2 크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까",
           "verbatim": true
         },
         "lead": {
-          "text": "크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까?",
+          "text": "세 번째를 골랐습니다. 캐릭터 이동을 이동 코드(`CharacterController2D`) 하나에 모으는 것이 가장 안전하다고 판단했습니다.",
           "verbatim": true
         },
         "sectionPath": [
           "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
-          "5.2 벽에 걸린 캐릭터는 벽이 직접 민다"
+          "5.2 크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까"
         ],
         "points": [],
         "visuals": [
@@ -587,13 +625,13 @@
         "layout": "problem",
         "tab": "문제 해결",
         "title": {
-          "text": "5.2 벽에 걸린 캐릭터는 벽이 직접 민다",
+          "text": "5.2 크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까",
           "verbatim": true
         },
         "lead": null,
         "sectionPath": [
           "5. 거꾸로 쓰는 색 규칙: 크러셔 벽",
-          "5.2 벽에 걸린 캐릭터는 벽이 직접 민다"
+          "5.2 크러셔 벽과 캐릭터의 충돌을 어떻게 처리할까"
         ],
         "points": [
           {
@@ -691,16 +729,16 @@
         "layout": "full",
         "tab": "선택",
         "title": {
-          "text": "6.2 공격 3종을 인터페이스로 묶는다",
+          "text": "6.2 공격 3종의 공통 구조를 어떻게 둘까",
           "verbatim": true
         },
         "lead": {
-          "text": "인터페이스로 정했습니다.",
+          "text": "인터페이스로 정했습니다. 공격끼리 나눠 가질 것은 동작이 아니라 약속이라고 봤기 때문입니다.",
           "verbatim": true
         },
         "sectionPath": [
           "6. 보스전",
-          "6.2 공격 3종을 인터페이스로 묶는다"
+          "6.2 공격 3종의 공통 구조를 어떻게 둘까"
         ],
         "points": [],
         "visuals": [
@@ -734,6 +772,48 @@
             "kind": "mermaid",
             "n": 1,
             "fp": "classDiagram"
+          }
+        ]
+      },
+      {
+        "key": "boss-cleanup",
+        "chapter": "boss",
+        "layout": "code",
+        "tab": "구현",
+        "title": {
+          "text": "6.3 공격은 자기 총알을 스스로 치운다",
+          "verbatim": true
+        },
+        "lead": {
+          "text": "공격 하나는 '시작'과 '정리' 두 함수만 약속하는 인터페이스(`IBossPattern`)를 구현합니다.",
+          "verbatim": true
+        },
+        "sectionPath": [
+          "6. 보스전",
+          "6.3 공격은 자기 총알을 스스로 치운다"
+        ],
+        "points": [
+          {
+            "label": "",
+            "text": "난사 공격(`BossPattern_Rampage`)은 만든 총알을 목록에 담아 두고, 끝날 때 남은 것을 모두 지웁니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "보스 관리자(`BossManager`)는 공격을 바꿀 때 무엇이 남았는지 모른 채 '정리해라'(`EndPattern`)만 부릅니다.",
+            "verbatim": true
+          },
+          {
+            "label": "",
+            "text": "운석 15개 중 10개째를 만들던 중이어도 남은 작업과 떨어지던 운석이 함께 사라집니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [
+          {
+            "kind": "code",
+            "n": 1,
+            "fp": "// BossPattern_Rampage.cs (발췌)"
           }
         ]
       },
@@ -821,33 +901,17 @@
           "7. 캐릭터 이동과 카메라",
           "7.2 왼쪽을 보면 닿는 위치가 어긋나던 문제"
         ],
-        "points": [
-          {
-            "label": "문제",
-            "text": "왼쪽으로 이동하면 캐릭터 그림은 뒤집히는데, 벽·발판에 닿는 위치는 오른쪽을 볼 때 그대로라 그림과 달랐습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "원인",
-            "text": "좌우 반전을 그림이 붙은 자식 오브젝트에만 했습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "해결",
-            "text": "부모째 좌우로 뒤집어 그림과 콜라이더가 함께 뒤집히게 했습니다.",
-            "verbatim": true
-          },
-          {
-            "label": "결과",
-            "text": "왼쪽을 보고 벽·발판에 붙어도 그림과 닿는 위치가 맞습니다.",
-            "verbatim": true
-          }
-        ],
+        "points": [],
         "visuals": [
+          {
+            "kind": "table",
+            "n": 1,
+            "fp": "항목|내용"
+          },
           {
             "kind": "code",
             "n": 1,
-            "fp": "// ShifterController.cs"
+            "fp": "// Shifter Controller.cs"
           }
         ]
       },
@@ -873,7 +937,7 @@
           },
           {
             "label": "",
-            "text": "데드존 상자를 에디터 화면에 그리게 해, 위 5·아래 1을 눈으로 보며 맞췄습니다.",
+            "text": "데드존 상자를 에디터 화면에 그리게 해, 위 5·아래 1(보스방은 위 3.5)을 눈으로 보며 맞췄습니다.",
             "verbatim": true
           }
         ],
