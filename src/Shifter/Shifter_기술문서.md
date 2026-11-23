@@ -31,11 +31,13 @@ SHIFTER는 캐릭터의 색을 흰색과 검은색으로 바꿔 가며 스테이
 | 항목 | 내용 |
 |---|---|
 | 엔진 · 언어 | Unity 6 (6000.3.15f1), URP 2D · C# |
+| 직접 만든 것 | 기획·게임 규칙, 레벨 디자인(STAGE 1 · STAGE 2 · 보스방), C# 코드(배운 코드 제외. 보스 공격 코드와 리팩토링은 AI와 함께 → [AI와 함께 만든 방식](#ai와-함께-만든-방식)), 플레이하며 정한 수치 |
 | 외부 에셋 | 캐릭터·보스·타일·배경·UI 그림과 Super Pixel Projectiles Pack 1(untiedgames, 보스 총알 그림). 모두 구매 또는 무료 에셋 |
 | 도구 | JetBrains Rider, Git · GitHub, Claude(→ [AI와 함께 만든 방식](#ai와-함께-만든-방식)) |
 | 규모 | 직접 쓴 C# 스크립트 33개(약 1,900줄, 배운 코드 제외), 씬 4개 |
 
 - GitHub: https://github.com/rlawlsdn77/Unity-2D-Shifter
+<!-- ✍️ 시연 영상이 생기면 이 자리에 "- 시연 영상: <주소>" 줄을 추가. '(추가 예정)' 같은 빈 자리표시자는 읽는 사람에게 '링크 없음'과 같아서 뺐습니다 -->
 
 ---
 
@@ -321,7 +323,7 @@ stateDiagram-v2
 
 ```mermaid
 classDiagram
-    direction TB
+    direction LR
     class OnBosspattern {
         보스방 입구 트리거
     }

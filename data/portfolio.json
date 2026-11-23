@@ -36,7 +36,7 @@
       "evidence": [
         { "text": "밸런스 표는 TSV 4종, 조절값은 ScriptableObject 7종, 최고 기록은 JSON으로 분리", "project": "OverFixed" },
         { "text": "열 이름으로 칸을 찾는 제네릭 파서 하나가 TSV 표를 모두 읽음", "project": "OverFixed" },
-        { "text": "Newtonsoft.Json으로 종류(`Type`) → `TurnMessage` → `Parameter` 순서로 세 번 파싱", "project": "IfIWasInMarket" }
+        { "text": "사용자 ID 표기가 섞인 프로토콜이라, 대소문자만 달라도 값이 빠지는 System.Text.Json 대신 Newtonsoft.Json을 고름", "project": "IfIWasInMarket" }
       ]
     }
   ],

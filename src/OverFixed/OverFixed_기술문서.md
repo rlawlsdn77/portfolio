@@ -142,7 +142,7 @@ flowchart LR
 | 장점 | 필요한 아이템을 놓쳐도 다시 찾으러 갈 수 있어 유저 친화적임 | 선내 사고와 주문 해결 사이에서 각 상황에 따른 선택을 유저가 스스로 결정하고, 그 과정이 긴박하게 진행됨 |
 | 단점 | 놓쳐도 다시 찾을 수 있어, 무엇부터 할지 고르는 긴박함이 줄어듦 | 필요한 재료를 놓치면 다시 찾을 수 없어 덜 친절함 |
 
-흐르다 사라지게 하는 쪽을 골랐습니다. 선내 사고와 주문 해결 사이에서 플레이어가 상황에 따라 스스로 선택하고, 그 과정이 긴박하게 진행되기를 바랐기 때문입니다.
+덜 친절해지는 대가를 안고 흐르다 사라지게 하는 쪽을 골랐습니다.
 
 ### 4.1 끊임없이 생기는 재료와 지붕 에어락
 
@@ -172,7 +172,7 @@ flowchart LR
 
 ### 4.3 비중 뽑기가 경계값에서 아무것도 고르지 못하던 문제
 
-재료·사고 종류를 비중으로 뽑는 함수가 드물게 아무것도 고르지 못했습니다. `Random.Range(float, float)`는 정수 버전과 달리 최댓값도 포함하기 때문입니다. 비중 0인 번호는 건너뛰고, 반복문이 끝나면 비중이 있는 마지막 번호를 돌려주게 고쳐, 비중이 0인 재료는 나오지 않습니다.
+재료·사고 종류를 비중으로 뽑는 함수가 드물게 아무것도 고르지 못했습니다. `Random.Range(float, float)`는 정수 버전과 달리 최댓값도 포함하기 때문입니다. 비중 0인 번호는 건너뛰고, 반복문이 끝나면 비중이 있는 마지막 번호를 돌려주게 고쳐, 비중이 0인 재료는 나오지 않습니다. 플레이로 확인했습니다.
 
 - 전체 코드: [SpawnManager.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/SpawnManager.cs) (풀과 흐름) · [WeightedRandom.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/WeightedRandom.cs) (비중 뽑기)
 
@@ -230,6 +230,25 @@ flowchart LR
 
 추상 클래스를 골랐습니다. `MiniGameUI`는 종류(enum)로 미니게임을 골라 시작과 끝만 알리고, 그것이 어떤 미니게임인지 모릅니다. 종류를 추가해도 기존 코드를 고치지 않습니다. 단일 상속 제약은 미니게임이 다른 부모를 가질 필요가 없어 문제가 되지 않았습니다.
 
+그림에서 볼 것은 세 미니게임이 `MiniGame` 하나를 상속해, `MiniGameUI`는 부모의 `Begin`·`End`·`Succeeded`만 알면 된다는 점입니다.
+
+```mermaid
+classDiagram
+    direction LR
+    class MiniGame {
+        <<abstract>>
+        +AccidentID
+        +Succeeded
+        +Begin(accidentRow, successCount)
+        +End()
+        #Succeed(resultText)
+        #Miss(resultText)
+    }
+    MiniGame <|-- TimingBarGame
+    MiniGame <|-- SequenceGame
+    MiniGame <|-- WireGame
+```
+
 - 전체 코드: [MiniGame.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/MiniGame/MiniGame.cs) (공통 부모) · [WireGame.cs](https://github.com/rlawlsdn77/Unity-3D-OverFixed/blob/main/Assets/OverFixed!/Scripts/MiniGame/WireGame.cs) (전선 잇기)
 
 ### 5.3 상태는 패널에, 화면은 보여 주기만
@@ -262,13 +281,13 @@ currentMiniGame.Succeeded -= accidentPanel.AddSuccess;              // Close
 
 ### 5.4 미니게임을 연 첫 프레임에 전선이 엉뚱한 곳에서 시작하던 문제
 
-전선 잇기 화면을 열자마자 단자를 클릭하면, 전선이 단자가 아닌 엉뚱한 위치에서 시작했습니다. 단자를 담은 Layout Group은 자식 위치를 프레임 끝에 계산해서, 만든 바로 그 프레임에는 단자 위치가 아직 정렬 전 값이었습니다. 단자를 만든 직후 정렬을 즉시 계산하게(`LayoutRebuilder.ForceRebuildLayoutImmediate`) 고쳤습니다.
+전선 잇기 화면을 열자마자 단자를 클릭하면, 전선이 단자가 아닌 엉뚱한 위치에서 시작했습니다. 단자를 담은 Layout Group은 자식 위치를 프레임 끝에 계산해서, 만든 바로 그 프레임에는 단자 위치가 아직 정렬 전 값이었습니다. 단자를 만든 직후 정렬을 즉시 계산하게(`LayoutRebuilder.ForceRebuildLayoutImmediate`) 고쳤습니다. 플레이로 확인했습니다. 화면을 열자마자 눌러도 전선이 단자에서 시작합니다.
 
 ---
 
 ## 6. 세 씬을 오가는 값을 한 곳에서만 바꾼다
 
-선내 사고를 빠르게 해결하지 않으면 안정도가 감소합니다. 그리고 할당량 제출이 끝나면 크레딧을 더 모아야 할 이유가 퇴색되기 때문에, 안정도 기능과 안정도 회복 물질을 추가해 크레딧의 사용처를 늘렸습니다. 이렇게 사고·주문·구매가 모두 같은 안정도와 크레딧을 바꾸게 되자, 그 값을 어디에 두고 누가 바꿀지 정해야 했습니다.
+선내 사고를 빠르게 해결하지 않으면 안정도가 감소합니다. 여기에 안정도를 회복하는 물질을 더해, 크레딧을 안정도에도 쓸 수 있게 했습니다. 이렇게 사고·주문·구매가 모두 같은 안정도와 크레딧을 바꾸게 되자, 그 값을 어디에 두고 누가 바꿀지 정해야 했습니다.
 
 크레딧을 어디에 쓰게 할까?
 
@@ -468,7 +487,7 @@ Wire        전선 연결    30             3                               10  
 |---|---|---|
 | 셰이더 | 셰이더 모양 | 게임 화면에서 눈으로 |
 | 재료 스폰 로직 (반구 형태에서 위쪽만 비껴 지나가기) | 위쪽 반구·함선 위 스치기 | 경로 길이 계산 ([4.2](#42-함선-위를-스치는-경로와-줄지-않는-풀)) |
-| 코드 리팩터링 | 리팩터링 규칙 | 한 판 플레이 |
+| 코드 리팩터링 | 리팩터링 규칙("값은 `GameManager` 함수로만 바꾼다"는 원칙) | 한 판 플레이 |
 
 잘 된 점은 경로 계산과 셰이더를 빨리 얻은 것입니다.
 
