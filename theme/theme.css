@@ -1,10 +1,44 @@
 /* ─────────────────────────────────────────────────────────────
-   테마 (theme/theme.css) — 포트폴리오 페이지·슬라이드·상세 문서가 마지막에 싣는 파일
-   지금은 비어 있어 기본 테마(어두운 바탕 · profile.md 강조색 → 보랏빛 그러데이션)를 씁니다.
-
-   바꾸려면: Claude Code에서 마음에 드는 웹페이지 스크린샷을 첨부하고
-     /portfolio-theme
-   를 입력하세요. Claude가 색·모양·영문 글꼴·효과를 정해진 규칙으로 뽑아 이 파일을 채웁니다.
-   손잡이(--t-*) 설명: .claude/skills/portfolio-theme/rules.md
-   이 파일은 /portfolio-update가 건드리지 않습니다(템플릿을 업데이트해도 내 테마가 남음).
+   테마 (theme/theme.css) — 포트폴리오 인쇄본(print.html)·슬라이드(project.html)·상세 문서(doc.html)가 마지막에 싣는 파일
+   2026-11-23: 예전 temp2/deck-theme.css(레트로 게임풍 다크)를 그대로 옮김. 맨 위 index.html(레트로 포트폴리오)과 같은 색.
+   검은 초록빛 바탕 · CRT 초록 강조 하나 · 각진 카드와 네모 버튼 · 픽셀 영문 라벨(Press Start 2P) · 광채 없음
+   규칙: .claude/skills/portfolio-theme/rules.md — 영문 글꼴 @import + :root { --t-… } 한 블록만.
+   슬라이드 배치(창 제목 막대·상태 막대·뒤집은 표지·픽셀 상자·주사선)는 theme/deck-layout.css가 맡습니다(project.html만 싣음).
+   한글 글꼴은 Pretendard 그대로(덱 측정·PPTX). 이 파일은 /portfolio-update가 건드리지 않습니다.
    ───────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");   /* 굵기 하나(400)뿐 — 가짜 굵게는 deck-layout.css가 막음 */
+
+:root {
+  /* ① 바탕과 글자 — 포트폴리오 페이지(index.html)의 --bg · --ink · 본문 80% · 보조 56% · 선 12%/24% · 판 4%를 바탕 위에서 섞은 색 */
+  --t-scheme: dark;
+  --t-bg: #0A0D0B;
+  --t-surface: #131614;
+  --t-ink: #E9EEE6;
+  --t-body: #BCC1BA;
+  --t-muted: #878B86;
+  --t-line: #252825;
+  --t-line-2: #404340;
+
+  /* ② 강조색 — CRT 초록 하나(짝 색 없음) */
+  --t-accent: #7BE38F;
+  --t-accent-2: #7BE38F;
+  --t-accent-3: #7BE38F;
+
+  /* ③ 모양 — 픽셀 화면처럼 모두 각지게 */
+  --t-radius: 0px;
+  --t-pill: 0px;
+  --t-shadow: rgb(0 0 0 / .8);
+
+  /* ④ 영문 라벨 글꼴 — 픽셀(오락실) */
+  --t-display: 'Press Start 2P';
+
+  /* ⑤ 효과 — 단색 라벨 · 단색 배지 · 광채 없음 */
+  --t-grad: linear-gradient(var(--accent-ink), var(--accent-ink));
+  --t-badge: var(--accent-fill);
+  --t-glow: 0;
+  --t-mark: 0;
+
+  /* 코드 판 — 바탕보다 한 단 어둡게 */
+  --t-code-bg: #070908;
+  /* 다이어그램 판은 어두운 바탕이라 기본(밝은 판) 그대로 */
+}

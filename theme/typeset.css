@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────
    줄바꿈 규칙 (theme/typeset.css) — 레이아웃 원칙 2 "짧은 끝줄 막기" (theme/layout-principles.md)
-   원본·temp1·temp2의 포트폴리오 문서·발표 덱·상세 기술문서가 모두 마지막에 싣습니다.
+   포트폴리오(index.html·print.html)·슬라이드·상세 문서가 모두 마지막에 싣습니다.
    theme/theme.css는 색 손잡이만 두는 파일이라(check-theme.py) 줄바꿈 규칙은 여기에 따로 둡니다.
    /portfolio-update가 렌더러(index.html·project.html·doc.html)를 다시 받으면 그 파일의 이 줄(<link … typeset.css>)이 빠집니다 → 다시 넣으세요.
 
