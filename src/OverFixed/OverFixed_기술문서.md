@@ -454,7 +454,11 @@ currentMiniGame.Succeeded -= accidentPanel.AddSuccess;              // Close
 | ScriptableObject | 한 벌뿐인 조절값 | 인스펙터 (플레이 중에도) | `CoreConfig`(안정도), `SpawnConfig`(재료 생성), `PlayerControlConfig`(이동·카메라), `MiniGameConfig` 등 7종 | `[SerializeField]` 참조 |
 | JSON (`persistentDataPath`) | 게임을 꺼도 남는 기록 | 게임이 저장 | `RecordSave`(최고 항해 수, 그때의 누적 크레딧) | `GameManager` |
 
-![플레이 중인 Unity 에디터. 오른쪽 인스펙터에 SpawnConfig 에셋의 값(재료 생성과 흐름 · 풀링)이 보이고, 아래 Game 뷰에서는 게임이 계속 돌아간다](images/inspector_config.png)
+| ScriptableObject · SpawnConfig | TSV · ItemTable |
+|---|---|
+| ![인스펙터에 보이는 SpawnConfig 에셋의 값. 재료 생성과 흐름(Base Spawn Rate 1.5, Flow Speed 2.5) · 풀링(Pool Count 40, Flow Item Scale 5)](images/SO_spawn.png) | ![ItemTable.tsv를 표로 연 화면. 첫 줄은 영어 열 이름, 둘째 줄은 # 한글 설명, 그 아래로 재료마다 한 줄씩 생성 비중이 적혀 있다](images/TSV_item.png) |
+
+**한 벌뿐인 조절값은 인스펙터에서, 행이 여러 개인 밸런스 표는 스프레드시트에서 고칩니다.**
 
 경계는 이렇게 나눕니다. 사고 종류마다 다른 값(제한시간·성공 횟수·안정도 감소·뽑힐 비중)은 `AccidentTable`의 한 줄에, 미니게임마다 한 벌뿐인 조작감 값(타이밍 바 커서 속도·성공 구간 폭, 순서 입력 길이)은 `MiniGameConfig`에 둡니다.
 
