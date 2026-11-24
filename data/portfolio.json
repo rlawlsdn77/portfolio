@@ -20,7 +20,7 @@
       "evidence": [
         { "text": "다른 색 발판의 `BoxCollider2D`를 꺼 이동·레이캐스트에서 함께 사라지게 함", "project": "Shifter" },
         { "text": "`DontDestroyOnLoad` 싱글톤 `GameManager`로 3개 씬의 값과 규칙을 한 곳에", "project": "OverFixed" },
-        { "text": "씬 전환을 `LiarClient`의 함수 한 곳에서 Additive 로드 → 활성 씬 지정 → 이전 씬 언로드로", "project": "IfIWasInMarket" }
+        { "text": "Additive 씬 전환에 맞춰 UI 매니저를 씬마다 나누고 공통 UI엔 타이머·채팅만 남김", "project": "IfIWasInMarket" }
       ]
     },
     {
