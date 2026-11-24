@@ -736,9 +736,9 @@ function ProjectButtons({ p, t }) {
   return (
     <div className="flex flex-wrap gap-3">
       <a className="pbtn pxb2 lift pri" href={deckUrl(p)} target="_blank" rel="noopener">{t('name.deck')} <Ext /></a>
+      {isUrl(L.video) && <a className="pbtn pxb2 lift" href={L.video} target="_blank" rel="noopener">{t('name.video')} <Ext /></a>}
       <a className="pbtn pxb2 lift" href={docUrl(p)} target="_blank" rel="noopener">{t('name.doc')} <Ext /></a>
       {isUrl(L.github) && <a className="pbtn pxb2 lift" href={L.github} target="_blank" rel="noopener">GitHub <Ext /></a>}
-      {isUrl(L.video) && <a className="pbtn pxb2 lift" href={L.video} target="_blank" rel="noopener">{t('name.video')} <Ext /></a>}
       {(L.extra || []).filter((l) => isUrl(l.url)).map((l, k) => <a key={k} className="pbtn pxb2 lift" href={l.url} target="_blank" rel="noopener">{l.label} <Ext /></a>)}
     </div>
   );
@@ -1053,6 +1053,7 @@ function WorldMap({ projects, t, no }) {
               <div className="mt-auto pt-4 flex flex-wrap gap-3">
                 <button type="button" className="pbtn pxb2 lift pri" onClick={() => enterStage(`p-${sp.id}`)}>▶ 스테이지 입장</button>
                 <a className="pbtn pxb2 lift" href={deckUrl(sp)} target="_blank" rel="noopener">{t('name.deck')} <Ext /></a>
+                {isUrl(sp.links?.video) && <a className="pbtn pxb2 lift" href={sp.links.video} target="_blank" rel="noopener">{t('name.video')} <Ext /></a>}
               </div>
               <p className="keyhint mt-3"><span className="key pxb2">◀</span><span className="key pxb2">▶</span> 고르기 · <span className="key pxb2">ENTER</span> 입장</p>
             </div>

@@ -16,8 +16,8 @@
 | 규모 | C# 스크립트 53개(약 3,400줄), 씬 3개, 밸런스 표(TSV) 4종, 설정 ScriptableObject(Unity에서 값을 담아 두는 파일) 7종 |
 
 - GitHub: https://github.com/rlawlsdn77/Unity-3D-OverFixed (게임 코드는 `Assets/OverFixed!/Scripts`, 그 밖의 폴더는 수업 실습)
+- 시연 영상: https://www.youtube.com/watch?v=hp_KYSpKFlc
 - 스크립트 수와 줄 수는 `Assets/OverFixed!/Scripts` 기준이고, 배운 코드는 빼고 AI와 함께 쓴 부분은 넣었습니다.
-<!-- ✍️ 시연 영상이 생기면 이 자리에 "- 시연 영상: <주소>" 줄을 추가. '(추가 예정)' 같은 빈 자리표시자는 읽는 사람에게 '링크 없음'과 같아서 뺐습니다 -->
 
 ---
 

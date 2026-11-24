@@ -15,7 +15,7 @@
 | 규모 | 이 프로젝트의 C# 스크립트 33개(약 1,900줄, 배운 코드 제외, AI와 함께 쓴 부분 포함), 씬 4개 |
 
 - GitHub: https://github.com/rlawlsdn77/Unity-2D-Shifter
-<!-- ✍️ 시연 영상이 생기면 이 자리에 "- 시연 영상: <주소>" 줄을 추가. '(추가 예정)' 같은 빈 자리표시자는 읽는 사람에게 '링크 없음'과 같아서 뺐습니다 -->
+- 시연 영상: https://www.youtube.com/watch?v=TV2pPTsOFdg
 
 ---
 

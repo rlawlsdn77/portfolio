@@ -16,9 +16,8 @@
 | 규모 | 담당 스크립트 7개 약 3,500줄, 그중 본인 작성 약 2,500줄 |
 
 - GitHub: https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket (내 코드는 `Assets/10. Scripts/06. Server And WebSocket/KJW_LIARGAME/Scripts`)
+- 시연 영상: https://www.youtube.com/watch?v=5ojDbp9maf0
 - 본인 작성 줄 수에는 서버 프로토콜에 맞춘 `Protocol.cs`·`CreateNetworkManager.cs` 약 700줄이 들어 있고, AI가 쓴 `ParseNetworkManager.cs`와 `LiarClient.cs`의 턴 메시지를 받는 함수 일부는 뺐습니다.
-
-<!-- ✍️ 시연 영상이 생기면 이 자리에 "- 시연 영상: <주소>" 줄을 추가. '(추가 예정)' 같은 빈 자리표시자는 읽는 사람에게 '링크 없음'과 같아서 뺐습니다 -->
 
 ---
 
