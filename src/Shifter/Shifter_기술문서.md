@@ -86,11 +86,12 @@ flowchart LR
     IN["키 입력"] --> PC["ShifterController"]
     PC -->|"Shift"| SH["Shifter<br/>지금 색"]
     PC -->|"이동 입력"| CC["CharacterController2D<br/>이동"]
-    SH -.->|"색 읽기"| W["발판 · 총알 · 기믹"]
-    W -->|"외부 이동"| CC
+    SH -.->|"색 읽기"| PF["발판 · 총알"]
+    SH -.->|"색 읽기"| GM["기믹<br/>크러셔 벽"]
+    GM -->|"외부 이동"| CC
 ```
 
-> 실선은 직접 부르는 관계, 점선은 값을 읽기만 하는 관계입니다.
+> 실선은 직접 부르는 관계, 점선은 값을 읽기만 하는 관계입니다. 그림은 원칙 ①·②(색과 이동)의 길을 보이고, ③ 보스는 [6.3](#63-공격은-자기-총알을-스스로-치운다) 그림에 있습니다.
 
 1. **캐릭터의 색을 바꾸는 곳은 `Shifter.ShiftTag()` 하나.** 발판·총알·벽은 모두 캐릭터의 색을 읽기만 합니다. → [4장](#4-색-규칙-shift-한-번이-바꾸는-것)
 2. **캐릭터 이동은 `CharacterController2D`만 맡는다.** 키 입력도, 벽이 미는 힘도 이 코드를 거칩니다. → [5장](#5-거꾸로-쓰는-색-규칙-크러셔-벽), [7장](#7-캐릭터-이동과-카메라)
@@ -244,15 +245,18 @@ Shift를 쓸 이유가 약해서 바꿨습니다. 개수 세기는 관찰과 기
 
 ```csharp
 // CrusherWall.cs (발췌) — 물리 계산마다, 벽 하나씩
-bool blocked = !player.CompareTag(wall.obj.tag);     // 다른 색이면 막힌다 (발판과 반대)
-color.a = blocked ? 0.5f : 1f;                       // 다른 색 벽은 반투명 (발판과 같음, 4.1)
+// 다른 색이면 막힌다 (발판과 반대)
+bool blocked = !player.CompareTag(wall.obj.tag);
+// 다른 색 벽은 반투명 (발판과 같음, 4.1)
+color.a = blocked ? 0.5f : 1f;
 
 // ... 벽을 끝 지점 쪽으로 옮기고, 이번에 움직인 거리를 wallDelta에 담는다
 
 if (blocked && wall.renderer.bounds.Intersects(playerCollider.bounds))
 {
     playerController.SetMoveInput(0f);
-    playerController.AddExternalMovement(wallDelta); // 벽이 움직인 만큼 캐릭터도 움직인다
+    // 벽이 움직인 만큼 캐릭터도 움직인다
+    playerController.AddExternalMovement(wallDelta);
 }
 
 // SpawnWall() — 벽을 만들 때
@@ -279,6 +283,8 @@ rb.bodyType = RigidbodyType2D.Kinematic;
 
 *공격 3종. 레이저는 보스 앞에서는 쏘자마자 사라지는 버그(→ [9장](#94-남은-문제)) 때문에, 보스에서 떨어진 자리에서 찍어 레이저가 화면을 가로지르는 모습입니다. 흰 총알은 그림의 원래 색 때문에 노란빛으로 보입니다.*
 
+- 총알마다 흰·검이 무작위로 정해지고, 같은 색일 때만 맞습니다. 흰·검 발판은 총알을 막지 않으므로, 발판 뒤에 숨는 대신 **다가오는 총알과 다른 색이 되어 몸으로 흘려보내는** 것이 회피 방법입니다.
+
 ### 6.1 공격 3번 → 5초 그로기 → 약점
 
 그림에서 볼 것은 공격 3번이 끝나야 그로기가 열리고, 약점을 3번 맞힐 때까지 이 고리를 되풀이한다는 점입니다.
@@ -299,8 +305,6 @@ stateDiagram-v2
 
 보스는 10초마다 공격을 무작위로 바꾸고, 3번 공격한 뒤 5초 동안 멈춰 약점을 드러냅니다(그로기). 약점은 밟는 즉시 꺼져 그로기 한 번에 한 번만 맞힐 수 있습니다. 한 주기가 45초(대기 10 + 공격 30 + 그로기 5)이므로, 가장 빠른 격파는 세 번째 그로기가 열리는 약 130초(2:10)입니다(코드의 시간 값으로 계산).
 
-- 총알마다 흰·검이 무작위로 정해지고, 같은 색일 때만 맞습니다. 흰·검 발판은 총알을 막지 않으므로, 발판 뒤에 숨는 대신 **다가오는 총알과 다른 색이 되어 몸으로 흘려보내는** 것이 회피 방법입니다.
-
 ### 6.2 공격 3종의 공통 구조를 어떻게 둘까
 
 | | 공통 부모 클래스(추상 클래스) `BossPattern` | 약속만 정하는 인터페이스 `IBossPattern` |
@@ -315,7 +319,7 @@ stateDiagram-v2
 
 ```mermaid
 classDiagram
-    direction LR
+    direction TB
     class OnBosspattern {
         보스방 입구 트리거
     }
@@ -369,7 +373,7 @@ public void StartPattern()
 
 public void EndPattern()
 {
-    StopAllCoroutines();                            // 아직 쏘지 않은 발사도 취소
+    StopAllCoroutines();                               // 아직 쏘지 않은 발사도 취소
     foreach (var projectile in activeProjectiles)
     {
         if (projectile != null) Destroy(projectile);   // 이미 맞아서 사라진 총알은 null
@@ -472,7 +476,7 @@ AI(Claude)는 제작 중과 제작 뒤 두 시기에 썼습니다.
 
 **잘 된 것.**
 - 검수에서 안 쓰는 코드와 디버그 로그를 정리하면서, 빌드 에러라는 실제 버그도 함께 찾았습니다.
-- 에디터 자동 테스트에서 혼자 플레이할 때 지나쳤던 문제 4가지(STAGE 1 총알 · STAGE 2 레드 타일 · 보스 레이저 · 다른 색 발판 안에서 Shift)를 찾았습니다(→ 9장 [남은 문제](#94-남은-문제)).
+- 에디터 자동 테스트에서 혼자 플레이할 때 지나쳤던 문제 4가지(STAGE 1 총알 · STAGE 2 레드 타일 · 보스 레이저 · 다른 색 발판 안에서 Shift)를 찾았습니다(→ 아래 [9.4](#94-남은-문제)).
 
 **안 된 것.**
 - 문서 초안에서 AI가 코드만 보고 설계 의도를 추정해 적었습니다. '왜 이렇게 했는지'는 코드에 남아 있지 않아, 문장마다 맞는지 하나씩 답하며 확인해야 했습니다.
