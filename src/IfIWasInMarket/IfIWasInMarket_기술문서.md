@@ -151,6 +151,17 @@ flowchart LR
 |---|---|
 | `MartReturnState` (마트에서 복귀) | 손에 든 물건 정리 → 플레이어별 고른 물건·퀘스트 결과 저장 → 회의실 씬 로드 → 채팅·TAB 정보창·퀘스트 결과·장르/키워드 UI → 퀘스트 효과음 → 회의 BGM |
 
+이때 `MartReturnState`가 담고 오는 값은 아래와 같습니다. 모든 상태에 공통인 값 4개와, 이 상태만의 값(`Parameter`)으로 나뉩니다.
+
+| 필드 | 형식 | 담긴 것 | 쓰는 곳 |
+|---|---|---|---|
+| `TurnMessageType` | enum | `MartReturnState` | 어느 핸들러로 갈지 |
+| `TimerMs` | float | 제한시간(ms) | 모든 상태에 공통 |
+| `CurrentCycle` | int | 사이클 | 모든 상태에 공통 |
+| `CurrentRound` | int | 라운드 | 모든 상태에 공통 |
+| `Parameter` → `UserItemList[]` | `UserId`, `ItemList` | 플레이어별 고른 물건 ID | 손에 든 물건 정리, 고른 물건 저장 |
+| `Parameter` → `UserQuestInfo[]` | `UserId`, `IsSuccess` | 플레이어별 개인 퀘스트 성공 여부 | 퀘스트 결과 UI·효과음 |
+
 한 라운드 안에서 턴 상태는 서버가 보낸 차례대로 아래처럼 넘어갑니다. 그림에서 볼 것은 발언과 지목 사이를 사이클마다 오가다가, 투표나 라밍아웃 어느 쪽으로든 라이어 확정에 닿는다는 점입니다.
 
 ```mermaid
@@ -250,10 +261,108 @@ sequenceDiagram
     Note over LC: 핸들러가 할 일을 정해진 순서로 부름 (5.2)
 ```
 
+리팩터링 전과 뒤를 세 군데에서 비교합니다. 리팩터링 전 코드는 리팩터링 직전 커밋(09.01)의 것이고, 긴 줄은 문서에서 나눠 옮겼습니다.
+
+**① 메시지 정의: 상태마다 클래스 하나 → `TurnMessage` 하나**
+
+```csharp
+// Before — Protocol.cs (리팩터링 전, 발췌): 상태마다 클래스 하나
+public class PointAtSuspectStateMessage
+{
+    public string Type { get; set; } = "지목 상태";
+    public float TimerMs { get; set; }
+    public int CurrentCycle { get; set; }
+    public int CurrentRound { get; set; }
+}
+
+public class PointAtSuspectEndStateMessage
+{
+    public string Type { get; set; } = "지목 종료 상태";
+    public float TimerMs { get; set; }
+    public int CurrentCycle { get; set; }
+    public int CurrentRound { get; set; }
+    public string CurrentOwnerID { get; set; } // 최다 득표(지목)된 유저
+}
+```
+
+```csharp
+// After — Protocol.cs (리팩터링 뒤, 발췌): 턴 상태는 이 클래스 하나
+public class TurnMessage
+{
+    public string Type { get; set; } = "turnMessage";
+    public TurnMessageType TurnMessageType { get; set; }
+    public float TimerMs { get; set; }
+    public int CurrentCycle { get; set; }
+    public int CurrentRound { get; set; }
+    public string Parameter { get; set; } // 상태마다 다른 값만. 없으면 null
+}
+
+// 지목 종료 · 라이어 확정 · 라밍아웃이 함께 쓰는 파라미터
+public class FocusIdParameter
+{
+    public string CurrentFocusID { get; set; }
+}
+```
+
+- **왜 묶을 수 있었나.** 21개 클래스 모두 공통 값 4개(`Type`·`TimerMs`·`CurrentCycle`·`CurrentRound`)가 같았고, 그중 11개는 그 밖에 아무 값도 없었습니다. 상태마다 다른 것은 '종류'와 '덧붙는 값'뿐이었으므로, 바뀐 양식은 종류를 enum으로, 덧붙는 값을 `Parameter` 하나로 받습니다. '누구 한 명'만 담는 상태 셋은 `FocusIdParameter`를 함께 씁니다.
+
+**② 받는 분기: 한글 문장으로 고르기 → enum으로 고르기**
+
+```csharp
+// Before — LiarClient.cs (리팩터링 전, 발췌): JSON의 Type(한글 문장)으로 고름
+switch (type)
+{
+    case "지목 상태":
+        OnPointAtSuspectState(
+            JsonConvert.DeserializeObject<PointAtSuspectStateMessage>(json));
+        break;
+    // ... 같은 모양의 한글 문장 case가 22개
+
+    default: Debug.Log($"[방] 등록되지 않은 종류(type) : {type}"); break;
+}
+```
+
+```csharp
+// After — LiarClient.cs (리팩터링 뒤, 발췌): 턴 상태는 이 case 하나로 받음
+case "turnMessage":
+    ParseNetworkManager.NetworkManager.MessageParse(
+        JsonConvert.DeserializeObject<TurnMessage>(json));
+    break;
+
+// After — ParseNetworkManager.cs (리팩터링 뒤, 발췌): enum으로 나눔
+switch (msg.TurnMessageType)
+{
+    case Protocol.TurnMessageType.PointAtSuspectState:
+        OnPointAtSuspectState?.Invoke(
+            msg.TimerMs, msg.CurrentCycle, msg.CurrentRound);
+        break;
+}
+```
+
+- **처음 설계에서 놓친 것.** 메시지 종류를 가리는 값이 화면에 보일 법한 한글 문장이었고, 서버와 클라이언트가 그 문장을 글자 그대로 맞춰야 했습니다. 모르는 종류는 `default`에서 로그 한 줄만 남기고 넘어가므로, 한 글자만 달라도 컴파일 오류 없이 그 상태가 조용히 무시됩니다. enum은 이름이 틀리면 컴파일되지 않습니다(이름·순서가 서버와 어긋나는 위험은 위 표의 B 단점으로 남음).
+
+**③ 상태 비교: 문자열 → enum**
+
+```csharp
+// Before — LiarUICanvasBinder.cs (리팩터링 전, 발췌): CurrentPhase는 string
+bool show = client.CurrentPhase == "물건 보여주고 발언 상태"
+            && client.RemainingSeconds > 3f
+            && client.LiarButtonClicked == false;
+```
+
+```csharp
+// After — LiarUICanvasBinder.cs (리팩터링 뒤, 발췌): CurrentState는 enum
+bool show = client.CurrentState == TurnMessageType.ShowItemAndSpeakState
+            && client.RemainingSeconds > 3f
+            && client.LiarButtonClicked == false;
+```
+
+- **처음 설계에서 놓친 것.** 받은 한글 문장을 그대로 현재 상태 값(`CurrentPhase`)으로 저장해, 같은 문장 비교가 `LiarClient` 3줄과 `LiarUICanvasBinder` 10줄에 복사되어 있었습니다. 오타는 컴파일러가 잡지 못하고, 서버가 상태 이름을 바꾸면 흩어진 13줄을 찾아 고쳐야 했습니다. 지금은 `TurnMessageType`으로 비교하므로 이름이 틀리면 컴파일 단계에서 드러납니다.
+
 | | 리팩터링 전 | 리팩터링 뒤 |
 |---|---|---|
-| 턴 상태 메시지 클래스 | 상태마다 22개 | `TurnMessage` 1개 (안에서 22종으로 나눔) |
-| 받는 함수의 분기 | 한글 문자열 34개 | 메시지 종류 14개 |
+| 턴 상태 메시지 클래스 | 상태마다 21개 | `TurnMessage` 1개 (안에서 22종으로 나눔) |
+| 받는 함수의 분기 | 33개 (그중 한글 문자열 22개) | 메시지 종류 14개 |
 
 - 새 상태를 추가하는 비용이 'enum 값 1 + case 1 + 핸들러 1'로 정해졌습니다.
 - 모르는 메시지 종류는 로그만 남기고 넘어가, 클라이언트를 서버에 맞추기 전에도 코어 루프를 시험할 수 있습니다(모르는 턴 상태는 예외).

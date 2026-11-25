@@ -125,4 +125,4 @@
 .vbox[data-kind="code"] .vmedia { box-shadow: none; }
 .rt-ach li::before { border-radius: 0; }
 .note, .callout { border-radius: 0; }
-table.mini td, table.md-table td { border-bottom: 1px dashed var(--line-2); }
+/* 표 격자는 deck-theme.css의 --grid 실선(가로·세로)을 그대로 씀 — 예전 가로 점선(--line-2)만으로는 어두운 바탕에서 칸이 안 보였음 */

@@ -13,6 +13,7 @@
 :root {
   --ink: var(--t-ink, #F4F4F6); --muted: var(--t-muted, #9A9AA6); --faint: var(--t-faint, color-mix(in srgb, var(--muted) 85%, var(--bg)));
   --line: var(--t-line, #26262E); --line-2: var(--t-line-2, #3D3D48); --bg: var(--t-bg, #0A0A0D); --card: var(--t-surface, #131318); --paper: var(--card);
+  --grid: var(--t-grid, color-mix(in srgb, var(--ink) 26%, var(--card)));   /* 표 격자 — 상세 문서(doc.css)와 같은 규칙 */
   --deck-bg: color-mix(in srgb, var(--bg) 88%, #000); --zebra: color-mix(in srgb, var(--ink) 3%, var(--card)); --th: color-mix(in srgb, var(--ink) 5%, var(--card));
   --accent: #2F6FEB; --accent-ink: #6D9AF1; --accent-fill: #2F6FEB; --accent-soft: #101A31; --accent-chip: #14264B; --accent-mid: #224C9D;
   --accent-2: #8C2FEB; --accent-2-ink: #BA82F3; --accent-2-fill: #8C2FEB; --accent-3: #EB2FBD;
@@ -104,8 +105,8 @@ a.chip:hover { background: var(--accent-chip); }
            font-size: 15px; font-weight: 800; text-decoration: none; background: transparent; white-space: nowrap; }
 .btnlink.primary { background: var(--accent-fill); color: #fff; }
 table.mini { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 1.55; table-layout: fixed; background: var(--paper); }
-table.mini th { background: var(--th); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); font-weight: 700; text-align: left; padding: 9px 14px; font-size: 14px; }   /* 머리 밑줄은 안쪽 그림자(크기 그대로) */
-table.mini td { padding: 9px 14px; border-bottom: 1px solid var(--line); color: var(--ink); vertical-align: top; overflow-wrap: anywhere; }
+table.mini th { background: var(--th); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); font-weight: 700; text-align: left; padding: 9px 14px; font-size: 14px; border: 1px solid var(--grid); }   /* 머리 밑줄은 안쪽 그림자(크기 그대로) */
+table.mini td { padding: 9px 14px; border: 1px solid var(--grid); color: var(--ink); vertical-align: top; overflow-wrap: anywhere; }
 table.mini tbody tr:nth-child(even) td { background: var(--zebra); }
 table.mini caption { caption-side: top; text-align: left; font-size: 13px; font-weight: 700; color: var(--muted); padding-bottom: 4px; }
 table.kv { border-collapse: collapse; font-size: 15px; }
@@ -249,8 +250,8 @@ table.kv td.role { color: var(--accent-ink); font-weight: 800; }
 .vbox .cap { font-size: 13px; line-height: 1.4; color: var(--muted); text-align: center; }
 .vbox .cap .ix { font-family: var(--mono); font-size: 12px; color: var(--accent-ink); margin-right: 6px; }
 table.md-table { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 1.5; background: var(--paper); table-layout: auto; }
-table.md-table th { background: var(--th); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); font-weight: 700; text-align: left; padding: 7px 11px; font-size: 13px; vertical-align: bottom; }
-table.md-table td { padding: 7px 11px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink); overflow-wrap: anywhere; }
+table.md-table th { background: var(--th); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); font-weight: 700; text-align: left; padding: 7px 11px; font-size: 13px; vertical-align: bottom; border: 1px solid var(--grid); }
+table.md-table td { padding: 7px 11px; border: 1px solid var(--grid); vertical-align: top; color: var(--ink); overflow-wrap: anywhere; }
 table.md-table tbody tr:nth-child(even) td { background: var(--zebra); }
 table.md-table code { font-size: max(.86em, 12px); }   /* 머리 칸(13px) 안 코드도 코드 하한 12px 아래로 내려가지 않게 */
 table.md-table img { max-height: 120px; max-width: 100%; height: auto; }   /* width·height 속성(렌더러가 미리 잰 크기)으로 불러오기 전에도 자리를 잡음 */
