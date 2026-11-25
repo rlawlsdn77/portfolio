@@ -163,7 +163,8 @@ code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft
 .md pre.fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), rgba(0,0,0,.25)); mask-image: linear-gradient(to right, #000 calc(100% - 56px), rgba(0,0,0,.25)); }
 
 .table-wrap { margin: 18px 0; overflow-x: auto; }
-.md table { display: table; border-collapse: collapse; font-size: 14.5px; }
+.md table { display: table; border-collapse: collapse; font-size: 14.5px;
+            outline: 1px solid var(--grid); outline-offset: -1px; }   /* 바깥 테두리: 겹친 칸 테두리는 절반이 표 밖이라 .table-wrap(overflow)에 잘려 안 보였음 → 표 안쪽에 한 번 더 그림 */
 .md th { text-align: left; background: var(--th); color: var(--ink); font-weight: 700; padding: 10px 14px; border: 1px solid var(--grid); white-space: nowrap; }
 .md td { padding: 10px 14px; border: 1px solid var(--grid); vertical-align: top; color: var(--body); }
 .md td img { display: block; margin: 0; border-radius: 8px; border: 1px solid var(--line); cursor: zoom-in; height: auto; }
