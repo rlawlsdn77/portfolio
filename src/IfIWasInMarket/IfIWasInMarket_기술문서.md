@@ -132,7 +132,7 @@ flowchart LR
 구조 전체를 관통하는 규칙은 세 가지입니다.
 
 1. 진행은 서버가 정하고, 상태 값은 한 곳에서만 쓴다. → [5.1](#51-상태마다-할-일을-한-함수에)
-2. 패널을 켜고 끄는 일은 상태가 바뀌는 순간에만 한다. → [5.2](#52-ui를-언제-갱신할까)
+2. 패널을 켜고 끄는 일은 상태가 바뀌는 순간에만 한다. → [5.3](#53-ui를-언제-갱신할까)
 3. 연출은 서버가 확정한 순간에 붙인다. → [8장](#8-조명사운드-연출-연결)
 
 ---
@@ -145,79 +145,41 @@ flowchart LR
 
 ### 5.1 상태마다 할 일을 한 함수에
 
-서버는 상태가 바뀔 때마다 "지금은 이 상태, 제한시간은 N ms"를 4명 모두에게 보냅니다. 상태는 22종이고, 하나를 받으면 할 일이 여러 가지입니다. 예를 들어 마트에서 복귀하는 `MartReturnState`가 담고 오는 값은 아래와 같습니다. 모든 상태에 공통인 값 4개와, 이 상태만의 값(`Parameter`)으로 나뉩니다.
+서버는 상태가 바뀔 때마다 "지금은 이 상태, 제한시간은 N ms"를 4명 모두에게 보냅니다. 상태는 22종이고, 하나를 받으면 할 일이 여러 가지입니다. 예를 들어 라운드를 여는 장르 배분·라이어 선정 상태(`GenreAssignAndLiarSelectState`)가 담고 오는 값은 아래와 같습니다. 모든 상태에 공통인 값 4개와, 이 상태만의 값(`Parameter`)으로 나뉩니다.
 
 | 필드 | 형식 | 담긴 것 | 쓰는 곳 |
 |---|---|---|---|
-| `TurnMessageType` | enum | `MartReturnState` | 어느 핸들러로 갈지 |
+| `TurnMessageType` | enum | `GenreAssignAndLiarSelectState` | 어느 핸들러로 갈지 |
 | `TimerMs` | float | 제한시간(ms) | 모든 상태에 공통 |
 | `CurrentCycle` | int | 사이클 | 모든 상태에 공통 |
 | `CurrentRound` | int | 라운드 | 모든 상태에 공통 |
-| `Parameter` → `UserItemList[]` | `UserId`, `ItemList` | 플레이어별 고른 물건 ID | 손에 든 물건 정리, 고른 물건 저장 |
-| `Parameter` → `UserQuestInfo[]` | `UserId`, `IsSuccess` | 플레이어별 개인 퀘스트 성공 여부 | 퀘스트 결과 UI·효과음 |
+| `Parameter` → `GenreId` | int | 이번 라운드 장르 ID | 장르 이름 찾기 |
+| `Parameter` → `CurrentOwnerID` | string | 선정된 라이어 ID | 라이어 ID 저장 (4명 모두 받음 → [10.4](#104-남은-문제)) |
 
-핸들러(상태 하나를 받았을 때 할 일을 모아 둔 함수)는 **① 공통 값 기록(`DoSetPhase`) → ② 팀원 시스템 → ③ 조명 → ④ UI → ⑤ 사운드** 순서로 부릅니다. `MartReturnState`는 씬을 옮기는 핸들러라 ④ UI 앞에서 회의실 씬을 다 불러올 때까지 기다리고([5.4](#54-씬이-바뀔-때-회의실-ui가-뜨지-않던-문제)), 조명은 바꾸지 않습니다. 번호 주석은 문서에서 단 설명입니다.
+핸들러(상태 하나를 받았을 때 할 일을 모아 둔 함수)는 **① 공통 값 기록(`DoSetPhase`) → ② 팀원 시스템 → ③ 조명 → ④ UI → ⑤ 사운드** 순서로 부르고, 그 상태에 할 일이 없는 칸은 건너뜁니다. 이 상태는 ①과 ④만 부릅니다. 씬을 옮기는 핸들러는 ④ UI 앞에서 새 씬을 다 불러올 때까지 기다립니다([5.4](#54-씬이-바뀔-때-회의실-ui가-뜨지-않던-문제)). 번호 주석은 문서에서 단 설명입니다.
 
 ```csharp
-// LiarClient.cs — 마트 복귀 상태 (발췌). 이 상태가 할 일을 정해진 순서로 부른다
-private async UniTask OnMartReturnStateAsync(float timerMs, int cycle, int round,
-    UserItemList[] userItemLists, UserQuestInfo[] userQuestInfos)
+// LiarClient.cs — 장르 배분 · 라이어 선정 상태 (발췌)
+private void OnGenreAssignAndLiarSelectState(float timerMs, int cycle, int round, int genreId,
+    string liarId)
 {
-    // ① 공통 값 기록
-    DoSetPhase(TurnMessageType.MartReturnState, timerMs, cycle, round);
+    // ① 공통 값 기록 · 받은 장르 저장
+    DoSetPhase(TurnMessageType.GenreAssignAndLiarSelectState, timerMs, cycle, round, liarId);
+    Genre = DataManager.Instance.GetGenreDef(genreId).GenreName;
 
-    // ② 팀원 시스템: 손에 든 물건 정리
-    for (int i = 0; i < userItemLists.Length; i++)
-    {
-        Interaction_Player player = GetPlayer(userItemLists[i].UserId);
-        player.ClearSelectedItems();
-        ItemInteractionHandler handler = player.GetComponent<ItemInteractionHandler>();
-        handler.ClearHandItem();
-    }
-    // ... 플레이어별 고른 물건 · 내 퀘스트 결과(QuestSuccess) 저장
+    // ④ UI: 타이머(매 라운드 다시 켬, 5.3) · '장르 및 키워드 뿌리기 준비 중'
+    CommonUIManager.Instance?.ShowTimer();
+    CommonUIManager.Instance?.ReadyToSelectUI();
 
-    // 회의실 씬을 다 불러온 뒤에 UI를 켠다
-    DoSetPlayer(MEETINGSTATE);
-    await DoLoadScene(CONFERENCESCENE);
-
-    // ④ UI: 채팅 · TAB 정보창 · 퀘스트 결과 · 장르/키워드
-    CommonUIManager.Instance?.ShowChat();
-    CommonUIManager.Instance?.EnableTabInfo();
-    MeetingRoomUIManager.Instance?.ShowQuestResult(QuestSuccess);
-    MeetingRoomUIManager.Instance?.ShowGenreKeyword(Genre, Keyword);
-
-    // ⑤ 사운드: 퀘스트 효과음 → 회의실 기본 BGM
-    SoundManager.Instance?.PlaySfx(QuestSuccess
-        ? SoundManager.GameSfx.QuestClear : SoundManager.GameSfx.QuestFail);
-    SoundManager.Instance?.StopBGM();
-    SoundManager.Instance?.PlayBGM(SoundManager.GameBGM.LiarGameBasic);
+    // 선정된 라이어 ID 저장
+    LiarId = liarId;
 }
 ```
 
 - 모든 핸들러가 상태 기록을 거치므로, "지금 무슨 상태인가"를 바꾸는 길이 하나뿐입니다. 채팅 종류 판별과 라밍아웃 버튼 조건이 모두 이 값을 읽습니다.
 - 전체 코드: [LiarClient.cs](https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket/blob/main/Assets/10.%20Scripts/06.%20Server%20And%20WebSocket/KJW_LIARGAME/Scripts/LiarClient.cs)
 
-### 5.2 UI를 언제 갱신할까
-
-상태가 바뀌는 순간 공지 패널이 떠서, 새 규칙(마트·특수채팅·라밍아웃)이 낯선 사람도 지금 무엇을 할지 압니다.
-
-| 장르·키워드 받기 (`CommonUIManager`) | 발언자 공지 (`MeetingRoomUIManager`) | 라밍아웃 버튼 (`MeetingRoomUIManager`) |
-|---|---|---|
-| ![매 라운드 장르·키워드 받기 상태에 뜨는 장르·키워드·현재 라운드 공개 패널](images/keyword_reveal.png) | ![발언 상태에 들어오는 순간 뜨는 발언자 공지(발언자·소개하는 물건·카테고리·사이클)와, 마트 복귀부터 왼쪽에 상시 표시되는 장르·키워드](images/speaker_notice.png) | ![발언 상태에서 남은 시간이 3초보다 많을 때만 아래에 보이는 라밍아웃 버튼](images/liarout_button.png) |
-
-UI를 언제 갱신할지 두 방법을 견줬습니다.
-
-| | A. 매 프레임 상태를 보고 판단한다 (폴링, 리팩터링 전) | B. 상태에 들어오는 순간 UI 함수를 부른다 (리팩터링 뒤) |
-|---|---|---|
-| 장점 | 호출을 빠뜨릴 일이 없다 | "이 상태에 무엇이 뜨는가"가 상태 핸들러 한 곳에 모인다 |
-| 단점 | 어떤 상태에 무엇이 뜨는지 알려면 갱신 함수 12개를 모두 읽어야 한다 | 호출을 빠뜨리면 패널이 안 뜨거나 남는다(실제로 2라운드부터 타이머가 안 켜졌다) |
-
-**둘을 나눠 썼습니다.** 패널을 켜고 끄는 일은 상태가 바뀌는 순간에만 일어나므로 B로, 타이머처럼 한 상태 안에서도 계속 바뀌는 값은 A로 남겼습니다. 대가인 '빠뜨림'은 두 규칙으로 줄였습니다.
-
-- 한 번에 하나만 보이는 공지는 모두 '모든 공지 끄기'로 시작해, 이전 공지를 끄는 것을 잊을 수 없게 했습니다.
-- 타이머처럼 매 라운드 다시 켜야 하는 UI는 라운드가 시작되는 상태(장르·키워드 받기)에서도 켜도록 했습니다.
-
-### 5.3 턴 메시지를 어떻게 나눠 받을까
+### 5.2 턴 메시지를 어떻게 나눠 받을까
 
 리팩터링 단계에서 서버를 맡은 김민성 님이 턴 메시지를 넓히기 어렵다며 구조 변경을 제안해, 바뀐 서버에 맞춰 클라이언트를 다시 짰습니다. 늘어나는 턴 메시지를 나눠 받는 두 방법을 견줬습니다.
 
@@ -287,9 +249,24 @@ switch (msg.TurnMessageType)
 
 - 전체 코드: [ParseNetworkManager.cs](https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket/blob/main/Assets/10.%20Scripts/06.%20Server%20And%20WebSocket/KJW_LIARGAME/Scripts/ParseNetworkManager.cs) · [Protocol.cs](https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket/blob/main/Assets/10.%20Scripts/06.%20Server%20And%20WebSocket/KJW_LIARGAME/Scripts/Protocol.cs)
 
+### 5.3 UI를 언제 갱신할까
+
+상태가 바뀌는 순간 공지 패널이 떠서, 처음 하는 사람도 지금 무엇을 할지 압니다.
+
+| 장르·키워드 받기 (`CommonUIManager`) | 발언자 공지 (`MeetingRoomUIManager`) | 라밍아웃 버튼 (`MeetingRoomUIManager`) |
+|---|---|---|
+| ![매 라운드 장르·키워드 받기 상태에 뜨는 장르·키워드·현재 라운드 공개 패널](images/keyword_reveal.png) | ![발언 상태에 들어오는 순간 뜨는 발언자 공지(발언자·소개하는 물건·카테고리·사이클)와, 마트 복귀부터 왼쪽에 상시 표시되는 장르·키워드](images/speaker_notice.png) | ![발언 상태에서 남은 시간이 3초보다 많을 때만 아래에 보이는 라밍아웃 버튼](images/liarout_button.png) |
+
+| | A. 매 프레임 판단 (폴링, 리팩터링 전) | B. 상태에 들어올 때 호출 (리팩터링 뒤) |
+|---|---|---|
+| 장점 | 호출을 빠뜨리지 않는다 | 상태마다 뜨는 UI가 핸들러 한 곳에 모인다 |
+| 단점 | 무엇이 뜨는지 알려면 갱신 함수 12개를 다 읽어야 한다 | 호출을 빠뜨리면 패널이 안 뜨거나 남는다 |
+
+**둘을 나눠 썼습니다.** 패널을 켜고 끄는 일은 B로, 타이머·남은 3초처럼 한 상태 안에서 계속 바뀌는 값은 A로 남겼습니다. 빠뜨림은 두 규칙으로 막았습니다. 공지는 늘 '모든 공지 끄기'로 시작하고, 타이머는 라운드 첫 상태에서도 다시 켭니다(5.1 코드 — 2라운드부터 타이머가 안 켜지던 버그를 고친 곳).
+
 ### 5.4 씬이 바뀔 때 회의실 UI가 뜨지 않던 문제
 
-Canvas 전환 단계에서는 UI를 모두 Canvas 프리팹 하나에 두어 로비용 방 정보가 회의실에서도 보였습니다. 그래서 리팩터링 때 타이머·채팅만 공통 UI에 남기고 나머지는 씬마다 두었습니다. 위쪽 셋에는 `DontDestroyOnLoad`를 걸었습니다. 그림에서 볼 것은 회의실 UI가 회의실 씬과 함께 생긴다는 점입니다(Additive: 지금 씬을 둔 채 새 씬을 겹쳐 불러오는 방식).
+처음에는 모든 UI를 Canvas 프리팹 하나에 두어 로비의 방 정보가 회의실에서도 보였습니다. 그래서 리팩터링 때 타이머·채팅만 씬이 바뀌어도 남는 공통 UI에 두고, 로비·회의실 UI는 그 씬과 함께 생기고 사라지게 나눴습니다(Additive: 지금 씬을 둔 채 새 씬을 겹쳐 불러오는 방식).
 
 ```mermaid
 flowchart TB
@@ -307,32 +284,23 @@ flowchart TB
     LC -->|"새 씬을 Additive로 불러온 뒤<br/>이전 씬 내리기"| DROP
 ```
 
-- 전체 코드: [CommonUIManager.cs](https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket/blob/main/Assets/10.%20Scripts/06.%20Server%20And%20WebSocket/KJW_LIARGAME/Scripts/CommonUIManager.cs) · [MeetingRoomUIManager.cs](https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket/blob/main/Assets/10.%20Scripts/06.%20Server%20And%20WebSocket/KJW_LIARGAME/Scripts/MeetingRoomUIManager.cs)
-
 | 항목 | 내용 |
 |---|---|
-| 문제 | 마트에서 회의실로 돌아오면 바로 떠야 할 퀘스트 결과와 장르·키워드가 뜨지 않았습니다 |
-| 원인 | 씬은 몇 프레임에 걸쳐 불러오는데(비동기), 띄우는 코드가 기다리지 않았습니다. 아직 `MeetingRoomUIManager`가 없었고, 대상이 없으면 조용히 건너뛰게 써 두어 오류도 나지 않았습니다 |
-| 해결 | 씬을 다 불러온 뒤에 띄우게 바꿨습니다(나정원 님, 리팩터링 때). 씬을 옮기는 상태 4종이 모두 이 모양입니다 |
-| 결과 | 마트에서 돌아오자마자 두 UI가 뜨는 것을 테스트로 확인했습니다 |
+| 문제 | 마트에서 회의실로 돌아오면 퀘스트 결과와 장르·키워드가 뜨지 않았습니다 |
+| 원인 | 씬을 다 불러오기(비동기) 전에 UI를 불러, 아직 `MeetingRoomUIManager`가 없었습니다. 대상이 없으면 조용히 건너뛰게 써 두어 오류도 나지 않았습니다 |
+| 해결 | 씬을 다 불러온 뒤에 UI를 부르게 바꿨습니다(나정원 님). 씬을 옮기는 상태 4종이 모두 이 모양입니다 |
+| 결과 | 돌아오자마자 두 UI가 뜨는 것을 테스트로 확인했습니다 |
 
-그림에서 볼 것은 회의실 씬을 다 불러온 **뒤에야** 회의실 UI를 부른다는 점입니다.
+아래 그림처럼 회의실 씬을 다 불러온 **뒤에야** 회의실 UI를 부릅니다.
 
 ```mermaid
-sequenceDiagram
-    participant LC as LiarClient
-    participant SM as SceneManager (Unity)
-    participant UI as MeetingRoomUIManager
-    Note over LC: 마트 복귀 상태(MartReturnState)를 받음
-    LC->>SM: 회의실 씬 불러오기 (Additive)
-    activate SM
-    SM-->>LC: 다 불러옴 (await)
-    deactivate SM
-    Note over UI: 회의실 씬과 함께 생김
-    LC->>SM: 마트 씬 내리기 (await)
-    LC->>UI: 퀘스트 결과 표시 (ShowQuestResult)
-    LC->>UI: 장르·키워드 표시 (ShowGenreKeyword)
+flowchart LR
+    A["마트 복귀<br/>상태 받음"] --> B["회의실 씬<br/>불러오기 (await)"]
+    B --> C["마트 씬<br/>내리기 (await)"]
+    C --> D["퀘스트 결과 ·<br/>장르/키워드 표시"]
 ```
+
+- 전체 코드: [CommonUIManager.cs](https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket/blob/main/Assets/10.%20Scripts/06.%20Server%20And%20WebSocket/KJW_LIARGAME/Scripts/CommonUIManager.cs) · [MeetingRoomUIManager.cs](https://github.com/rlawlsdn77/Unity-3D-IfIWasInMarket/blob/main/Assets/10.%20Scripts/06.%20Server%20And%20WebSocket/KJW_LIARGAME/Scripts/MeetingRoomUIManager.cs)
 
 ---
 
@@ -495,7 +463,7 @@ public void RequestLiarSelfDisclose()
 
 ## 10. 돌아보며
 
-팀 전체로는 로비 → 마트 → 회의실이라는 핵심 루프를 설계·구현하고, 턴마다 맞는 UI/UX를 제공했습니다. 그 안에서 제가 맡은 일은 서버의 턴 메시지를 각 객체에 전달해 턴을 진행하고, 팀원이 만든 UI를 알맞은 턴에 보이게 연결하는 것이었습니다. 4장의 기술 목표 두 가지는 이뤘습니다. 한 판(로비 → 3라운드 → 최종 결과 → 로비 복귀)이 끝까지 돌고, 새 상태는 enum 값 1 + case 1 + 핸들러 1로 더할 수 있습니다([5.3](#53-턴-메시지를-어떻게-나눠-받을까)).
+팀 전체로는 로비 → 마트 → 회의실이라는 핵심 루프를 설계·구현하고, 턴마다 맞는 UI/UX를 제공했습니다. 그 안에서 제가 맡은 일은 서버의 턴 메시지를 각 객체에 전달해 턴을 진행하고, 팀원이 만든 UI를 알맞은 턴에 보이게 연결하는 것이었습니다. 4장의 기술 목표 두 가지는 이뤘습니다. 한 판(로비 → 3라운드 → 최종 결과 → 로비 복귀)이 끝까지 돌고, 새 상태는 enum 값 1 + case 1 + 핸들러 1로 더할 수 있습니다([5.2](#52-턴-메시지를-어떻게-나눠-받을까)).
 
 ### 10.1 목표한 경험은 전해졌나
 
@@ -519,11 +487,11 @@ public void RequestLiarSelfDisclose()
 
 ### 10.3 AI와 함께 만든 방식
 
-서버의 턴 메시지 양식과 `Protocol.cs`가 대대적으로 바뀐 리팩터링 단계([5.3](#53-턴-메시지를-어떻게-나눠-받을까))에서 AI를 썼습니다.
+서버의 턴 메시지 양식과 `Protocol.cs`가 대대적으로 바뀐 리팩터링 단계([5.2](#52-턴-메시지를-어떻게-나눠-받을까))에서 AI를 썼습니다.
 
 | AI에게 맡긴 것 | 내가 직접 판단한 것 |
 |---|---|
-| `ParseNetworkManager.cs` 작성(턴 메시지를 상태별로 다시 나눔), `LiarClient.cs`의 턴 메시지를 받는 함수 일부 | 턴 메시지를 하나로 묶는 방향([5.3](#53-턴-메시지를-어떻게-나눠-받을까)) · 씬별 UI 나누기([5.4](#54-씬이-바뀔-때-회의실-ui가-뜨지-않던-문제)) · 받는 쪽 분기와 구독(일이 생기면 부를 함수 등록) 정리 |
+| `ParseNetworkManager.cs` 작성(턴 메시지를 상태별로 다시 나눔), `LiarClient.cs`의 턴 메시지를 받는 함수 일부 | 턴 메시지를 하나로 묶는 방향([5.2](#52-턴-메시지를-어떻게-나눠-받을까)) · 씬별 UI 나누기([5.4](#54-씬이-바뀔-때-회의실-ui가-뜨지-않던-문제)) · 받는 쪽 분기와 구독(일이 생기면 부를 함수 등록) 정리 |
 
 **확인 방법.** 코드를 읽고 이해한 뒤, 실행과 팀 플레이 테스트로 확인했습니다.
 
