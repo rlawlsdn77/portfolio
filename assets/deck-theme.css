@@ -24,7 +24,10 @@
   --code-bg: var(--t-code-bg, #111116); --ok: #1B7A4B; --ok-ink: color-mix(in srgb, #2BB673 70%, var(--ink)); --diagram-bg: var(--t-diagram, var(--card));
   --sans: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --display: var(--t-display, 'Montserrat'), var(--sans);
-  --mono: 'D2Coding', Consolas, monospace;
+  /* 영문·공백은 시스템 고정폭 글꼴(Windows Consolas · macOS Menlo · 리눅스 DejaVu Sans Mono), 한글만 D2Coding.
+     예전엔 D2Coding이 먼저였는데, 불러오는 D2Coding 축소판(subset)에 공백 글자가 없어 공백만 Consolas로 그려졌음
+     → 공백 폭(0.55em)과 글자 폭(0.5em)이 달라 공백으로 맞춘 줄 끝 주석이 줄마다 어긋났음 */
+  --mono: Consolas, Menlo, 'DejaVu Sans Mono', 'D2Coding', monospace;
   color-scheme: var(--t-scheme, dark);
 }
 body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }

@@ -265,13 +265,16 @@ color.a = blocked ? 0.5f : 1f;                       // 다른 색 벽은 반투
 if (blocked && wall.renderer.bounds.Intersects(playerCollider.bounds))
 {
     playerController.SetMoveInput(0f);
-    playerController.AddExternalMovement(wallDelta);  // 벽이 움직인 만큼 캐릭터도 움직인다
+    playerController.AddExternalMovement(wallDelta); // 벽이 움직인 만큼 캐릭터도 움직인다
 }
 
 // SpawnWall() — 벽을 만들 때
-col.enabled = false;                                 // 켜 두면 캐릭터가 벽 속에서 얼어붙는다 (5.2)
-Rigidbody2D rb = obj.AddComponent<Rigidbody2D>();    // PlatformManager가 이 벽을 발판으로 관리하지 않게
-rb.bodyType = RigidbodyType2D.Kinematic;             // 중력·물리 힘을 받지 않게 (벽은 직접 옮김)
+// 켜 두면 캐릭터가 벽 속에서 얼어붙는다 (5.2)
+col.enabled = false;
+// PlatformManager가 이 벽을 발판으로 관리하지 않게
+Rigidbody2D rb = obj.AddComponent<Rigidbody2D>();
+// 중력·물리 힘을 받지 않게 (벽은 직접 옮김)
+rb.bodyType = RigidbodyType2D.Kinematic;
 ```
 
 - **`Rigidbody2D`를 붙이는 이유.** 벽은 흰·검 발판 프리팹을 세워 다시 씁니다. 그대로 두면 `PlatformManager`가 태그를 보고 콜라이더를 다시 켜므로, '`Rigidbody2D`가 있으면 건너뛴다'는 규칙에 걸리게 했습니다.

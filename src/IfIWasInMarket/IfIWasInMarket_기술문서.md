@@ -182,15 +182,21 @@ stateDiagram-v2
 // LiarClient.cs — 지목 상태. 이 상태가 할 일을 정해진 순서로 부른다
 private void OnPointAtSuspectState(float timerMs, int cycle, int round)
 {
-    DoSetPhase(TurnMessageType.PointAtSuspectState, timerMs, cycle, round);      // ① 공통 값 기록
+    // ① 공통 값 기록
+    DoSetPhase(TurnMessageType.PointAtSuspectState, timerMs, cycle, round);
 
-    Vote_System.Instance?.SetTurnType(Vote_System.TurnType.Point, timerMs);      // ② 팀원 시스템: 지목 입력 켜기
-    if (cycle != 3) ConferenceManager.Instance?.RequestSkipPointUI(true);         //    Skip 버튼 (마지막 사이클 제외, 하드코딩)
+    // ② 팀원 시스템: 지목 입력 켜기
+    //    Skip 버튼 (마지막 사이클 제외, 하드코딩)
+    Vote_System.Instance?.SetTurnType(Vote_System.TurnType.Point, timerMs);
+    if (cycle != 3) ConferenceManager.Instance?.RequestSkipPointUI(true);
 
-    LightManager.Instance?.TurnOnFocusTable();                                     // ③ 조명: 테이블 전체
-    MeetingRoomUIManager.Instance?.ShowPointAtNotice();                            // ④ UI: "라이어로 의심되는 사람을 지목하십시오"
+    // ③ 조명: 테이블 전체
+    LightManager.Instance?.TurnOnFocusTable();
+    // ④ UI: "라이어로 의심되는 사람을 지목하십시오"
+    MeetingRoomUIManager.Instance?.ShowPointAtNotice();
 
-    SoundManager.Instance?.StopBGM();                                              // ⑤ 사운드: 지목·투표 BGM
+    // ⑤ 사운드: 지목·투표 BGM
+    SoundManager.Instance?.StopBGM();
     SoundManager.Instance?.PlayBGM(SoundManager.GameBGM.LiarGameVoteOrPoint);
 }
 ```
@@ -347,7 +353,8 @@ public void Say(string text)
     if (string.IsNullOrWhiteSpace(text)) return;
     if (Me == null) return;
 
-    // 발언 상태 + 내가 발언자 + 이번 차례에 아직 특수채팅을 안 보냈으면, 첫 마디는 특수채팅이 된다.
+    // 발언 상태 + 내가 발언자 + 이번 차례에 아직 특수채팅을 안 보냈으면,
+    // 첫 마디는 특수채팅이 된다.
     if (CurrentState == TurnMessageType.ShowItemAndSpeakState && CurrentOwnerID == Me.Id &&
         hasSentSpecialChat == false)
     {
@@ -401,7 +408,8 @@ flowchart LR
 | 공개는 서버가 알린 순간에 | 4명이 같은 순간에 판이 뒤집히는 장면을 보게 |
 
 ```csharp
-// LiarClient.cs — 라밍아웃 버튼을 눌렀다. '라이어가 아님' 안내는 여기서 바로 띄우고, 점수 판정은 서버가 한다.
+// LiarClient.cs — 라밍아웃 버튼을 눌렀다.
+// '라이어가 아님' 안내는 여기서 바로 띄우고, 점수 판정은 서버가 한다.
 public void RequestLiarSelfDisclose()
 {
     if (Me == null) return;
@@ -410,7 +418,8 @@ public void RequestLiarSelfDisclose()
     if (LiarId != Me.Id)
     {
         IsNotLiarPushCycle = true;
-        MeetingRoomUIManager.Instance?.ShowNotLiarNotice(); // 라이어가 아닌 사람이 라밍아웃 버튼을 누름
+        // 라이어가 아닌 사람이 라밍아웃 버튼을 누름
+        MeetingRoomUIManager.Instance?.ShowNotLiarNotice();
     }
 
     SendAsync(new LiarSelfDisclose { ID = Me.Id }).Forget();

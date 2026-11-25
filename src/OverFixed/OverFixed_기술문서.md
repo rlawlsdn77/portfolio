@@ -406,9 +406,12 @@ classDiagram
 
 ```csharp
 // MiniGameUI.cs (발췌) — 구독은 Open에서, 해제는 Close에서만
-currentMiniGame.Succeeded += accidentPanel.AddSuccess;              // Open
-currentMiniGame.Begin(accidentRow, accidentPanel.SuccessCount);     // Open: 지금까지의 성공 수를 넘겨 이어서
-currentMiniGame.Succeeded -= accidentPanel.AddSuccess;              // Close
+// Open
+currentMiniGame.Succeeded += accidentPanel.AddSuccess;
+// Open: 지금까지의 성공 수를 넘겨 이어서
+currentMiniGame.Begin(accidentRow, accidentPanel.SuccessCount);
+// Close
+currentMiniGame.Succeeded -= accidentPanel.AddSuccess;
 ```
 
 해결, 시간 초과, 정산·게임오버 화면, Q·Esc·닫기 버튼이 모두 같은 닫기 함수를 부르므로 해제가 빠질 곳이 없습니다. 시간 초과 직후 늦게 도착한 성공처럼 어긋난 호출은 패널이 무시합니다.
