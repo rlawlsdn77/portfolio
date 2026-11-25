@@ -22,6 +22,7 @@
   --line: var(--t-line, #24242C); --line-2: var(--t-line-2, #3D3D48);
   /* 표 격자 — 예전엔 --line(바탕과 거의 같은 색)이라 어두운 테마에서 칸이 안 보이고 글자만 떠 보였음. 글자색을 바탕에 섞어 밝은·어두운 테마 모두 보이게 */
   --grid: var(--t-grid, color-mix(in srgb, var(--ink) 26%, var(--paper)));
+  --grid-outer: var(--t-grid-outer, var(--ink));   /* 표 바깥 테두리 = 글자색(어두운 테마에서 흰색, 밝게 읽기·인쇄에서는 어두운 색) */
   --paper: var(--t-bg, #0A0A0D); --bg: var(--paper); --surface: var(--t-surface, #131318); --th: color-mix(in srgb, var(--ink) 5%, var(--surface));
   --code-bg: var(--t-code-bg, #111116); --diagram-bg: var(--t-diagram, var(--surface)); --shadow: var(--t-shadow, rgb(0 0 0 / .8));
   --sans: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -163,10 +164,15 @@ code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft
 .md pre.fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), rgba(0,0,0,.25)); mask-image: linear-gradient(to right, #000 calc(100% - 56px), rgba(0,0,0,.25)); }
 
 .table-wrap { margin: 18px 0; overflow-x: auto; }
-.md table { display: table; border-collapse: collapse; font-size: 14.5px;
-            outline: 1px solid var(--grid); outline-offset: -1px; }   /* 바깥 테두리: 겹친 칸 테두리는 절반이 표 밖이라 .table-wrap(overflow)에 잘려 안 보였음 → 표 안쪽에 한 번 더 그림 */
+.md table { display: table; border-collapse: collapse; font-size: 14.5px; }
 .md th { text-align: left; background: var(--th); color: var(--ink); font-weight: 700; padding: 10px 14px; border: 1px solid var(--grid); white-space: nowrap; }
 .md td { padding: 10px 14px; border: 1px solid var(--grid); vertical-align: top; color: var(--body); }
+/* 표 바깥 테두리(흰색) — 가장자리 칸의 겹친 테두리를 2px로: 더 굵은 쪽이 이기고, 바깥 절반이 .table-wrap(overflow)에 잘려도 안쪽 1px이 남음 */
+.md table tr > :first-child { border-left: 2px solid var(--grid-outer); }
+.md table tr > :last-child { border-right: 2px solid var(--grid-outer); }
+.md table > thead > tr:first-child > *,
+.md table:not(:has(> thead)) > tbody:first-of-type > tr:first-child > * { border-top: 2px solid var(--grid-outer); }
+.md table > :last-child > tr:last-child > * { border-bottom: 2px solid var(--grid-outer); }
 .md td img { display: block; margin: 0; border-radius: 8px; border: 1px solid var(--line); cursor: zoom-in; height: auto; }
 
 .md .pf-figure { margin: 20px 0; }
