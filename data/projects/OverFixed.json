@@ -58,7 +58,7 @@
       "title": "정비 씬으로 넘어가면 크레딧·안정도가 처음 값으로 돌아가던 문제",
       "problem": "정비 씬으로 넘어가면 크레딧·안정도가 처음 값으로 돌아갔다. 스크립트 실행 순서에 따라 `GameManager`가 씬과 함께 파괴됐다",
       "cause": "다른 코드가 `Awake`보다 먼저 `Instance`를 찾으면 배운 `SingletonBase`가 `DontDestroyOnLoad` 없이 매니저로 정해 버리고, 뒤이은 `Awake`는 '이미 정해짐'으로 건너뛰어 `DontDestroyOnLoad`가 끝내 걸리지 않았다",
-      "solution": "`Awake`에서 자기가 하나뿐인 매니저로 정해져 있으면 한 번 더 건다. 실행 순서를 앞당기는 방법(`[DefaultExecutionOrder]`)은 지킬 순서 규칙이 늘어나 고르지 않았다",
+      "solution": "`Awake`에서 자기가 하나뿐인 매니저로 정해져 있으면 `DontDestroyOnLoad`를 한 번 더 건다. 실행 순서를 앞당기는 방법(`[DefaultExecutionOrder]`)은 지킬 순서 규칙이 늘어나 고르지 않았다",
       "result": "정비 씬에서도 하이어라키의 DontDestroyOnLoad 아래에 `GameManager`가 남아 있는 것을 확인했다",
       "lesson": "'안다고 생각한 동작'과 실제 동작의 차이에서 나온 문제 — 쓰는 도구의 실제 동작을 확인한다",
       "section": "5.3 정비 씬으로 넘어가면 크레딧·안정도가 처음 값으로 돌아가던 문제"
@@ -167,7 +167,7 @@
           { "label": "", "text": "그래서 씬이 바뀌어도 값은 남고, 미니게임 화면을 닫아도 사고는 계속됩니다.", "verbatim": true }
         ],
         "visuals": [
-          { "kind": "mermaid", "n": 1, "fp": "flowchart LR" }
+          { "kind": "mermaid", "n": 1, "fp": "flowchart TB" }
         ]
       },
       {
@@ -250,14 +250,18 @@
       {
         "key": "credit-flow",
         "chapter": "loop",
-        "layout": "full",
+        "layout": "visual",
         "tab": "흐름",
-        "title": { "text": "크레딧과 안정도를 바꾸는 길은 아래가 전부입니다.", "verbatim": true },
+        "title": { "text": "크레딧과 코어 안정도가 늘고 주는 경우는 아래가 전부입니다.", "verbatim": true },
         "lead": { "text": "주문 실패에 −5%를 둔 것은, 모아 둔 크레딧으로 할당량만 내고 주문은 해결하지 않는 플레이를 막으려는 것입니다.", "verbatim": true },
         "sectionPath": ["5. 크레딧과 안정도"],
-        "points": [],
+        "points": [
+          { "label": "항해 성공", "text": "할당량을 다 내고 도착하면 정산 → 정비를 거쳐 다음 항해로 넘어갑니다.", "verbatim": true },
+          { "label": "게임오버", "text": "코어 안정도가 0%가 되거나, 할당량을 다 내지 못한 채 도착하면 끝납니다.", "verbatim": true }
+        ],
         "visuals": [
-          { "kind": "mermaid", "n": 1, "fp": "flowchart LR" }
+          { "kind": "table", "n": 2, "fp": "+ (늘어남)|− (줄어듦)" },
+          { "kind": "table", "n": 3, "fp": "+ (늘어남)|− (줄어듦)" }
         ]
       },
       {
@@ -302,7 +306,7 @@
         "points": [],
         "visuals": [
           { "kind": "table", "n": 1, "fp": "항목|내용" },
-          { "kind": "code", "n": 1, "fp": "// GameManager.cs" }
+          { "kind": "mermaid", "n": 1, "fp": "sequenceDiagram" }
         ]
       },
       {
