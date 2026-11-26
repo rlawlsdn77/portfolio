@@ -194,38 +194,45 @@
   .gauge { display: inline-flex; gap: 3px; margin-left: auto; }
   .gauge i { width: 10px; height: 8px; background: rgba(233, 238, 230, .12); }
   .gauge i.on { background: var(--acc); }
-  .sk .hd { display: flex; align-items: center; gap: 14px; padding: 18px 16px 0; }
-  .sk .ico { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex: none; color: var(--acc); background: var(--acc-soft);
+  .sk .hd { display: flex; align-items: center; gap: 14px; padding: 14px 16px 0; }
+  .sk .ico { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; color: var(--acc); background: var(--acc-soft);
     --pc: var(--acc-line); transition: background-color .12s, color .12s; }
   .sk:hover .ico { background: var(--acc); color: var(--bg); --pc: var(--acc); }
   .sk h3 { margin: 0; min-width: 0; font-family: var(--pixel); font-weight: 700; font-size: 18px; line-height: 1.35; color: var(--ink); word-break: keep-all; }
   .sk h3 .sub { display: block; margin-top: 3px; font-weight: 400; font-size: 12px; line-height: 1.45; color: var(--muted); }
-  .sk ul { margin: 0; padding: 14px 16px 16px; list-style: none; }
-  .sk li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 9px 0; font-size: 14px; line-height: 1.6; color: var(--body); word-break: keep-all;
+  .sk ul { margin: 0; padding: 12px 16px 14px; list-style: none; }
+  .sk li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 7px 0; font-size: 14px; line-height: 1.6; color: var(--body); word-break: keep-all;
     border-top: 1px dashed var(--line); }
   .sk li:first-child { border-top: 0; padding-top: 0; }
-  .sk li .pj { display: inline-block; margin-top: 3px; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--acc); white-space: nowrap; }
+  .sk li .pj { display: inline-block; margin-left: 6px; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--acc); white-space: nowrap; }
   .sk li .pj:hover { text-decoration: underline; text-underline-offset: 3px; }
-  /* 인벤토리 창: 분류마다 한 줄(이름 + 아이템 슬롯), 아래 설명칸은 올린 아이템을 설명.
-     스킬 창 격자의 빈 칸에 들어가므로 폭이 좁으면 분류 이름을 위에, 넓으면 왼쪽에(컨테이너 폭 기준) */
-  .inv { display: flex; flex-direction: column; min-width: 0; background: var(--panel); container-type: inline-size; }
+  /* 인벤토리 창: 그 밖의 스킬 + 쓴 도구를 분류별로 가로로 나란히(슬롯 아래 이름). 아래 설명칸은 올린 아이템을 한 줄로 설명.
+     스킬 절이 한 화면에 들어가도록 높이를 한 줄로 — 넓은 화면은 분류 사이에 점선, 좁으면 줄바꿈 */
+  .inv { margin-top: 20px; background: var(--panel); }
   .inv .wbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 9px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
-  .inv .rows { flex: 1; padding: 4px 16px; }
-  .inv .row { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
-  .inv .row:last-child { border-bottom: 0; }
-  @container (min-width: 600px) { .inv .row { grid-template-columns: 120px minmax(0, 1fr); align-items: center; gap: 18px; } }
-  .inv .gl { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 12px; color: var(--muted); }
+  .inv .rows { display: flex; flex-wrap: wrap; gap: 16px 28px; padding: 14px 16px 12px; }
+  .inv .grp { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  @media (min-width: 1280px) {
+    .inv .rows { flex-wrap: nowrap; justify-content: space-between; gap: 0; }
+    .inv .grp + .grp { padding-left: 18px; border-left: 1px dashed var(--line); }
+    .inv .grp { padding-right: 18px; }
+  }
+  .inv .gl { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 12px; color: var(--muted); white-space: nowrap; }
   .inv .gl .n { margin-right: 6px; font-family: var(--arcade); font-size: 9px; color: var(--acc); }
-  .inv .items { display: flex; flex-wrap: wrap; gap: 12px; margin: 0; padding: 0; list-style: none; }
-  .item { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px 0 4px; border: 0; color: var(--body); background: rgba(10, 13, 11, .6);
-    --pc: var(--line2); transition: color .12s, transform .1s steps(2); }
-  .item .cart { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex: none; font-family: var(--arcade); font-size: 9px;
-    color: var(--acc); background: var(--acc-soft); transition: background-color .12s, color .12s; }
-  .item .nm { font-family: var(--pixel); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
-  .item:hover, .item:focus-visible { color: var(--ink); --pc: var(--acc-line); transform: translateY(-2px); }
-  .item.on { color: var(--ink); --pc: var(--acc); }
-  .item.on .cart { background: var(--acc); color: var(--bg); }
-  .inv .desc { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-height: 58px; margin: 0 16px 16px; padding: 9px 12px; font-family: var(--pixel);
+  .inv .items { display: flex; flex-wrap: wrap; gap: 10px 6px; margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 1280px) { .inv .items { flex-wrap: nowrap; } }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 60px; padding: 0; border: 0; background: transparent; color: var(--body); }
+  .item.wide { width: 80px; }
+  .item.fit { width: auto; min-width: 60px; }
+  .item.fit .nm { white-space: nowrap; }   /* 띄어쓰기 없는 긴 이름(Newtonsoft.Json)은 낱말 중간에서 끊지 않고 슬롯을 넓힘 */
+  .item .cart { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-family: var(--arcade); font-size: 9px; color: var(--acc);
+    background: rgba(10, 13, 11, .6); --pc: var(--line2); transition: background-color .12s, color .12s, transform .1s steps(2); }
+  .item .nm { max-width: 100%; font-family: var(--pixel); font-weight: 700; font-size: 11px; line-height: 1.3; text-align: center; word-break: keep-all; }
+  .item:hover .cart, .item:focus-visible .cart { --pc: var(--acc-line); transform: translateY(-3px); }
+  .item:hover, .item:focus-visible, .item.on { color: var(--ink); }
+  .item.on .cart { background: var(--acc); color: var(--bg); --pc: var(--acc); }
+  .item:focus-visible { outline-offset: 3px; }
+  .inv .desc { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-height: 40px; margin: 0 16px 14px; padding: 8px 12px; font-family: var(--pixel);
     font-size: 12px; line-height: 1.5; color: var(--body); background: rgba(10, 13, 11, .9); --pc: var(--line2); }
 
   /* 월드맵: 넓은 화면은 지도 + 옆 정보창, 좁은 화면은 위아래. 노드는 계단 길 위에(좁은 화면은 한 줄에 하나) */
@@ -970,22 +977,29 @@ const TOOL_GROUPS = [
     { name: 'Claude', mark: 'CL', p: ['Shifter'] } ] },
 ];
 
+const FEATURED = 3;   // 상세 창으로 보일 대표 스킬 수(profile.md 메모 순서의 앞에서부터)
 function Skills({ pf, byId, t, no }) {
   const skills = pf.skills || [];
   if (!skills.length) return null;
-  const cols = skills.length >= 3 ? 'md:grid-cols-2 xl:grid-cols-6' : skills.length === 2 ? 'md:grid-cols-2' : '';
-  const groups = TOOL_GROUPS.map((g) => ({ ...g, items: g.items.filter((x) => x.p.some((id) => byId[id])) })).filter((g) => g.items.length);
+  // 대표 스킬 = profile.md 기술 스택 메모 순서의 앞 FEATURED개(상세 창). 나머지는 인벤토리에 아이콘 + 이름만
+  const featured = skills.slice(0, FEATURED);
+  const rest = skills.slice(FEATURED);
+  const cols = featured.length >= 3 ? 'md:grid-cols-2 xl:grid-cols-3' : featured.length === 2 ? 'md:grid-cols-2' : '';
+  const span = (i) => (featured.length >= 3 && featured.length % 2 === 1 && i === featured.length - 1 ? 'md:col-span-2 xl:col-span-1' : '');
   const total = Object.keys(byId).length;
+  const projOf = (s) => [...new Set((s.evidence || []).map((e) => e.project).filter((id) => byId[id]))];
+  const skillItems = rest.map((s) => {
+    const [title, sub] = splitSkill(s.name);
+    return { name: title, sub, icon: (SKILL_ICON.find(([re]) => re.test(s.name)) || [])[1], wide: true, p: projOf(s), how: '근거' };
+  });
+  const groups = [
+    skillItems.length && { label: '그 밖의 스킬', items: skillItems },
+    ...TOOL_GROUPS.map((g) => ({ ...g, items: g.items.filter((x) => x.p.some((id) => byId[id])) })),
+  ].filter((g) => g && g.items.length);
   const nItems = groups.reduce((a, g) => a + g.items.length, 0);
   const [cur, setCur] = useState(null);   // 설명칸에 보일 아이템(올리기 · 포커스 · 누르기)
+  const curGroup = cur && (groups.find((g) => g.items.includes(cur)) || {}).label;
   const used = (x) => x.p.filter((id) => byId[id]).map((id) => byId[id].title);
-  // 빈 칸 없는 격자: 넓은 화면은 6칸 격자에 창마다 2칸(3열). 마지막 줄이 2개면 3칸씩, 1개면 6칸 — 중간 폭(2열)도 마지막 하나가 남으면 2칸
-  const n = skills.length;
-  const span = (i) => {
-    const xl = n >= 3 && i >= n - (n % 3) ? (n % 3 === 2 ? 'xl:col-span-3' : 'xl:col-span-6') : 'xl:col-span-2';
-    const md = n >= 2 && n % 2 === 1 && i === n - 1 ? 'md:col-span-2' : '';
-    return `${xl} ${md}`;
-  };
   return (
     <section id="skills" className="sec stage">
       <div className="wrap pad">
@@ -996,12 +1010,12 @@ function Skills({ pf, byId, t, no }) {
             <p className="mt-1 f-pixel text-[12px] muted"><span className="gauge align-[-1px] mr-1.5" aria-hidden="true"><i className="on" /><i /></span>= 근거가 나온 프로젝트 수</p>
           </div>
         </div>
-        <div className={`mt-8 grid gap-6 ${cols}`}>
-          {skills.map((s, i) => {
+        <div className={`mt-6 grid gap-6 ${cols}`}>
+          {featured.map((s, i) => {
             const [title, sub] = splitSkill(s.name);
             const icon = (SKILL_ICON.find(([re]) => re.test(s.name)) || [])[1];
             const ev = s.evidence || [];
-            const n = new Set(ev.map((e) => e.project).filter((id) => byId[id])).size;
+            const n = projOf(s).length;
             return (
               <article key={i} className={`sk pxb ${span(i)}`}>
                 <div className="wbar">
@@ -1018,7 +1032,7 @@ function Skills({ pf, byId, t, no }) {
                       <span className="acc" aria-hidden="true">▸</span>
                       <span>
                         <Rich text={e.text} />
-                        {byId[e.project] && <><br /><a href={`#p-${e.project}`} className="pj" onClick={(ev2) => { ev2.preventDefault(); enterStage(`p-${e.project}`); }}>{byId[e.project].title} →</a></>}
+                        {byId[e.project] && <><a href={`#p-${e.project}`} className="pj" onClick={(ev2) => { ev2.preventDefault(); enterStage(`p-${e.project}`); }}>{byId[e.project].title} →</a></>}
                       </span>
                     </li>
                   ))}
@@ -1028,22 +1042,22 @@ function Skills({ pf, byId, t, no }) {
           })}
         </div>
         {groups.length > 0 && (
-          <div className="inv pxb mt-8">
+          <div className="inv pxb">
             <div className="wbar">
               <span className="f-arcade text-[10px] acc">INVENTORY</span>
-              <span className="f-pixel font-bold text-[13px]">쓴 도구</span>
+              <span className="f-pixel font-bold text-[13px]">{skillItems.length ? '그 밖의 스킬 · 쓴 도구' : '쓴 도구'}</span>
               <span className="ml-auto f-arcade text-[9px] muted">ITEMS {pad(nItems)}</span>
             </div>
             <div className="rows">
               {groups.map((g, gi) => (
-                <div key={g.label} className="row">
+                <div key={g.label} className="grp">
                   <p className="gl"><span className="n">{pad(gi + 1)}</span>{g.label}</p>
                   <ul className="items">
                     {g.items.map((x) => (
                       <li key={x.name}>
-                        <button type="button" className={`item pxb2 ${cur === x ? 'on' : ''}`} aria-pressed={cur === x}
+                        <button type="button" className={`item ${x.wide ? 'wide' : !/\s/.test(x.name) && x.name.length > 8 ? 'fit' : ''} ${cur === x ? 'on' : ''}`} aria-pressed={cur === x}
                                 onMouseEnter={() => setCur(x)} onFocus={() => setCur(x)} onClick={() => setCur(x)}>
-                          <span className="cart" aria-hidden="true">{x.mark}</span>
+                          <span className="cart pxb2" aria-hidden="true">{x.icon ? <PxIcon name={x.icon} /> : x.mark}</span>
                           <span className="nm">{x.name}</span>
                         </button>
                       </li>
@@ -1054,8 +1068,8 @@ function Skills({ pf, byId, t, no }) {
             </div>
             <p className="desc pxb2" aria-live="polite">
               {cur
-                ? <><span className="font-bold acc">{cur.name}</span><span>{g2label(cur)}</span><span className="muted">쓴 프로젝트 — {used(cur).join(' · ')}</span></>
-                : <span className="muted"><span className="acc mr-1.5" aria-hidden="true">▶</span>아이템에 올리면 쓴 프로젝트가 여기 보입니다</span>}
+                ? <><span className="font-bold acc">{cur.name}</span><span>{curGroup}</span>{cur.sub && <span>{cur.sub}</span>}<span className="muted">{cur.how || '쓴'} 프로젝트 — {used(cur).join(' · ')}</span></>
+                : <span className="muted"><span className="acc mr-1.5" aria-hidden="true">▶</span>아이템에 올리면 설명과 프로젝트가 여기 보입니다</span>}
             </p>
           </div>
         )}
@@ -1063,7 +1077,6 @@ function Skills({ pf, byId, t, no }) {
     </section>
   );
 }
-const g2label = (x) => (TOOL_GROUPS.find((g) => g.items.includes(x)) || {}).label || '';
 
 // ── 04 월드맵: 프로젝트를 기간 순서로 계단 길 위에. 고르면 옆 정보창이 미끄러져 바뀌고, 고른 노드를 한 번 더 누르면(Enter) 입장.
 // 한 월드에 5개까지. 더 많으면 WORLD 1 · 2 …로 나눠 ◀ ▶(키는 월드 끝을 넘으면 다음 월드로) ──
