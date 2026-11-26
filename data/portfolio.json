@@ -16,7 +16,7 @@
   },
   "skills": [
     {
-      "name": "Unity",
+      "name": "Unity 6 (URP · Input System · uGUI)",
       "evidence": [
         { "text": "다른 색 발판의 `BoxCollider2D`를 꺼 이동·레이캐스트에서 함께 사라지게 함", "project": "Shifter" },
         { "text": "`DontDestroyOnLoad` 싱글톤 `GameManager`로 3개 씬의 값과 규칙을 한 곳에", "project": "OverFixed" },
@@ -24,19 +24,33 @@
       ]
     },
     {
-      "name": "C#",
+      "name": "데이터 분리 (TSV · ScriptableObject · JSON)",
       "evidence": [
-        { "text": "`IBossPattern` 인터페이스로 보스 패턴 3종의 시작·정리를 통일", "project": "Shifter" },
-        { "text": "추상 클래스 `MiniGame`으로 조작이 다른 미니게임 3종의 공통 동작을 한 곳에", "project": "OverFixed" },
-        { "text": "턴 상태 22종을 `TurnMessage` 하나로 묶고 상태 종류(enum)로 나눠, 상태마다 할 일을 한 함수에 모음", "project": "IfIWasInMarket" }
+        { "text": "밸런스 표는 TSV 4종, 조절값은 ScriptableObject 7종, 최고 기록은 JSON으로 분리", "project": "OverFixed" },
+        { "text": "열 이름으로 칸을 찾는 제네릭 파서 하나가 TSV 표를 모두 읽음", "project": "OverFixed" }
       ]
     },
     {
-      "name": "TSV / ScriptableObject / JSON",
+      "name": "확장 가능한 구조 설계 (인터페이스 · 추상 클래스)",
       "evidence": [
-        { "text": "밸런스 표는 TSV 4종, 조절값은 ScriptableObject 7종, 최고 기록은 JSON으로 분리", "project": "OverFixed" },
-        { "text": "열 이름으로 칸을 찾는 제네릭 파서 하나가 TSV 표를 모두 읽음", "project": "OverFixed" },
+        { "text": "`IBossPattern` 인터페이스로 보스 패턴 3종의 시작·정리를 통일", "project": "Shifter" },
+        { "text": "추상 클래스 `MiniGame`으로 조작이 다른 미니게임 3종의 공통 동작을 한 곳에", "project": "OverFixed" },
+        { "text": "턴 상태 22종을 `TurnMessage` 하나로 묶어, 새 상태는 enum 값 1 + case 1 + 핸들러 1로 더함", "project": "IfIWasInMarket" }
+      ]
+    },
+    {
+      "name": "네트워크 · 비동기 (WebSocket · UniTask · Newtonsoft.Json)",
+      "evidence": [
+        { "text": "서버와 주고받는 길을 `LiarClient` 하나로 모아, 4명이 같은 순간에 같은 장면으로 넘어가게 함", "project": "IfIWasInMarket" },
+        { "text": "상태가 시작될 때 한 번 받은 제한시간으로 남은 시간을 직접 계산해, 매초 시간을 주고받지 않음", "project": "IfIWasInMarket" },
         { "text": "사용자 ID 표기가 섞인 프로토콜이라, 대소문자만 달라도 값이 빠지는 System.Text.Json 대신 Newtonsoft.Json을 고름", "project": "IfIWasInMarket" }
+      ]
+    },
+    {
+      "name": "Git · GitHub 협업 (Asana · Fork)",
+      "evidence": [
+        { "text": "꼬인 병합 구간을 이력에서 걷어 내 복구하고, 작업 하나마다 브랜치를 따서 `main`에 합침", "project": "IfIWasInMarket" },
+        { "text": "커밋 기록을 다시 읽어, 리팩터링에서 되살아난 빌드 에러를 찾아 고침", "project": "Shifter" }
       ]
     }
   ],
