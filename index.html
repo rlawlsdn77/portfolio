@@ -186,40 +186,45 @@
   .portrait { display: flex; align-items: center; justify-content: center; width: 84px; height: 84px; flex: none; font-family: var(--arcade); font-size: 20px;
     color: var(--acc); background: var(--acc-soft); --pc: var(--acc-line); }
   .skill:hover { --pc: var(--acc-line); }
-  /* 상태창 프로젝트 그래프: 프로젝트마다 한 줄 — 개발 기간 막대(1칸 = 하루) + 핵심 기능 ■ · 문제 해결 □ 칸. 데이터에서 자동으로 그림 */
-  .pg { margin-top: 14px; padding: 10px 14px 11px; background: rgba(10, 13, 11, .55); --pc: var(--line); }
-  .pg .gh, .pg .gr { display: grid; grid-template-columns: minmax(96px, 150px) minmax(0, 1fr) auto; align-items: center; gap: 10px; }
-  .pg .gh b { margin-left: 4px; font-weight: 400; color: var(--ink); }
-  .pg .gh { padding-bottom: 7px; border-bottom: 1px dashed var(--line); font-family: var(--arcade); font-size: 8px; color: var(--muted); }
-  .pg .gh .lg { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; font-family: var(--pixel); font-size: 10.5px; }
-  .pg .gr { padding-top: 9px; }
-  .pg .nm { min-width: 0; font-family: var(--pixel); font-weight: 700; font-size: 12px; line-height: 1.3; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pg .nm small { margin-left: 6px; font-weight: 400; font-size: 10.5px; color: var(--muted); }
-  .pg .bar { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .pg .bar i { display: block; height: 12px; background: repeating-linear-gradient(90deg, var(--acc) 0 var(--seg), transparent var(--seg) calc(var(--seg) + 2px)); }
-  .pg .bar b { flex: none; font-family: var(--arcade); font-weight: 400; font-size: 10px; color: var(--acc); }
-  .pg .blk { display: flex; gap: 3px; }
-  .sq { display: inline-block; width: 9px; height: 9px; background: var(--acc); }
-  .sq.o { background: transparent; box-shadow: inset 0 0 0 2px var(--body); }
-  /* DATA LOG: 기록마다 작은 세로 막대 그래프 + 변화 배지(문서의 전후 숫자로 계산) */
-  .dlog-wrap { margin-top: 16px; background: var(--panel); }
-  .dlog-wrap .wbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 8px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
-  .dlog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; }
-  @media (min-width: 768px) { .dlog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  @media (min-width: 1280px) { .dlog-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
-  .dlog { display: flex; flex-direction: column; min-width: 0; padding: 10px 14px 12px; border-left: 1px dashed var(--line); border-top: 1px dashed var(--line); margin: -1px 0 0 -1px; }
-  .dlog .hd { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 12.5px; line-height: 1.3; color: var(--ink); word-break: keep-all; }
-  .dlog .pj { display: block; margin-top: 2px; font-family: var(--pixel); font-weight: 700; font-size: 10.5px; color: var(--acc); }
-  .dlog .pj:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .dlog .chart { display: flex; align-items: flex-end; gap: 8px; height: 76px; margin-top: 10px; }
-  .dlog .col { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; min-width: 0; height: 100%; }
-  .dlog .col .v { font-family: var(--arcade); font-size: 9px; color: var(--body); white-space: nowrap; }
-  .dlog .col i { display: block; width: 100%; max-width: 30px; background: repeating-linear-gradient(0deg, var(--line2) 0 4px, transparent 4px 6px); }
-  .dlog .col.hi i { background: repeating-linear-gradient(0deg, var(--acc) 0 4px, transparent 4px 6px); }
-  .dlog .col.hi .v { color: var(--acc); }
-  .dlog .col .k { font-family: var(--pixel); font-size: 10.5px; color: var(--muted); white-space: nowrap; }
-  .dlog .badge { align-self: flex-start; margin-top: 9px; padding: 2px 6px; font-family: var(--arcade); font-size: 9px; line-height: 1.6; color: var(--bg); background: var(--acc); }
-  .dlog .note { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--muted); word-break: keep-all; }
+  /* 상태창 증거 창(자기소개 문장을 뒷받침하는 숫자): DATA MAP(코드 밖 데이터 분포) · EXTEND(새 기능 추가 비용) · REFACTOR(리팩터링 전후) */
+  .evrow { display: grid; gap: 16px; margin-top: 16px; }
+  @media (min-width: 768px) { .evrow { grid-template-columns: repeat(2, minmax(0, 1fr)); } .evrow .main { grid-column: 1 / -1; } }
+  @media (min-width: 1280px) { .evrow { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); } .evrow .main { grid-column: auto; } }
+  .evp { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
+  .evp .wbar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 8px 14px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
+  .evp .wbar .tg { font-family: var(--arcade); font-size: 9px; color: var(--acc); }
+  .evp .wbar .tt { font-family: var(--pixel); font-weight: 700; font-size: 13px; color: var(--ink); }
+  .evp .wbar .ts { margin-left: auto; font-family: var(--pixel); font-size: 11px; color: var(--muted); }
+  .evp .bd { flex: 1; padding: 12px 14px 4px; }
+  .evp .ft { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0; padding: 8px 14px 11px; font-size: 12px; line-height: 1.5; color: var(--body); word-break: keep-all; }
+  .evp .ft .pj { margin-left: auto; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--acc); white-space: nowrap; }
+  .evp .ft .pj:hover { text-decoration: underline; text-underline-offset: 3px; }
+  /* DATA MAP: 형식마다 한 줄 — 1칸 = 데이터 하나 */
+  .dm { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px 14px; }
+  .dm .nm { font-family: var(--pixel); font-weight: 700; font-size: 12.5px; color: var(--ink); white-space: nowrap; }
+  .dm .nm b { display: block; margin-top: 2px; font-family: var(--arcade); font-weight: 400; font-size: 9px; color: var(--acc); }
+  .dm .cells { display: flex; flex-wrap: wrap; gap: 4px; }
+  .dm .cell { display: inline-flex; align-items: center; height: 22px; padding: 0 7px; font-family: var(--pixel); font-size: 10.5px; color: var(--bg); background: var(--acc); white-space: nowrap; }
+  .dm .cell.more { color: var(--acc); background: var(--acc-soft); box-shadow: inset 0 0 0 1px var(--acc-line); }
+  .dm .how { grid-column: 2; margin-top: -6px; font-size: 11.5px; color: var(--muted); }
+  /* EXTEND: 더하는 것만 +1 칸으로 */
+  .ext { display: grid; gap: 8px; }
+  .ext .add { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(10, 13, 11, .55); --pc: var(--acc-line); }
+  .ext .add .pl { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 30px; padding: 0 6px; font-family: var(--arcade); font-size: 10px;
+    color: var(--bg); background: var(--acc); }
+  .ext .add .nm { min-width: 0; font-family: var(--pixel); font-weight: 700; font-size: 12.5px; color: var(--ink); }
+  .ext .add .nm small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+  /* REFACTOR: 전·후 가로 칸 막대 + 변화율 */
+  .rf { display: grid; gap: 12px; }
+  .rf .it .hd { display: flex; align-items: baseline; gap: 8px; margin: 0 0 6px; font-family: var(--pixel); font-weight: 700; font-size: 12.5px; color: var(--ink); }
+  .rf .it .hd .badge { margin-left: auto; padding: 1px 6px; font-family: var(--arcade); font-size: 9px; line-height: 1.6; color: var(--bg); background: var(--acc); }
+  .rf .bars { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; }
+  .rf .bk { font-family: var(--pixel); font-size: 11px; color: var(--muted); }
+  .rf .track { height: 12px; }
+  .rf .track i { display: block; height: 100%; background: repeating-linear-gradient(90deg, var(--line2) 0 5px, transparent 5px 7px); }
+  .rf .track i.hi { background: repeating-linear-gradient(90deg, var(--acc) 0 5px, transparent 5px 7px); }
+  .rf .bv { font-family: var(--arcade); font-size: 10px; color: var(--body); text-align: right; white-space: nowrap; }
+  .rf .bv.hi { color: var(--acc); }
   /* 스킬 창: 머리 막대(SKILL 01) + 아이콘·제목 + 범용 근거 줄(프로젝트 이름은 보이지 않음 — 프로젝트가 늘어도 그대로 읽힘). 올리면 테두리·아이콘이 초록으로 */
   .sk { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
   .sk:hover { --pc: var(--acc-line); }
@@ -906,43 +911,44 @@ function TitleScreen({ pf, prof, projects, t, no }) {
   );
 }
 
-// ── 02 상태창: 캐릭터 카드(프로젝트 그래프) + 자기소개 대화창 + DATA LOG 그래프 ──
-// 개발 기간(일): meta '기간'의 "N일"을 먼저, 없으면 "YYYY.MM.DD ~ YYYY.MM.DD"를 첫날·끝날 포함으로 셈. 못 읽으면 null(그래프에서 막대 없음)
-function periodDays(p) {
-  const v = ((p.meta || []).find((m) => m.label === '기간') || {}).value || '';
-  const n = v.match(/(\d+)\s*일/);
-  if (n) return +n[1];
-  const d = v.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})\s*~\s*(\d{4})\.(\d{1,2})\.(\d{1,2})/);
-  if (!d) return null;
-  return Math.round((Date.UTC(d[4], d[5] - 1, d[6]) - Date.UTC(d[1], d[2] - 1, d[3])) / 864e5) + 1;
-}
-// DATA LOG — 프로젝트 문서에 적힌 숫자만(지어내지 않음). 불러온 프로젝트의 것만 보임. 새 프로젝트가 생기면 그 문서의 숫자를 더함
-//   kind: change = 전 → 후(배지 = 변화율) · gap = 필요 vs 확보(배지 = 여유) · dist = 분포(배지 = 가장 많은 것)
-const DATA_LOG = [
-  { p: 'IfIWasInMarket', kind: 'change', label: '턴 메시지 클래스', unit: '개', bars: [['전', 21], ['후', 1]], note: '상태별 클래스를 하나로 통합' },   // 문서 §5.2 표
-  { p: 'IfIWasInMarket', kind: 'change', label: '받는 함수의 분기', unit: '개', bars: [['전', 33], ['후', 14]], note: '한글 문장 비교를 enum으로' },   // 문서 §5.2 표
-  { p: 'OverFixed', kind: 'gap', label: '재료 풀 크기', unit: '개', bars: [['동시 최대', 26], ['풀', 40]], note: '경로 길이로 동시 개수를 미리 계산' }, // 문서 §4.2 표
-  { p: 'OverFixed', kind: 'dist', label: '피드백 12건 분류', unit: '건', bars: [['반복', 5], ['촉박', 4], ['몰입', 4]], note: '가장 많은 의견에서 다음 계획' }, // 문서 §9.1
-  { p: 'Shifter', kind: 'change', label: '크러셔 벽 속도', unit: '', bars: [['전', 3], ['후', 10]], note: '초당 · 캐릭터(8)보다 빠르게' },        // 문서 §5.1
-  { p: 'Shifter', kind: 'change', label: 'Shift 쿨타임', unit: '초', bars: [['전', 2], ['후', 1]], note: '플레이하며 맞춘 값' },                    // 문서 §5.1
-];
-function logBadge(x) {
-  const v = x.bars.map((b) => b[1]);
-  if (x.kind === 'change') { const r = Math.round(((v[1] - v[0]) / v[0]) * 100); return { text: `${r < 0 ? '▼' : '▲'}${Math.abs(r)}%`, hi: 1 }; }
-  if (x.kind === 'gap') return { text: `여유 +${v[1] - v[0]}`, hi: 1 };
-  const m = v.indexOf(Math.max(...v));
-  return { text: `최다 ${x.bars[m][0]}`, hi: m };
+// ── 02 상태창: 캐릭터 카드 + 자기소개 대화창 + 자기소개를 뒷받침하는 숫자(증거 창 3개) ──
+// 증거 숫자 — 프로젝트 문서에 적힌 것만(지어내지 않음). 그 프로젝트를 불러왔을 때만 창이 보임
+const EVIDENCE = {
+  // DATA MAP: 데이터는 코드 밖에 — 문서 OverFixed §1(약 100개) · §7.1 표(형식 · 담는 것 · 고치는 방법 · 데이터) · 개요 표(TSV 4종 · SO 7종)
+  map: {
+    p: 'OverFixed', sub: '밸런스 수치 약 100개를 누가 고치는가로 나눔',
+    rows: [
+      { name: 'TSV', n: 4, what: '행이 여러 개인 밸런스 표', how: '스프레드시트로 고침', items: ['ItemTable', 'OrderTable', 'VoyageTable', 'AccidentTable'] },
+      { name: 'ScriptableObject', n: 7, what: '한 벌뿐인 조절값', how: '인스펙터로 고침(플레이 중에도)', items: ['CoreConfig', 'SpawnConfig', 'PlayerControlConfig', 'MiniGameConfig'] },
+      { name: 'JSON', n: 1, what: '게임을 꺼도 남는 기록', how: '게임이 저장', items: ['RecordSave'] },
+    ],
+    foot: '같은 데이터를 두 형식에 중복해 두지 않습니다',
+  },
+  // EXTEND: 새 기능은 클래스 하나로 — 문서 OverFixed §6.2
+  extend: {
+    p: 'OverFixed', title: '새 미니게임 추가 비용',
+    adds: [['+1', '미니게임 클래스', '공통 동작은 부모(MiniGame)에'], ['+1줄', 'AccidentTable', '제한시간 · 성공 수 · 비중'], ['+1', 'AccidentType 값', 'enum, 표의 ID와 짝']],
+    foot: 'MiniGameUI는 부모의 Begin · End · Succeeded만 압니다',
+  },
+  // REFACTOR: 바꾼 결과는 숫자로 — 문서 IfIWasInMarket §5.2 표
+  refactor: {
+    p: 'IfIWasInMarket',
+    items: [['턴 메시지 클래스', '개', 21, 1], ['받는 함수의 분기', '개', 33, 14]],
+    foot: '한글 문장 비교를 enum으로 — 이름이 틀리면 컴파일되지 않습니다',
+  },
+};
+
+function EvLink({ id, byId }) {
+  return <a href={`#p-${id}`} className="pj" onClick={(e) => { e.preventDefault(); enterStage(`p-${id}`); }}>{byId[id].title} →</a>;
 }
 
 function Status({ prof, projects, t, no }) {
   const initials = (prof.nameEn || '').split(/\s+/).filter(Boolean).map((w) => w[0].toUpperCase()).join('').slice(0, 3);
   const solo = projects.filter((p) => p.team?.type !== 'team').length;
   const team = projects.length - solo;
-  const rows = projects.map((p) => ({ p, days: periodDays(p), f: (p.highlights || []).length, x: (p.troubleshooting || []).length }));
-  const maxDays = Math.max(1, ...rows.map((r) => r.days || 0));
-  const total = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
   const byId = Object.fromEntries(projects.map((p) => [p.id, p]));
-  const log = DATA_LOG.filter((x) => byId[x.p]);
+  const { map, extend, refactor } = EVIDENCE;
+  const show = { map: !!byId[map.p], extend: !!byId[extend.p], refactor: !!byId[refactor.p] };
   return (
     <section id="status" className="sec stage">
       <div className="wrap pad">
@@ -950,9 +956,9 @@ function Status({ prof, projects, t, no }) {
           <div className="flex-1 min-w-0"><Eyebrow no={no('status')}>상태창</Eyebrow><h2 className="giant mt-4">STATUS</h2></div>
           <p className="f-pixel text-[12px] muted">{t('page.intro')}</p>
         </div>
-        <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,.95fr)_minmax(0,1.05fr)] items-stretch">
-          <article className="panel pxb p-5 min-w-0">
-            <div className="flex items-center gap-[18px]">
+        <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)] items-stretch">
+          <article className="panel pxb p-5 min-w-0 flex items-center">
+            <div className="flex items-center gap-[18px] min-w-0">
               <span className="portrait pxb2" aria-hidden="true">{initials || '▶'}</span>
               <div className="min-w-0">
                 <p className="f-arcade text-[10px] muted">PLAYER 1</p>
@@ -962,31 +968,9 @@ function Status({ prof, projects, t, no }) {
                   {prof.email && <a href={`mailto:${prof.email}`} className="hover:text-[color:var(--acc)]">{prof.email}</a>}
                   {isUrl(prof.github) && <a href={prof.github} target="_blank" rel="noopener" className="hover:text-[color:var(--acc)]">{shortUrl(prof.github)} <Ext /></a>}
                 </p>
+                {projects.length > 0 && <p className="mt-1 f-pixel text-[12px] muted">프로젝트 {projects.length}개 ({[solo && `개인 ${solo}`, team && `팀 ${team}`].filter(Boolean).join(' · ')})</p>}
               </div>
             </div>
-            {rows.length > 0 && (
-              <div className="pg pxb2" role="img" aria-label={`프로젝트별 기록: ${rows.map((r) => `${r.p.title} ${r.days ?? '?'}일, 핵심 기능 ${r.f}, 문제 해결 ${r.x}`).join(' / ')}`}>
-                {/* 머리 줄에 합계: 프로젝트 수 · 개발 기간 합 · 핵심 기능 합 · 문제 해결 합 */}
-                <div className="gh">
-                  <span>PROJECT<b>{projects.length}</b></span>
-                  <span>DAYS<b>{total('days')}</b></span>
-                  <span className="flex items-center"><span className="lg"><span className="sq" />기능 {total('f')}</span><span className="lg"><span className="sq o" />해결 {total('x')}</span></span>
-                </div>
-                {rows.map((r) => (
-                  <div key={r.p.id} className="gr">
-                    <span className="nm">{r.p.title}<small>{r.p.team?.type === 'team' ? `팀 ${r.p.team.size || ''}`.trim() : '개인'}</small></span>
-                    <span className="bar">
-                      {r.days != null && <i style={{ width: `${(r.days / maxDays) * 100}%`, '--seg': `calc(${100 / r.days}% - 2px)` }} />}
-                      <b>{r.days != null ? `${r.days}일` : '—'}</b>
-                    </span>
-                    <span className="blk">
-                      {Array.from({ length: r.f }, (_, k) => <span key={`f${k}`} className="sq" />)}
-                      {Array.from({ length: r.x }, (_, k) => <span key={`x${k}`} className="sq o" />)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
           </article>
           {prof.intro && (
             <div className="min-w-0 flex items-center">
@@ -1000,37 +984,64 @@ function Status({ prof, projects, t, no }) {
             </div>
           )}
         </div>
-        {log.length > 0 && (
-          <div className="dlog-wrap pxb">
-            <div className="wbar">
-              <span className="f-arcade text-[10px] acc">DATA LOG</span>
-              <span className="f-pixel font-bold text-[13px]">숫자로 남긴 결정</span>
-              <span className="ml-auto f-pixel text-[11px] muted">프로젝트 문서에 적은 수치</span>
-            </div>
-            <div className="dlog-grid">
-              {log.map((x, i) => {
-                const max = Math.max(...x.bars.map((b) => b[1]));
-                const bd = logBadge(x);
-                return (
-                  <article key={i} className="dlog">
-                    <p className="hd">{x.label}
-                      <a href={`#p-${x.p}`} className="pj" onClick={(e) => { e.preventDefault(); enterStage(`p-${x.p}`); }}>{byId[x.p].title} →</a>
-                    </p>
-                    <div className="chart" role="img" aria-label={`${x.label}: ${x.bars.map((b) => `${b[0]} ${b[1]}${x.unit}`).join(', ')}`}>
-                      {x.bars.map((b, k) => (
-                        <div key={k} className={`col ${k === bd.hi ? 'hi' : ''}`}>
-                          <span className="v">{b[1]}{x.unit}</span>
-                          <i style={{ height: `max(4px, ${(b[1] / max) * 46}px)` }} />
-                          <span className="k">{b[0]}</span>
+        {(show.map || show.extend || show.refactor) && (
+          <div className="evrow">
+            {show.map && (
+              <section className="evp pxb main" aria-label="코드 밖 데이터">
+                <div className="wbar"><span className="tg">DATA MAP</span><span className="tt">코드 밖 데이터</span><span className="ts">{map.sub}</span></div>
+                <div className="bd">
+                  <div className="dm">
+                    {map.rows.map((r) => (
+                      <React.Fragment key={r.name}>
+                        <span className="nm">{r.name}<b>×{r.n}</b></span>
+                        <span className="cells" role="img" aria-label={`${r.name} ${r.n}개: ${r.items.join(', ')}${r.n > r.items.length ? ` 외 ${r.n - r.items.length}개` : ''}`}>
+                          {r.items.map((x) => <span key={x} className="cell">{x}</span>)}
+                          {r.n > r.items.length && <span className="cell more">+{r.n - r.items.length}</span>}
+                        </span>
+                        <span className="how">{r.what} · {r.how}</span>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+                <p className="ft"><span>{map.foot}</span><EvLink id={map.p} byId={byId} /></p>
+              </section>
+            )}
+            {show.extend && (
+              <section className="evp pxb" aria-label={extend.title}>
+                <div className="wbar"><span className="tg">EXTEND</span><span className="tt">{extend.title}</span></div>
+                <div className="bd">
+                  <div className="ext">
+                    {extend.adds.map(([pl, nm, d]) => (
+                      <div key={nm} className="add pxb2"><span className="pl">{pl}</span><span className="nm">{nm}<small>{d}</small></span></div>
+                    ))}
+                  </div>
+                </div>
+                <p className="ft"><span>{extend.foot}</span><EvLink id={extend.p} byId={byId} /></p>
+              </section>
+            )}
+            {show.refactor && (
+              <section className="evp pxb" aria-label="리팩터링 전후">
+                <div className="wbar"><span className="tg">REFACTOR</span><span className="tt">리팩터링 전후</span></div>
+                <div className="bd">
+                  <div className="rf">
+                    {refactor.items.map(([label, unit, a, b]) => {
+                      const r = Math.round(((b - a) / a) * 100);
+                      const max = Math.max(a, b);
+                      return (
+                        <div key={label} className="it">
+                          <p className="hd">{label}<span className="badge">{r < 0 ? '▼' : '▲'}{Math.abs(r)}%</span></p>
+                          <div className="bars" role="img" aria-label={`${label}: 전 ${a}${unit}, 후 ${b}${unit}`}>
+                            <span className="bk">전</span><span className="track"><i style={{ width: `max(6px, ${(a / max) * 100}%)` }} /></span><span className="bv">{a}{unit}</span>
+                            <span className="bk">후</span><span className="track"><i className="hi" style={{ width: `max(6px, ${(b / max) * 100}%)` }} /></span><span className="bv hi">{b}{unit}</span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                    <span className="badge">{bd.text}</span>
-                    <p className="note">{x.note}</p>
-                  </article>
-                );
-              })}
-            </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <p className="ft"><span>{refactor.foot}</span><EvLink id={refactor.p} byId={byId} /></p>
+              </section>
+            )}
           </div>
         )}
       </div>
