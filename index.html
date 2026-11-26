@@ -189,51 +189,36 @@
   /* 스킬 창: 머리 막대(SKILL 01 · 근거 프로젝트 게이지) + 아이콘·제목 + 근거 줄. 올리면 테두리·아이콘이 초록으로 */
   .sk { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
   .sk:hover { --pc: var(--acc-line); }
-  .sk .wbar { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
+  .sk .wbar { display: flex; align-items: center; gap: 10px; padding: 7px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
   .sk .wbar .no { font-family: var(--arcade); font-size: 9px; color: var(--muted); }
   .gauge { display: inline-flex; gap: 3px; margin-left: auto; }
   .gauge i { width: 10px; height: 8px; background: rgba(233, 238, 230, .12); }
   .gauge i.on { background: var(--acc); }
-  .sk .hd { display: flex; align-items: center; gap: 14px; padding: 14px 16px 0; }
-  .sk .ico { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; color: var(--acc); background: var(--acc-soft);
+  .sk .hd { display: flex; align-items: center; gap: 14px; padding: 12px 16px 0; }
+  .sk .ico { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; color: var(--acc); background: var(--acc-soft);
     --pc: var(--acc-line); transition: background-color .12s, color .12s; }
   .sk:hover .ico { background: var(--acc); color: var(--bg); --pc: var(--acc); }
   .sk h3 { margin: 0; min-width: 0; font-family: var(--pixel); font-weight: 700; font-size: 18px; line-height: 1.35; color: var(--ink); word-break: keep-all; }
   .sk h3 .sub { display: block; margin-top: 3px; font-weight: 400; font-size: 12px; line-height: 1.45; color: var(--muted); }
-  .sk ul { margin: 0; padding: 12px 16px 14px; list-style: none; }
-  .sk li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 7px 0; font-size: 14px; line-height: 1.6; color: var(--body); word-break: keep-all;
+  .sk ul { margin: 0; padding: 10px 16px 8px; list-style: none; }
+  .sk li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 6px 0; font-size: 13.5px; line-height: 1.55; color: var(--body); word-break: keep-all;
     border-top: 1px dashed var(--line); }
   .sk li:first-child { border-top: 0; padding-top: 0; }
   .sk li .pj { display: inline-block; margin-left: 6px; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--acc); white-space: nowrap; }
   .sk li .pj:hover { text-decoration: underline; text-underline-offset: 3px; }
-  /* 인벤토리 창: 그 밖의 스킬 + 쓴 도구를 분류별로 가로로 나란히(슬롯 아래 이름). 아래 설명칸은 올린 아이템을 한 줄로 설명.
-     스킬 절이 한 화면에 들어가도록 높이를 한 줄로 — 넓은 화면은 분류 사이에 점선, 좁으면 줄바꿈 */
-  .inv { margin-top: 20px; background: var(--panel); }
-  .inv .wbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 9px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
-  .inv .rows { display: flex; flex-wrap: wrap; gap: 16px 28px; padding: 14px 16px 12px; }
-  .inv .grp { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-  @media (min-width: 1280px) {
-    .inv .rows { flex-wrap: nowrap; justify-content: space-between; gap: 0; }
-    .inv .grp + .grp { padding-left: 18px; border-left: 1px dashed var(--line); }
-    .inv .grp { padding-right: 18px; }
-  }
-  .inv .gl { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 12px; color: var(--muted); white-space: nowrap; }
-  .inv .gl .n { margin-right: 6px; font-family: var(--arcade); font-size: 9px; color: var(--acc); }
-  .inv .items { display: flex; flex-wrap: wrap; gap: 10px 6px; margin: 0; padding: 0; list-style: none; }
-  @media (min-width: 1280px) { .inv .items { flex-wrap: nowrap; } }
-  .item { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 60px; padding: 0; border: 0; background: transparent; color: var(--body); }
-  .item.wide { width: 80px; }
-  .item.fit { width: auto; min-width: 60px; }
-  .item.fit .nm { white-space: nowrap; }   /* 띄어쓰기 없는 긴 이름(Newtonsoft.Json)은 낱말 중간에서 끊지 않고 슬롯을 넓힘 */
-  .item .cart { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-family: var(--arcade); font-size: 9px; color: var(--acc);
-    background: rgba(10, 13, 11, .6); --pc: var(--line2); transition: background-color .12s, color .12s, transform .1s steps(2); }
-  .item .nm { max-width: 100%; font-family: var(--pixel); font-weight: 700; font-size: 11px; line-height: 1.3; text-align: center; word-break: keep-all; }
-  .item:hover .cart, .item:focus-visible .cart { --pc: var(--acc-line); transform: translateY(-3px); }
-  .item:hover, .item:focus-visible, .item.on { color: var(--ink); }
-  .item.on .cart { background: var(--acc); color: var(--bg); --pc: var(--acc); }
-  .item:focus-visible { outline-offset: 3px; }
-  .inv .desc { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-height: 40px; margin: 0 16px 14px; padding: 8px 12px; font-family: var(--pixel);
-    font-size: 12px; line-height: 1.5; color: var(--body); background: rgba(10, 13, 11, .9); --pc: var(--line2); }
+  /* 도구 줄: 창 없이 머리 오른쪽에 그대로 띄움(분류 이름 + 픽셀 아이콘 + 이름). 스킬 창에 이미 나온 것은 빼므로 짧음.
+     올리면 아이콘이 떠오르고, 이름 위에 쓴 프로젝트(title) */
+  .tools { display: flex; flex-wrap: wrap; gap: 14px 30px; }
+  .tools .grp { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+  .tools .gl { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .tools .gl .n { margin-right: 6px; font-family: var(--arcade); font-size: 9px; color: var(--acc); }
+  .tools ul { display: flex; flex-wrap: wrap; gap: 8px 4px; margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 1024px) { .tools { justify-content: flex-end; } .tools .gl { text-align: center; } .tools ul { justify-content: center; } }
+  .tool { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 60px; padding: 0 2px; color: var(--body); }
+  .tool .gi { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: var(--acc); transition: transform .1s steps(2), color .12s; }
+  .tool .nm { font-family: var(--pixel); font-weight: 700; font-size: 11.5px; line-height: 1.3; text-align: center; white-space: nowrap; }
+  .tool:hover { color: var(--ink); }
+  .tool:hover .gi { transform: translateY(-3px); color: var(--ink); }
 
   /* 월드맵: 넓은 화면은 지도 + 옆 정보창, 좁은 화면은 위아래. 노드는 계단 길 위에(좁은 화면은 한 줄에 하나) */
   .mapgrid { display: grid; gap: 28px; }
@@ -945,6 +930,17 @@ const PX_ICONS = {
   blocks: ['####..####', '#..#..#..#', '#..#..#..#', '####..####', '..........', '..........', '####...#..', '#..#...#..', '#..#.#####', '####...#..', '.......#..'],
   swap: ['........#..', '.........#.', '###########', '.........#.', '........#..', '..#........', '.#.........', '###########', '.#.........', '..#........'],
   branch: ['.##.....##.', '#..#...#..#', '.##.....##.', '.#.......#.', '.#......#..', '.#....##...', '.#..##.....', '.###.......', '.#.........', '.##........', '#..#.......', '.##........'],
+  // 도구 아이콘(상표 그림이 아니라 무엇인지 떠오르게 하는 픽셀 그림)
+  terminal: ['###########', '#.........#', '#.#.......#', '#..#......#', '#...#.....#', '#..#......#', '#.#..####.#', '#.........#', '###########'],
+  ease: ['........###', '......##...', '.....#.....', '....#......', '....#......', '...#.......', '..#........', '###........'],
+  clock: ['...#####...', '..#.....#..', '.#...#...#.', '#....#....#', '#....#....#', '#....###..#', '#.........#', '.#.......#.', '..#.....#..', '...#####...'],
+  braces: ['..##...##..', '.#.......#.', '.#.......#.', '.#.......#.', '#.........#', '.#.......#.', '.#.......#.', '.#.......#.', '..##...##..'],
+  text: ['###########', '#....#....#', '.....#.....', '.....#.....', '.....#.....', '.....#.....', '.....#.....', '....###....'],
+  pad: ['.#########.', '#.........#', '#..#...#..#', '#.###.#.#.#', '#..#...#..#', '#.........#', '#...###...#', '.###...###.'],
+  cat: ['.#.......#.', '.##.....##.', '.#########.', '###########', '##..###..##', '###########', '.#########.', '...#...#...', '#..#...#...', '.###...#...'],
+  fork: ['#..#..#', '#..#..#', '#..#..#', '#..#..#', '.#####.', '...#...', '...#...', '...#...', '...#...'],
+  dots: ['....###....', '...#####...', '...#####...', '....###....', '...........', '.###...###.', '#####.#####', '#####.#####', '.###...###.'],
+  spark: ['.....#.....', '.#...#...#.', '..#..#..#..', '...#.#.#...', '....###....', '###########', '....###....', '...#.#.#...', '..#..#..#..', '.#...#...#.', '.....#.....'],
 };
 const SKILL_ICON = [[/unity/i, 'cube'], [/데이터|data|tsv/i, 'data'], [/구조|설계|패턴|pattern/i, 'blocks'], [/네트워크|network|socket|비동기/i, 'swap'], [/git|협업/i, 'branch']];
 function PxIcon({ name, cell = 2 }) {
@@ -960,60 +956,83 @@ const splitSkill = (name) => { const m = String(name).match(/^(.*?)\s*\((.+)\)\s
 //   IfIWasInMarket: Unity 6 · UniTask · Newtonsoft.Json · DOTween · uGUI + TextMeshPro · Input System · GitHub 조직 저장소 · Fork · Asana · Rider
 const TOOL_GROUPS = [
   { label: '엔진 · IDE', items: [
-    { name: 'Unity', mark: 'U', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] },
-    { name: 'Rider', mark: 'RD', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] } ] },
+    { name: 'Unity', icon: 'cube', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] },
+    { name: 'Rider', icon: 'terminal', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] } ] },
   { label: '라이브러리', items: [
-    { name: 'DOTween', mark: 'DT', p: ['IfIWasInMarket', 'OverFixed'] },
-    { name: 'UniTask', mark: 'UT', p: ['IfIWasInMarket'] },
-    { name: 'Newtonsoft.Json', mark: '{}', p: ['IfIWasInMarket'] },
-    { name: 'TextMeshPro', mark: 'TMP', p: ['IfIWasInMarket', 'OverFixed'] },
-    { name: 'Input System', mark: 'IN', p: ['IfIWasInMarket', 'OverFixed'] } ] },
+    { name: 'DOTween', icon: 'ease', p: ['IfIWasInMarket', 'OverFixed'] },
+    { name: 'UniTask', icon: 'clock', p: ['IfIWasInMarket'] },
+    { name: 'Newtonsoft.Json', icon: 'braces', p: ['IfIWasInMarket'] },
+    { name: 'TextMeshPro', icon: 'text', p: ['IfIWasInMarket', 'OverFixed'] },
+    { name: 'Input System', icon: 'pad', p: ['IfIWasInMarket', 'OverFixed'] } ] },
   { label: '협업 도구', items: [
-    { name: 'Git', mark: 'GIT', p: ['Shifter', 'OverFixed'] },
-    { name: 'GitHub', mark: 'GH', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] },
-    { name: 'Fork', mark: 'FK', p: ['IfIWasInMarket'] },
-    { name: 'Asana', mark: 'AS', p: ['IfIWasInMarket'] } ] },
+    { name: 'Git', icon: 'branch', p: ['Shifter', 'OverFixed'] },
+    { name: 'GitHub', icon: 'cat', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] },
+    { name: 'Fork', icon: 'fork', p: ['IfIWasInMarket'] },
+    { name: 'Asana', icon: 'dots', p: ['IfIWasInMarket'] } ] },
   { label: 'AI 도구', items: [
-    { name: 'Claude', mark: 'CL', p: ['Shifter'] } ] },
+    { name: 'Claude', icon: 'spark', p: ['Shifter'] } ] },
 ];
+// 스킬 창 제목·괄호에 이미 나온 도구는 아래 도구 줄에 다시 넣지 않음(중복 빼기). 글자·숫자만 남겨 비교
+const keyOf = (s) => String(s).toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
 
-const FEATURED = 3;   // 상세 창으로 보일 대표 스킬 수(profile.md 메모 순서의 앞에서부터)
+const FEATURED = 6;   // 상세 창으로 보일 대표 스킬 수(profile.md 메모 순서의 앞에서부터). 이보다 많은 스킬은 머리 오른쪽에 아이콘 + 이름만
 function Skills({ pf, byId, t, no }) {
   const skills = pf.skills || [];
   if (!skills.length) return null;
-  // 대표 스킬 = profile.md 기술 스택 메모 순서의 앞 FEATURED개(상세 창). 나머지는 인벤토리에 아이콘 + 이름만
   const featured = skills.slice(0, FEATURED);
   const rest = skills.slice(FEATURED);
-  const cols = featured.length >= 3 ? 'md:grid-cols-2 xl:grid-cols-3' : featured.length === 2 ? 'md:grid-cols-2' : '';
-  const span = (i) => (featured.length >= 3 && featured.length % 2 === 1 && i === featured.length - 1 ? 'md:col-span-2 xl:col-span-1' : '');
+  const nf = featured.length;
+  const cols = nf >= 3 ? 'md:grid-cols-2 xl:grid-cols-6' : nf === 2 ? 'md:grid-cols-2' : '';
+  // 빈 칸 없는 격자: 넓은 화면은 6칸 격자에 창마다 2칸(3열). 마지막 줄이 2개면 3칸씩, 1개면 6칸 — 중간 폭(2열)도 마지막 하나가 남으면 2칸
+  const span = (i) => {
+    if (nf < 3) return '';
+    const xl = i >= nf - (nf % 3) ? (nf % 3 === 2 ? 'xl:col-span-3' : 'xl:col-span-6') : 'xl:col-span-2';
+    const md = nf % 2 === 1 && i === nf - 1 ? 'md:col-span-2' : '';
+    return `${xl} ${md}`;
+  };
   const total = Object.keys(byId).length;
   const projOf = (s) => [...new Set((s.evidence || []).map((e) => e.project).filter((id) => byId[id]))];
-  const skillItems = rest.map((s) => {
-    const [title, sub] = splitSkill(s.name);
-    return { name: title, sub, icon: (SKILL_ICON.find(([re]) => re.test(s.name)) || [])[1], wide: true, p: projOf(s), how: '근거' };
-  });
+  const iconOf = (name) => (SKILL_ICON.find(([re]) => re.test(name)) || [])[1];
+  // 중복 빼기: 대표 스킬 이름(괄호 안 포함)에 이미 나온 도구는 도구 줄에 넣지 않음
+  const said = featured.map((s) => keyOf(s.name)).join('|');
   const groups = [
-    skillItems.length && { label: '그 밖의 스킬', items: skillItems },
-    ...TOOL_GROUPS.map((g) => ({ ...g, items: g.items.filter((x) => x.p.some((id) => byId[id])) })),
+    rest.length && { label: '그 밖의 스킬', items: rest.map((s) => { const [title, sub] = splitSkill(s.name); return { name: title, icon: iconOf(s.name), tip: sub, p: projOf(s) }; }) },
+    ...TOOL_GROUPS.map((g) => ({ ...g, items: g.items.filter((x) => x.p.some((id) => byId[id]) && !said.includes(keyOf(x.name))) })),
   ].filter((g) => g && g.items.length);
-  const nItems = groups.reduce((a, g) => a + g.items.length, 0);
-  const [cur, setCur] = useState(null);   // 설명칸에 보일 아이템(올리기 · 포커스 · 누르기)
-  const curGroup = cur && (groups.find((g) => g.items.includes(cur)) || {}).label;
-  const used = (x) => x.p.filter((id) => byId[id]).map((id) => byId[id].title);
+  const tip = (x) => [x.tip, `쓴 프로젝트: ${x.p.filter((id) => byId[id]).map((id) => byId[id].title).join(' · ')}`].filter(Boolean).join(' — ');
   return (
     <section id="skills" className="sec stage">
       <div className="wrap pad">
-        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
-          <div className="flex-1 min-w-0 basis-[320px]"><Eyebrow no={no('skills')}>{t('page.stack')}</Eyebrow><h2 className="giant mt-4">{t('en.skills')}</h2></div>
-          <div className="min-w-0 pb-1 lg:text-right">
-            <p className="f-pixel text-[13px] txt">SKILL SLOTS — {t('page.stack-note')}</p>
-            <p className="mt-1 f-pixel text-[12px] muted"><span className="gauge align-[-1px] mr-1.5" aria-hidden="true"><i className="on" /><i /></span>= 근거가 나온 프로젝트 수</p>
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
+          <div className="flex-1 min-w-0 basis-[320px]">
+            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+              <Eyebrow no={no('skills')}>{t('page.stack')}</Eyebrow>
+              <p className="f-pixel text-[11px] muted"><span className="gauge align-[-1px] mr-1.5" aria-hidden="true"><i className="on" /><i /></span>= 근거가 나온 프로젝트 수</p>
+            </div>
+            <h2 className="giant mt-4">{t('en.skills')}</h2>
           </div>
+          {groups.length > 0 && (
+            <div className="tools min-w-0 pb-1" aria-label="그 밖의 스킬과 쓴 도구">
+              {groups.map((g, gi) => (
+                <div key={g.label} className="grp">
+                  <p className="gl"><span className="n">{pad(gi + 1)}</span>{g.label}</p>
+                  <ul>
+                    {g.items.map((x) => (
+                      <li key={x.name} className="tool" title={tip(x)}>
+                        <span className="gi" aria-hidden="true">{x.icon ? <PxIcon name={x.icon} cell={3} /> : null}</span>
+                        <span className="nm">{x.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className={`mt-6 grid gap-6 ${cols}`}>
+        <div className={`mt-5 grid gap-4 ${cols}`}>
           {featured.map((s, i) => {
             const [title, sub] = splitSkill(s.name);
-            const icon = (SKILL_ICON.find(([re]) => re.test(s.name)) || [])[1];
+            const icon = iconOf(s.name);
             const ev = s.evidence || [];
             const n = projOf(s).length;
             return (
@@ -1032,7 +1051,7 @@ function Skills({ pf, byId, t, no }) {
                       <span className="acc" aria-hidden="true">▸</span>
                       <span>
                         <Rich text={e.text} />
-                        {byId[e.project] && <><a href={`#p-${e.project}`} className="pj" onClick={(ev2) => { ev2.preventDefault(); enterStage(`p-${e.project}`); }}>{byId[e.project].title} →</a></>}
+                        {byId[e.project] && <a href={`#p-${e.project}`} className="pj" onClick={(ev2) => { ev2.preventDefault(); enterStage(`p-${e.project}`); }}>{byId[e.project].title} →</a>}
                       </span>
                     </li>
                   ))}
@@ -1041,38 +1060,6 @@ function Skills({ pf, byId, t, no }) {
             );
           })}
         </div>
-        {groups.length > 0 && (
-          <div className="inv pxb">
-            <div className="wbar">
-              <span className="f-arcade text-[10px] acc">INVENTORY</span>
-              <span className="f-pixel font-bold text-[13px]">{skillItems.length ? '그 밖의 스킬 · 쓴 도구' : '쓴 도구'}</span>
-              <span className="ml-auto f-arcade text-[9px] muted">ITEMS {pad(nItems)}</span>
-            </div>
-            <div className="rows">
-              {groups.map((g, gi) => (
-                <div key={g.label} className="grp">
-                  <p className="gl"><span className="n">{pad(gi + 1)}</span>{g.label}</p>
-                  <ul className="items">
-                    {g.items.map((x) => (
-                      <li key={x.name}>
-                        <button type="button" className={`item ${x.wide ? 'wide' : !/\s/.test(x.name) && x.name.length > 8 ? 'fit' : ''} ${cur === x ? 'on' : ''}`} aria-pressed={cur === x}
-                                onMouseEnter={() => setCur(x)} onFocus={() => setCur(x)} onClick={() => setCur(x)}>
-                          <span className="cart pxb2" aria-hidden="true">{x.icon ? <PxIcon name={x.icon} /> : x.mark}</span>
-                          <span className="nm">{x.name}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <p className="desc pxb2" aria-live="polite">
-              {cur
-                ? <><span className="font-bold acc">{cur.name}</span><span>{curGroup}</span>{cur.sub && <span>{cur.sub}</span>}<span className="muted">{cur.how || '쓴'} 프로젝트 — {used(cur).join(' · ')}</span></>
-                : <span className="muted"><span className="acc mr-1.5" aria-hidden="true">▶</span>아이템에 올리면 설명과 프로젝트가 여기 보입니다</span>}
-            </p>
-          </div>
-        )}
       </div>
     </section>
   );
