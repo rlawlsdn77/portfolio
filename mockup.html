@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>김진우 · 포트폴리오 (목업 — 왼쪽 목차형)</title>
+<!-- 목업: 원본 index.html은 그대로 두고, data/*.json을 읽어 바뀐 구조만 보여 주는 미리보기 파일입니다(커밋하지 않음).
+     · 왼쪽 목차 + 한 화면(내려 읽지 않음) · 대표 3개는 탭 · 기타 7개는 카드 자리에서 펼침
+     · 기타 7개는 실제 3개를 복제한 "더미" — 프로젝트가 많아졌을 때 모양을 보기 위한 것이며 실제 내용이 아닙니다 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --bg: #0A0D0B; --side: #0D110E; --ink: #E9EEE6; --acc: #7BE38F; --warn: #F2C94C;
+    --body: rgba(233,238,230,.82); --muted: rgba(233,238,230,.58);
+    --line: rgba(233,238,230,.12); --line2: rgba(233,238,230,.24); --panel: rgba(233,238,230,.04);
+    --acc-soft: color-mix(in srgb, var(--acc) 12%, transparent);
+    --acc-line: color-mix(in srgb, var(--acc) 45%, transparent);
+    --arcade: 'Press Start 2P', 'Pretendard Variable', Pretendard, sans-serif;
+    --sans: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+    --side-w: 248px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.65 var(--sans); word-break: keep-all; overflow: hidden; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  code.ic { font: 600 .88em/1 ui-monospace, Consolas, monospace; background: rgba(123,227,143,.10); color: #BDF5C8; padding: .12em .38em; border-radius: 2px; word-break: break-all; }
+  .arc { font-family: var(--arcade); letter-spacing: .02em; }
+  .muted { color: var(--muted); }
+  .acc { color: var(--acc); }
+  .en { font: 10px/1.4 var(--arcade); color: var(--muted); letter-spacing: .04em; }  /* 영문 게임 용어는 작은 장식 */
+
+  /* ── 틀: 왼쪽 목차 + 오른쪽 한 화면 ── */
+  .shell { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); height: 100vh; }
+  .side { background: var(--side); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .me { padding: 22px 20px 18px; border-bottom: 1px solid var(--line); }
+  .me .nm { font-size: 18px; font-weight: 800; }
+  .me .job { font-size: 12.5px; color: var(--acc); margin-top: 2px; }
+  nav.toc { flex: 1; overflow-y: auto; padding: 12px 10px 16px; }
+  .grp { margin: 16px 10px 6px; font-size: 12px; font-weight: 700; color: var(--muted); display: flex; justify-content: space-between; }
+  .grp .en { font-size: 9px; }
+  .item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 1px solid transparent; padding: 9px 10px; font-size: 14px; color: var(--body); border-radius: 0; }
+  .item:hover { background: var(--panel); color: var(--ink); }
+  .item[aria-current="true"] { background: var(--acc-soft); border-color: var(--acc-line); color: var(--ink); font-weight: 700; }
+  .item[aria-current="true"]::before { content: '▶'; color: var(--acc); font-size: 10px; margin-left: -2px; }
+  .item .no { font: 9px/1 var(--arcade); color: var(--muted); width: 18px; flex: none; }
+  .item[aria-current="true"] .no { display: none; }
+  .item .cnt { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .item .sub { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; margin-top: 1px; }
+  .side-foot { padding: 14px 20px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .side-foot kbd { font: 10px/1 var(--arcade); border: 1px solid var(--line2); padding: 3px 5px; color: var(--ink); }
+
+  .stage { min-width: 0; min-height: 0; overflow-y: auto; position: relative; }
+  .view { max-width: 1120px; margin: 0 auto; padding: 36px 44px 40px; min-height: 100%; display: flex; flex-direction: column; }
+  .view.enter { animation: in .22s ease-out; }
+  @keyframes in { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .view.enter { animation: none; } }
+
+  .eyebrow { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--acc); }
+  .eyebrow .en { color: var(--acc); opacity: .7; }
+  h1.big { font: 34px/1.25 var(--arcade); margin: 12px 0 0; letter-spacing: .01em; }
+  h2.ttl { font-size: 28px; line-height: 1.3; font-weight: 800; margin: 8px 0 0; }
+  .lead { font-size: 16.5px; line-height: 1.7; color: var(--body); margin: 10px 0 0; max-width: 62ch; }
+
+  .box { border: 1px solid var(--line2); background: var(--panel); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border: 1px solid var(--line2); background: var(--panel); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .btn:hover { border-color: var(--acc); color: var(--acc); }
+  .btn.pri { background: var(--acc); color: #07140B; border-color: var(--acc); }
+  .btn.pri:hover { filter: brightness(1.08); color: #07140B; }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 8px; border: 1px solid var(--line2); color: var(--body); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dummy { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; background: var(--warn); color: #1A1400; vertical-align: middle; }
+
+  /* ── 소개(요약 한 장) ── */
+  .intro-top { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 36px; align-items: start; }
+  .intro-text p { margin: 0 0 8px; color: var(--body); }
+  .feat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 14px; }
+  .fcard { text-align: left; padding: 0; border: 1px solid var(--line2); background: var(--panel); display: flex; flex-direction: column; }
+  .fcard:hover { border-color: var(--acc); }
+  .fcard .th { aspect-ratio: 16/9; background: #000; overflow: hidden; }
+  .fcard .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fcard .bd { padding: 12px 14px 14px; }
+  .fcard .t { font-size: 16px; font-weight: 800; }
+  .fcard .m { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .fcard .one { font-size: 13px; color: var(--body); margin-top: 8px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .sec-h { display: flex; align-items: baseline; justify-content: space-between; margin-top: 28px; }
+  .sec-h h3 { margin: 0; font-size: 15px; font-weight: 800; }
+  .linkbtn { background: none; border: 0; padding: 0; color: var(--acc); font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ── 기술 스택 ── */
+  .skill-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+  .skill { padding: 18px; }
+  .skill h3 { margin: 0; font-size: 18px; font-weight: 800; display: flex; justify-content: space-between; gap: 8px; }
+  .skill h3 small { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .skill ul { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .skill li { font-size: 13.5px; line-height: 1.6; color: var(--body); padding-left: 12px; border-left: 2px solid var(--line2); }
+  .skill li .from { display: block; font-size: 12px; color: var(--acc); margin-top: 2px; }
+
+  /* ── 대표 프로젝트 ── */
+  .p-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 16px; }
+  .summary > div { padding: 12px 16px; border-right: 1px solid var(--line); }
+  .summary > div:last-child { border-right: 0; }
+  .summary dt { font-size: 12px; color: var(--muted); }
+  .summary dd { margin: 2px 0 0; font-size: 14px; font-weight: 700; line-height: 1.45; }
+  .summary .wide { grid-column: span 1; }
+  .tabs { display: flex; gap: 0; margin-top: 20px; border-bottom: 1px solid var(--line2); }
+  .tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 18px 9px; font-size: 15px; font-weight: 700; color: var(--muted); display: flex; flex-direction: column; align-items: flex-start; gap: 3px; margin-bottom: -1px; }
+  .tab .en { font-size: 9px; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--acc); }
+  .tab[aria-selected="true"] .en { color: var(--acc); }
+  .tab .n { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .pane { padding-top: 22px; flex: 1; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .cover { border: 1px solid var(--line2); background: #000; }
+  .cover img { width: 100%; height: auto; display: block; }
+  dl.meta { margin: 0; display: grid; grid-template-columns: 76px minmax(0, 1fr); border-top: 1px solid var(--line); }
+  dl.meta dt, dl.meta dd { padding: 8px 0; border-bottom: 1px solid var(--line); margin: 0; font-size: 13.5px; }
+  dl.meta dt { color: var(--muted); font-weight: 600; }
+  .intent { margin-top: 16px; padding: 14px 16px; border-left: 3px solid var(--acc); background: var(--panel); }
+  .intent b { font-size: 12.5px; color: var(--acc); }
+  .intent p { margin: 4px 0 0; font-size: 14px; color: var(--body); }
+
+  .list-detail { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 24px; align-items: start; }
+  .picks { display: flex; flex-direction: column; gap: 8px; }
+  .pick { text-align: left; border: 1px solid var(--line2); background: var(--panel); padding: 10px 12px; font-size: 14px; font-weight: 700; line-height: 1.45; }
+  .pick .en { display: block; font-size: 9px; margin-bottom: 4px; font-weight: 400; }
+  .pick:hover { border-color: var(--acc-line); }
+  .pick[aria-pressed="true"] { border-color: var(--acc); background: var(--acc-soft); }
+  .detail { padding: 20px 22px; }
+  .detail h4 { margin: 0; font-size: 19px; line-height: 1.45; font-weight: 800; }
+  .detail .what { margin: 6px 0 0; color: var(--body); font-size: 14.5px; }
+  .rows { margin: 16px 0 0; display: flex; flex-direction: column; gap: 12px; }
+  .rows > div { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 12px; }
+  .rows dt { font-size: 13px; font-weight: 800; color: var(--acc); }
+  .rows dt .en { display: block; font-size: 8.5px; margin-top: 3px; font-weight: 400; }
+  .rows dd { margin: 0; font-size: 14px; line-height: 1.65; color: var(--body); }
+  .rows .why dd { color: var(--ink); }
+  .fig { margin: 16px 0 0; }
+  .fig img { max-width: 100%; max-height: 260px; display: block; border: 1px solid var(--line2); cursor: zoom-in; }
+  .fig figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .more-links { margin-top: 14px; font-size: 13px; }
+
+  .ach { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .ach li { display: flex; gap: 10px; font-size: 14.5px; color: var(--body); }
+  .ach li::before { content: '✓'; color: var(--acc); font-weight: 800; }
+  .shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .shots button { padding: 0; border: 1px solid var(--line2); background: #000; aspect-ratio: 16/10; overflow: hidden; }
+  .shots button:hover { border-color: var(--acc); }
+  .shots img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 26px; padding-top: 14px; border-top: 1px dashed var(--line2); font-size: 13px; color: var(--muted); }
+
+  /* ── 기타 프로젝트(카드 자리에서 펼침) ── */
+  .o-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 22px; align-items: start; }
+  .ocard { border: 1px solid var(--line2); background: var(--panel); }
+  .ocard > button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 0; }
+  .ocard .th { aspect-ratio: 16/9; background: #000; overflow: hidden; }
+  .ocard .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ocard .bd { padding: 10px 12px 12px; }
+  .ocard .t { font-size: 14.5px; font-weight: 800; line-height: 1.4; }
+  .ocard .m { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ocard .one { font-size: 12.5px; color: var(--body); margin-top: 6px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ocard .tog { font-size: 12px; color: var(--acc); margin-top: 8px; font-weight: 600; }
+  .ocard.open { grid-column: 1 / -1; border-color: var(--acc); display: grid; grid-template-columns: 300px minmax(0, 1fr); }
+  .ocard.open > button .one { -webkit-line-clamp: unset; }
+  .ocard .ex { padding: 14px 18px 16px; border-left: 1px solid var(--line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; align-content: start; }
+  .ocard .ex h5 { margin: 0 0 4px; font-size: 12.5px; color: var(--acc); }
+  .ocard .ex ul { margin: 0; padding-left: 16px; font-size: 13px; color: var(--body); line-height: 1.6; }
+  .ocard .ex .btns { grid-column: 1 / -1; margin-top: 10px; }
+  .ocard .ex .btn { min-height: 34px; font-size: 13px; padding: 0 12px; }
+
+  /* ── 연락처 ── */
+  .contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; margin-top: 28px; align-items: start; }
+  .mail { font-size: 22px; font-weight: 800; color: var(--acc); text-decoration: none; }
+
+  /* 크게 보기 */
+  .lb { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 50; padding: 30px; }
+  .lb img { max-width: 92vw; max-height: 82vh; }
+  .lb p { margin: 0; font-size: 14px; color: var(--body); }
+
+  /* 목업 표시 띠 */
+  .mock { position: fixed; right: 12px; bottom: 12px; z-index: 40; font-size: 12px; background: var(--warn); color: #1A1400; padding: 4px 10px; font-weight: 700; }
+
+  /* ── 한 화면에 들어가게 줄임(1366×768 기준) ── */
+  .view { padding: 26px 40px 22px; }
+  .p-head h1.big { font-size: 28px; margin-top: 8px; }
+  .p-head .lead { font-size: 15px; margin-top: 6px; }
+  .summary { margin-top: 12px; }
+  .summary > div { padding: 8px 14px; }
+  .tabs { margin-top: 12px; }
+  .tab { padding: 7px 16px 7px; }
+  .pane { padding-top: 16px; }
+  .cover img { max-height: 330px; object-fit: contain; background: #000; }
+  dl.meta dt, dl.meta dd { padding: 6px 0; font-size: 13px; line-height: 1.55; }
+  .intent { margin-top: 12px; padding: 10px 14px; }
+  .intent p { font-size: 13.5px; }
+  .detail { padding: 16px 20px; }
+  .detail.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); gap: 0 22px; }
+  .detail.has-fig > .fig { grid-column: 2; grid-row: 1 / span 5; margin: 0; }
+  .detail.has-fig > :not(.fig) { grid-column: 1; }
+  .fig img { max-height: 300px; width: 100%; object-fit: contain; background: #000; }
+  .rows { gap: 10px; margin-top: 12px; }
+  .rows dd { font-size: 13.5px; line-height: 1.6; }
+  h1.big.ko { font-family: var(--sans); font-weight: 800; letter-spacing: 0; }
+  .tabs-end { margin-left: auto; align-self: center; display: flex; gap: 16px; align-items: center; font-size: 12.5px; }
+  .cover img { max-height: 300px; }
+  .ach { gap: 8px; } .ach li { font-size: 14px; line-height: 1.6; }
+  .o-grid { margin-top: 16px; gap: 12px; }
+  .ocard .th { aspect-ratio: 16/8; }
+  .ocard.open .th { aspect-ratio: 16/9; }
+
+  /* 좁은 화면: 목차가 위 가로 띠로 */
+  @media (max-width: 960px) {
+    body { overflow: auto; }
+    .shell { grid-template-columns: 1fr; height: auto; }
+    .side { position: sticky; top: 0; z-index: 10; border-right: 0; border-bottom: 1px solid var(--line); }
+    .me, .side-foot, .grp { display: none; }
+    nav.toc { display: flex; overflow-x: auto; padding: 6px; gap: 4px; }
+    .item { white-space: nowrap; width: auto; }
+    .item .sub, .item .cnt { display: none; }
+    .stage { overflow: visible; }
+    .view { padding: 24px 18px 40px; }
+    .intro-top, .two, .list-detail, .contact, .ocard.open, .ocard .ex { grid-template-columns: 1fr; }
+    .feat-grid, .skill-grid { grid-template-columns: 1fr; }
+    .o-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ocard .ex { border-left: 0; border-top: 1px solid var(--line); }
+    .detail.has-fig { display: block; }
+    .detail.has-fig > .fig { margin-top: 14px; }
+    h1.big { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="me"><div class="nm" id="me-nm"></div><div class="job" id="me-job"></div></div>
+    <nav class="toc" id="toc" aria-label="목차"></nav>
+    <div class="side-foot"><kbd>▲</kbd><kbd>▼</kbd> 목차 이동 · <kbd>◀</kbd><kbd>▶</kbd> 탭 넘기기</div>
+  </aside>
+  <main class="stage" id="stage"></main>
+</div>
+<div class="mock">목업 · 노란 '더미'는 복제한 가짜 프로젝트</div>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const rich = (s) => esc(s).replace(/`([^`]+)`/g, '<code class="ic">$1</code>').replace(/\n/g, '<br>');
+const pad = (n) => String(n).padStart(2, '0');
+const isUrl = (u) => /^https?:\/\//.test(u || '');
+const img = (p, src) => `src/${p.id}/${src}`;
+const deckUrl = (p) => `project.html?p=${encodeURIComponent(p.id)}`;
+const docUrl = (p) => `doc.html?p=${encodeURIComponent(p.id)}`;
+const metaOf = (p, re) => ((p.meta || []).find((m) => re.test(m.label || '')) || {}).value || '';
+const rangeOf = (v) => (String(v).match(/\d{4}\.\d{1,2}(?:\.\d{1,2})?\s*~\s*(?:\d{4}\.)?\d{1,2}(?:\.\d{1,2})?/) || [String(v || '')])[0];
+const teamOf = (p) => (p.team?.type === 'team' ? `팀 ${p.team.size || ''}`.trim() : '개인');
+const ext = ' <span aria-hidden="true">↗</span>';
+
+const S = { pf: null, feat: [], others: [], views: [], cur: 0, tab: {}, pick: {}, open: -1 };
+
+function linksHtml(p, small) {
+  const L = p.links || {};
+  return `<div class="btns">
+    <a class="btn ${small ? '' : 'pri'}" href="${deckUrl(p)}" target="_blank" rel="noopener">슬라이드${ext}</a>
+    ${isUrl(L.video) ? `<a class="btn" href="${esc(L.video)}" target="_blank" rel="noopener">시연 영상${ext}</a>` : ''}
+    <a class="btn" href="${docUrl(p)}" target="_blank" rel="noopener">상세 문서${ext}</a>
+    ${isUrl(L.github) ? `<a class="btn" href="${esc(L.github)}" target="_blank" rel="noopener">GitHub${ext}</a>` : ''}
+  </div>`;
+}
+
+// ── 화면마다 그리기 ──
+function vIntro() {
+  const pr = S.pf.profile;
+  const intro = String(pr.intro || '').split('\n').filter(Boolean).map((l) => `<p>${rich(l)}</p>`).join('');
+  return `
+  <div class="eyebrow">소개 <span class="en">PLAYER 1</span></div>
+  <div class="intro-top">
+    <div>
+      <h1 class="big">${esc(pr.nameEn || pr.name)}</h1>
+      <p style="margin:10px 0 0;font-size:15px"><b>${esc(pr.name)}</b> · <span class="acc">${esc(pr.job)}</span></p>
+      <p class="lead" style="font-size:19px;font-weight:700;color:var(--ink)">${rich(pr.headline)}</p>
+      <div class="btns" style="margin-top:18px">
+        <a class="btn pri" href="mailto:${esc(pr.email)}">메일 보내기</a>
+        ${isUrl(pr.github) ? `<a class="btn" href="${esc(pr.github)}" target="_blank" rel="noopener">GitHub${ext}</a>` : ''}
+        <a class="btn" href="print.html" target="_blank" rel="noopener">포트폴리오 PDF${ext}</a>
+      </div>
+    </div>
+    <div class="box intro-text" style="padding:18px 20px">
+      <b style="font-size:13px;color:var(--acc)">자기소개</b>
+      <div style="margin-top:6px;font-size:14.5px">${intro}</div>
+      <p class="muted" style="font-size:12.5px;margin:10px 0 0">${esc(pr.email)} · 프로젝트 ${S.feat.length + S.others.length}개 (대표 ${S.feat.length} · 그 외 ${S.others.length})</p>
+    </div>
+  </div>
+  <div class="sec-h"><h3>대표 프로젝트 <span class="en" style="margin-left:6px">FEATURED</span></h3>
+    <button class="linkbtn" data-go="others">그 외 프로젝트 ${S.others.length}개 보기 →</button></div>
+  <div class="feat-grid">
+    ${S.feat.map((p, i) => `
+      <button class="fcard" data-go="p-${i}">
+        <span class="th">${p.cover ? `<img src="${img(p, p.cover)}" alt="" loading="lazy">` : ''}</span>
+        <span class="bd">
+          <span class="t" style="display:block">${esc(p.title)}</span>
+          <span class="m" style="display:block">${teamOf(p)} · ${esc(rangeOf(metaOf(p, /기간/)))}</span>
+          <span class="one">${rich(p.tagline)}</span>
+          <span class="tags" style="margin-top:8px">${(p.tags || []).slice(0, 3).map((g) => `<span class="tag">${esc(g)}</span>`).join('')}</span>
+        </span>
+      </button>`).join('')}
+  </div>`;
+}
+
+function vSkills() {
+  const sk = S.pf.skills || [];
+  return `
+  <div class="eyebrow">기술 스택 <span class="en">SKILLS</span></div>
+  <h2 class="ttl">쓴 기술과 그 근거</h2>
+  <p class="lead">기술마다 실제로 쓴 프로젝트의 문장을 근거로 붙였습니다. 기술마다 근거는 2개까지 보이고, 나머지는 펼쳐 봅니다.</p>
+  <div class="skill-grid">
+    ${sk.map((s, i) => {
+      const ev = s.evidence || [];
+      const projs = new Set(ev.map((e) => e.project)).size;
+      const open = S.pick['skill-' + i];
+      const show = open ? ev : ev.slice(0, 2);
+      return `<div class="box skill">
+        <h3>${esc(s.name)} <small>프로젝트 ${projs}개에서 씀</small></h3>
+        <ul>${show.map((e) => `<li>${rich(e.text)}<span class="from">${esc(titleOf(e.project))}</span></li>`).join('')}</ul>
+        ${ev.length > 2 ? `<button class="linkbtn" style="margin-top:10px" data-skill="${i}">${open ? '접기' : `근거 ${ev.length - 2}개 더 보기`}</button>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+const titleOf = (id) => (S.feat.find((p) => p.id === id) || {}).title || id;
+
+function vProject(i) {
+  const p = S.feat[i];
+  const hl = p.highlights || [], ts = p.troubleshooting || [], rt = p.retro || {}, shots = p.screenshots || [];
+  const tabs = [
+    { key: 'start', ko: '소개', en: 'START' },
+    hl.length && { key: 'quest', ko: '기능', en: 'QUEST', n: hl.length },
+    ts.length && { key: 'boss', ko: '문제 해결', en: 'BOSS', n: ts.length },
+    ((rt.achieved || []).length || shots.length) && { key: 'clear', ko: '결과', en: 'CLEAR' },
+  ].filter(Boolean);
+  const k = Math.min(S.tab[i] || 0, tabs.length - 1);
+  const t = tabs[k].key;
+  const role = p.team?.role;
+  // 요약 띠: 탭을 누르지 않아도 핵심이 보이게
+  const summary = `
+    <dl class="box summary">
+      <div><dt>인원</dt><dd>${p.team?.type === 'team' ? `팀 프로젝트 · ${esc(p.team.size || '')}` : '개인 프로젝트'}</dd></div>
+      <div><dt>기간</dt><dd>${esc(metaOf(p, /기간/))}</dd></div>
+      <div><dt>담은 것</dt><dd>기능 ${hl.length} · 문제 해결 ${ts.length}</dd></div>
+      <div><dt>핵심 기술</dt><dd>${(p.tags || []).slice(0, 3).map(esc).join(' · ')}</dd></div>
+    </dl>`;
+  let body = '';
+  if (t === 'start') {
+    const meta = (p.meta || []).filter((m) => m.value && !/기간/.test(m.label));
+    body = `<div class="two">
+      <div>
+        ${p.cover ? `<div class="cover"><img src="${img(p, p.cover)}" alt="${esc(p.title)} 대표 이미지"></div>` : ''}
+      </div>
+      <div>
+        <dl class="meta">
+          ${meta.map((m) => `<dt>${esc(m.label)}</dt><dd>${rich(m.value)}</dd>`).join('')}
+          ${role ? `<dt>내 역할</dt><dd>${rich(role)}</dd>` : ''}
+        </dl>
+        ${p.intent?.text ? `<div class="intent"><b>개발 의도</b><p>${rich(p.intent.text)}</p></div>` : ''}
+        <div class="tags" style="margin-top:14px">${(p.tags || []).map((g) => `<span class="tag">${esc(g)}</span>`).join('')}</div>
+        <div style="margin-top:16px">${linksHtml(p)}</div>
+      </div>
+    </div>`;
+  } else if (t === 'quest') {
+    const j = Math.min(S.pick[`q${i}`] || 0, hl.length - 1), h = hl[j];
+    body = `<div class="list-detail">
+      <div class="picks" role="group" aria-label="기능">${hl.map((x, n) => `<button class="pick" aria-pressed="${n === j}" data-pick="q${i}:${n}"><span class="en">QUEST ${pad(n + 1)}</span>${esc(x.title)}</button>`).join('')}</div>
+      <article class="box detail ${h.image?.src ? 'has-fig' : ''}">
+        <p class="en acc" style="margin:0 0 6px">기능 ${pad(j + 1)} / ${pad(hl.length)}</p>
+        <h4>${esc(h.title)}</h4>
+        ${h.what ? `<p class="what">${rich(h.what)}</p>` : ''}
+        <dl class="rows">
+          ${h.how ? `<div><dt>구현 방법<span class="en">HOW</span></dt><dd>${rich(h.how)}</dd></div>` : ''}
+          ${h.why ? `<div class="why"><dt>선택 이유<span class="en">WHY</span></dt><dd>${rich(h.why)}</dd></div>` : ''}
+        </dl>
+        ${h.image?.src ? `<figure class="fig"><img src="${img(p, h.image.src)}" alt="${esc(h.image.caption || h.title)}" data-lb="${esc(img(p, h.image.src))}" data-cap="${esc(h.image.caption || '')}"><figcaption>${esc(h.image.caption || '')}</figcaption></figure>` : ''}
+        <p class="more-links"><a class="acc" href="${deckUrl(p)}" target="_blank" rel="noopener">슬라이드에서 자세히${ext}</a>${h.section ? ` <span class="muted"> · 원문 ${esc(h.section)}</span>` : ''}</p>
+      </article>
+    </div>`;
+  } else if (t === 'boss') {
+    const j = Math.min(S.pick[`b${i}`] || 0, ts.length - 1), b = ts[j];
+    const rows = [['문제', 'PROBLEM', b.problem], ['원인', 'CAUSE', b.cause], ['해결', 'FIX', b.solution], ['결과', 'RESULT', b.result], ['배운 점', 'LESSON', b.lesson]].filter((r) => r[2]);
+    body = `<div class="list-detail">
+      <div class="picks" role="group" aria-label="문제 해결">${ts.map((x, n) => `<button class="pick" aria-pressed="${n === j}" data-pick="b${i}:${n}"><span class="en">BOSS ${pad(n + 1)} · CLEAR</span>${esc(x.title)}</button>`).join('')}</div>
+      <article class="box detail">
+        <p class="en acc" style="margin:0 0 6px">문제 해결 ${pad(j + 1)} / ${pad(ts.length)}</p>
+        <h4>${esc(b.title)}</h4>
+        <dl class="rows">${rows.map(([ko, en, tx]) => `<div><dt>${ko}<span class="en">${en}</span></dt><dd>${rich(tx)}</dd></div>`).join('')}</dl>
+      </article>
+    </div>`;
+  } else {
+    const left = (rt.regrets || []).length, plans = (rt.plans || []).length;
+    body = `<div class="two">
+      <div class="box" style="padding:20px 22px">
+        <b style="font-size:15px">이룬 것</b> <span class="en">STAGE CLEAR</span>
+        <ul class="ach" style="margin-top:12px">${(rt.achieved || []).map((a) => `<li><span>${rich(a)}</span></li>`).join('')}</ul>
+        ${left || plans ? `<p class="muted" style="font-size:13px;margin:16px 0 0;padding-top:12px;border-top:1px dashed var(--line2)">남은 과제 ${left}건 · 다음 계획 ${plans}건 → <a class="acc" href="${docUrl(p)}" target="_blank" rel="noopener">상세 문서${ext}</a></p>` : ''}
+      </div>
+      <div>
+        <b style="font-size:14px">스크린샷</b> <span class="muted" style="font-size:12.5px">${shots.length}장 · 누르면 크게</span>
+        <div class="shots" style="margin-top:10px">${shots.map((s) => `<button data-lb="${esc(img(p, s.src))}" data-cap="${esc(s.caption || '')}" aria-label="크게 보기: ${esc(s.caption || '')}"><img src="${img(p, s.src)}" alt="" loading="lazy"></button>`).join('')}</div>
+      </div>
+    </div>`;
+  }
+  const next = S.views[S.cur + 1];
+  return `
+  <div class="p-head">
+    <div>
+      <div class="eyebrow">대표 프로젝트 ${i + 1} / ${S.feat.length} <span class="en">STAGE ${pad(i + 1)}</span></div>
+      <h1 class="big${/[ㄱ-힣]/.test(p.title) ? " ko" : ""}">${esc(p.title)}</h1>
+      <p class="lead">${rich(p.tagline)}</p>
+    </div>
+  </div>
+  ${summary}
+  <div class="tabs" role="tablist">${tabs.map((x, n) => `<button class="tab" role="tab" aria-selected="${n === k}" data-tab="${i}:${n}"><span class="en">${x.en}</span><span>${x.ko}${x.n ? `<span class="n">${x.n}</span>` : ''}</span></button>`).join('')}
+    <span class="tabs-end"><span class="muted">◀ ▶ 탭 ${k + 1} / ${tabs.length}</span>
+    ${next ? `<button class="linkbtn" data-go="${next.id}">다음: ${esc(next.label)} ▼</button>` : ''}</span></div>
+  <div class="pane">${body}</div>`;
+}
+
+function vOthers() {
+  return `
+  <div class="eyebrow">그 외 프로젝트 <span class="en">MORE STAGES</span></div>
+  <h2 class="ttl">그 외 프로젝트 ${S.others.length}개</h2>
+  <p class="lead">카드를 누르면 그 자리에서 기능·문제 해결 목록과 링크가 펼쳐집니다. 깊은 설명은 대표 프로젝트에만 둡니다.</p>
+  <div class="o-grid">
+    ${S.others.map((p, i) => {
+      const open = S.open === i;
+      return `<div class="ocard ${open ? 'open' : ''}">
+        <button data-open="${i}" aria-expanded="${open}">
+          <span class="th" style="display:block">${p.cover ? `<img src="${img(p, p.cover)}" alt="" loading="lazy">` : ''}</span>
+          <span class="bd" style="display:block">
+            <span class="t" style="display:block">${esc(p.title)} <span class="dummy">더미</span></span>
+            <span class="m" style="display:block">${teamOf(p)} · ${esc(rangeOf(metaOf(p, /기간/)))}</span>
+            <span class="one">${rich(p.tagline)}</span>
+            <span class="tog" style="display:block">${open ? '▲ 접기' : '▼ 펼치기'}</span>
+          </span>
+        </button>
+        ${open ? `<div class="ex">
+          <div><h5>기능 ${(p.highlights || []).length}</h5><ul>${(p.highlights || []).map((h) => `<li>${esc(h.title)}</li>`).join('')}</ul></div>
+          <div><h5>문제 해결 ${(p.troubleshooting || []).length}</h5><ul>${(p.troubleshooting || []).map((b) => `<li>${esc(b.title)}</li>`).join('')}</ul></div>
+          ${p.team?.role ? `<div style="grid-column:1/-1"><h5>내 역할</h5><p style="margin:0;font-size:13px;color:var(--body)">${rich(p.team.role)}</p></div>` : ''}
+          ${linksHtml(p, true)}
+        </div>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function vContact() {
+  const pr = S.pf.profile;
+  const all = [...S.feat, ...S.others];
+  return `
+  <div class="eyebrow">연락처 <span class="en">THANK YOU FOR PLAYING</span></div>
+  <h2 class="ttl">읽어 주셔서 감사합니다</h2>
+  <div class="contact">
+    <div>
+      <a class="mail" href="mailto:${esc(pr.email)}">${esc(pr.email)}</a>
+      <div class="btns" style="margin-top:16px">
+        <a class="btn pri" href="mailto:${esc(pr.email)}">메일 보내기</a>
+        ${isUrl(pr.github) ? `<a class="btn" href="${esc(pr.github)}" target="_blank" rel="noopener">GitHub${ext}</a>` : ''}
+        <a class="btn" href="print.html" target="_blank" rel="noopener">포트폴리오 PDF${ext}</a>
+      </div>
+      <button class="linkbtn" style="margin-top:20px" data-go="intro">▲ 처음으로</button>
+    </div>
+    <div class="box" style="padding:16px 18px">
+      <b style="font-size:13px;color:var(--acc)">프로젝트 ${all.length}개</b>
+      <ol style="margin:8px 0 0;padding-left:22px;font-size:13.5px;line-height:1.9;columns:2;column-gap:28px">
+        ${all.map((p) => `<li><a href="${docUrl(p)}" target="_blank" rel="noopener" style="text-decoration:none">${esc(p.title)}</a></li>`).join('')}
+      </ol>
+    </div>
+  </div>`;
+}
+
+// ── 목차 ──
+function buildViews() {
+  S.views = [
+    { id: 'intro', label: '소개', sub: '요약 한 장', grp: '' },
+    { id: 'skills', label: '기술 스택', sub: `${(S.pf.skills || []).length}개`, grp: '' },
+    ...S.feat.map((p, i) => ({ id: `p-${i}`, label: p.title, sub: `${teamOf(p)} · ${rangeOf(metaOf(p, /기간/)).split('~')[0].trim().slice(0, 7)}`, grp: 'feat' })),
+    { id: 'others', label: '모아 보기', sub: S.others.map((p) => p.title.replace(/\s*\(더미 \d+\)/, '')).slice(0, 2).join(', ') + ' …', grp: 'others', cnt: S.others.length },
+    { id: 'contact', label: '연락처', sub: '', grp: 'end' },
+  ];
+}
+function renderToc() {
+  let last = null, html = '';
+  S.views.forEach((v, n) => {
+    if (v.grp !== last) {
+      if (v.grp === 'feat') html += `<div class="grp"><span>대표 프로젝트</span><span class="en">FEATURED</span></div>`;
+      if (v.grp === 'others') html += `<div class="grp"><span>그 외 프로젝트 (${S.others.length})</span><span class="en">MORE</span></div>`;
+      if (v.grp === 'end') html += `<div class="grp"><span></span></div>`;
+      last = v.grp;
+    }
+    const no = v.grp === 'feat' ? pad(n - 1) : '';
+    html += `<button class="item" data-go="${v.id}" aria-current="${n === S.cur}"><span class="no">${no}</span><span style="min-width:0"><span>${esc(v.label)}</span>${v.sub ? `<span class="sub">${esc(v.sub)}</span>` : ''}</span></button>`;
+  });
+  $('#toc').innerHTML = html;
+}
+function render(anim) {
+  const v = S.views[S.cur];
+  let h = '';
+  if (v.id === 'intro') h = vIntro();
+  else if (v.id === 'skills') h = vSkills();
+  else if (v.id.startsWith('p-')) h = vProject(+v.id.slice(2));
+  else if (v.id === 'others') h = vOthers();
+  else h = vContact();
+  $('#stage').innerHTML = `<div class="view ${anim ? 'enter' : ''}">${h}</div>`;
+  renderToc();
+}
+function go(id) {
+  const n = S.views.findIndex((v) => v.id === id);
+  if (n < 0) return;
+  const changed = n !== S.cur;
+  S.cur = n;
+  if (changed) $('#stage').scrollTop = 0;
+  try { history.replaceState(null, '', `#${id}`); } catch (e) {}
+  render(changed);
+}
+
+// ── 누르기 ──
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-go],[data-tab],[data-pick],[data-open],[data-skill],[data-lb]');
+  if (!el) return;
+  if (el.dataset.go) return go(el.dataset.go);
+  if (el.dataset.tab) { const [i, n] = el.dataset.tab.split(':').map(Number); S.tab[i] = n; return render(false); }
+  if (el.dataset.pick) { const [k, n] = el.dataset.pick.split(':'); S.pick[k] = +n; return render(false); }
+  if (el.dataset.open) {
+    const i = +el.dataset.open; S.open = S.open === i ? -1 : i; render(false);
+    const c = document.querySelector('.ocard.open'); if (c) c.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return;
+  }
+  if (el.dataset.skill) { const k = 'skill-' + el.dataset.skill; S.pick[k] = !S.pick[k]; return render(false); }
+  if (el.dataset.lb) openLb(el.dataset.lb, el.dataset.cap);
+});
+function openLb(src, cap) {
+  const d = document.createElement('div');
+  d.className = 'lb';
+  d.innerHTML = `<img src="${src}" alt=""><p>${esc(cap)} <span class="muted">· Esc·누르면 닫기</span></p>`;
+  d.onclick = () => d.remove();
+  document.body.appendChild(d);
+}
+// ── 키보드: ▲▼ 목차 · ◀▶ 탭 ──
+document.addEventListener('keydown', (e) => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  const lb = $('.lb');
+  if (lb) { if (e.key === 'Escape') lb.remove(); return; }
+  const v = S.views[S.cur];
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); if (S.cur < S.views.length - 1) go(S.views[S.cur + 1].id); }
+  else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); if (S.cur > 0) go(S.views[S.cur - 1].id); }
+  else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && v.id.startsWith('p-')) {
+    e.preventDefault();
+    const i = +v.id.slice(2), n = document.querySelectorAll('.tab').length;
+    S.tab[i] = Math.max(0, Math.min(n - 1, (S.tab[i] || 0) + (e.key === 'ArrowRight' ? 1 : -1)));
+    render(false);
+  }
+});
+
+// ── 데이터 읽기 ──
+(async () => {
+  S.pf = await fetch('data/portfolio.json', { cache: 'no-cache' }).then((r) => r.json());
+  S.feat = (await Promise.all(S.pf.projects.map((id) => fetch(`data/projects/${encodeURIComponent(id)}.json`, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null)))).filter(Boolean);
+  // 더미 7개: 실제 3개를 돌아가며 복제(그림 경로는 원래 폴더 그대로). 프로젝트가 많아졌을 때의 모양 확인용
+  S.others = Array.from({ length: 7 }, (_, n) => { const b = S.feat[n % S.feat.length]; return { ...b, title: `${b.title} (더미 ${n + 1})`, dummy: true }; });
+  $('#me-nm').textContent = S.pf.profile.name;
+  $('#me-job').textContent = S.pf.profile.job;
+  buildViews();
+  const start = S.views.findIndex((v) => v.id === location.hash.slice(1));
+  S.cur = start < 0 ? 0 : start;
+  render(false);
+  window.__mockReady = true;
+})();
+</script>
+</body>
+</html>

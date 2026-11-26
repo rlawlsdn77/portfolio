@@ -27,9 +27,11 @@
 > 강조하고 싶은 기술을 적어 두세요. Claude가 프로젝트 문서에서 **근거를 찾아** "경험 기반" 문장으로 만듭니다.
 > 근거를 찾지 못한 기술은 싣지 않고, 점검 리포트로 알려 줍니다. 비워 두면 문서에서 자동으로 고릅니다.
 
-- Unity
-- C#
-- TSV / ScriptableObject / JSON
+- Unity 6 (URP · Input System · uGUI)
+- 데이터 분리 (TSV · ScriptableObject · JSON)
+- 확장 가능한 구조 설계 (인터페이스 · 추상 클래스)
+- 네트워크 · 비동기 (WebSocket · UniTask · Newtonsoft.Json)
+- Git · GitHub 협업 (Asana · Fork)
 
 ## 페이지 설정
 
