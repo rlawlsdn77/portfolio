@@ -186,14 +186,11 @@
   .portrait { display: flex; align-items: center; justify-content: center; width: 84px; height: 84px; flex: none; font-family: var(--arcade); font-size: 20px;
     color: var(--acc); background: var(--acc-soft); --pc: var(--acc-line); }
   .skill:hover { --pc: var(--acc-line); }
-  /* 스킬 창: 머리 막대(SKILL 01 · 근거 프로젝트 게이지) + 아이콘·제목 + 근거 줄. 올리면 테두리·아이콘이 초록으로 */
+  /* 스킬 창: 머리 막대(SKILL 01) + 아이콘·제목 + 범용 근거 줄(프로젝트 이름은 보이지 않음 — 프로젝트가 늘어도 그대로 읽힘). 올리면 테두리·아이콘이 초록으로 */
   .sk { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
   .sk:hover { --pc: var(--acc-line); }
   .sk .wbar { display: flex; align-items: center; gap: 10px; padding: 7px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
   .sk .wbar .no { font-family: var(--arcade); font-size: 9px; color: var(--muted); }
-  .gauge { display: inline-flex; gap: 3px; margin-left: auto; }
-  .gauge i { width: 10px; height: 8px; background: rgba(233, 238, 230, .12); }
-  .gauge i.on { background: var(--acc); }
   .sk .hd { display: flex; align-items: center; gap: 14px; padding: 12px 16px 0; }
   .sk .ico { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; color: var(--acc); background: var(--acc-soft);
     --pc: var(--acc-line); transition: background-color .12s, color .12s; }
@@ -204,10 +201,8 @@
   .sk li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 6px 0; font-size: 13.5px; line-height: 1.55; color: var(--body); word-break: keep-all;
     border-top: 1px dashed var(--line); }
   .sk li:first-child { border-top: 0; padding-top: 0; }
-  .sk li .pj { display: inline-block; margin-left: 6px; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--acc); white-space: nowrap; }
-  .sk li .pj:hover { text-decoration: underline; text-underline-offset: 3px; }
   /* 도구 줄: 창 없이 머리 오른쪽에 그대로 띄움(분류 이름 + 픽셀 아이콘 + 이름). 스킬 창에 이미 나온 것은 빼므로 짧음.
-     올리면 아이콘이 떠오르고, 이름 위에 쓴 프로젝트(title) */
+     올리면 아이콘이 떠오름. 프로젝트 이름은 보이지 않음(TOOL_GROUPS의 p는 불러온 프로젝트에 있는 도구만 고르는 데만 씀) */
   .tools { display: flex; flex-wrap: wrap; gap: 14px 30px; }
   .tools .grp { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
   .tools .gl { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--muted); white-space: nowrap; }
@@ -990,25 +985,19 @@ function Skills({ pf, byId, t, no }) {
     const md = nf % 2 === 1 && i === nf - 1 ? 'md:col-span-2' : '';
     return `${xl} ${md}`;
   };
-  const total = Object.keys(byId).length;
-  const projOf = (s) => [...new Set((s.evidence || []).map((e) => e.project).filter((id) => byId[id]))];
   const iconOf = (name) => (SKILL_ICON.find(([re]) => re.test(name)) || [])[1];
   // 중복 빼기: 대표 스킬 이름(괄호 안 포함)에 이미 나온 도구는 도구 줄에 넣지 않음
   const said = featured.map((s) => keyOf(s.name)).join('|');
   const groups = [
-    rest.length && { label: '그 밖의 스킬', items: rest.map((s) => { const [title, sub] = splitSkill(s.name); return { name: title, icon: iconOf(s.name), tip: sub, p: projOf(s) }; }) },
+    rest.length && { label: '그 밖의 스킬', items: rest.map((s) => { const [title, sub] = splitSkill(s.name); return { name: title, icon: iconOf(s.name), tip: sub }; }) },
     ...TOOL_GROUPS.map((g) => ({ ...g, items: g.items.filter((x) => x.p.some((id) => byId[id]) && !said.includes(keyOf(x.name))) })),
   ].filter((g) => g && g.items.length);
-  const tip = (x) => [x.tip, `쓴 프로젝트: ${x.p.filter((id) => byId[id]).map((id) => byId[id].title).join(' · ')}`].filter(Boolean).join(' — ');
   return (
     <section id="skills" className="sec stage">
       <div className="wrap pad">
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
           <div className="flex-1 min-w-0 basis-[320px]">
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-              <Eyebrow no={no('skills')}>{t('page.stack')}</Eyebrow>
-              <p className="f-pixel text-[11px] muted"><span className="gauge align-[-1px] mr-1.5" aria-hidden="true"><i className="on" /><i /></span>= 근거가 나온 프로젝트 수</p>
-            </div>
+            <Eyebrow no={no('skills')}>{t('page.stack')}</Eyebrow>
             <h2 className="giant mt-4">{t('en.skills')}</h2>
           </div>
           {groups.length > 0 && (
@@ -1018,7 +1007,7 @@ function Skills({ pf, byId, t, no }) {
                   <p className="gl"><span className="n">{pad(gi + 1)}</span>{g.label}</p>
                   <ul>
                     {g.items.map((x) => (
-                      <li key={x.name} className="tool" title={tip(x)}>
+                      <li key={x.name} className="tool" title={x.tip || undefined}>
                         <span className="gi" aria-hidden="true">{x.icon ? <PxIcon name={x.icon} cell={3} /> : null}</span>
                         <span className="nm">{x.name}</span>
                       </li>
@@ -1034,12 +1023,10 @@ function Skills({ pf, byId, t, no }) {
             const [title, sub] = splitSkill(s.name);
             const icon = iconOf(s.name);
             const ev = s.evidence || [];
-            const n = projOf(s).length;
             return (
               <article key={i} className={`sk pxb ${span(i)}`}>
                 <div className="wbar">
                   <span className="no">SKILL {pad(i + 1)}</span>
-                  {total > 0 && <span className="gauge" role="img" aria-label={`근거 프로젝트 ${n} / ${total}`}>{Array.from({ length: total }, (_, k) => <i key={k} className={k < n ? 'on' : ''} />)}</span>}
                 </div>
                 <div className="hd">
                   <span className="ico pxb2" aria-hidden="true">{icon ? <PxIcon name={icon} /> : <span className="f-arcade text-[11px]">{pad(i + 1)}</span>}</span>
@@ -1049,10 +1036,7 @@ function Skills({ pf, byId, t, no }) {
                   {ev.map((e, k) => (
                     <li key={k}>
                       <span className="acc" aria-hidden="true">▸</span>
-                      <span>
-                        <Rich text={e.text} />
-                        {byId[e.project] && <a href={`#p-${e.project}`} className="pj" onClick={(ev2) => { ev2.preventDefault(); enterStage(`p-${e.project}`); }}>{byId[e.project].title} →</a>}
-                      </span>
+                      <span><Rich text={e.text} /></span>
                     </li>
                   ))}
                 </ul>

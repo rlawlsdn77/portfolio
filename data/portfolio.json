@@ -18,39 +18,43 @@
     {
       "name": "Unity 6 (URP · Input System · uGUI)",
       "evidence": [
-        { "text": "다른 색 발판의 `BoxCollider2D`를 꺼 이동·레이캐스트에서 함께 사라지게 함", "project": "Shifter" },
-        { "text": "`DontDestroyOnLoad` 싱글톤 `GameManager`로 3개 씬의 값과 규칙을 한 곳에", "project": "OverFixed" },
-        { "text": "Additive 씬 전환에 맞춰 UI 매니저를 씬마다 나누고 공통 UI엔 타이머·채팅만 남김", "project": "IfIWasInMarket" }
+        { "text": "오브젝트 풀링으로 생성·파괴 없는 재사용", "project": "OverFixed" },
+        { "text": "`DontDestroyOnLoad` 싱글톤으로 씬을 넘는 상태 유지", "project": "OverFixed" },
+        { "text": "Additive 씬 전환과 씬별 UI 매니저 분리", "project": "IfIWasInMarket" },
+        { "text": "레이캐스트 반사로 빛 경로 계산", "project": "Shifter" }
       ]
     },
     {
       "name": "데이터 분리 (TSV · ScriptableObject · JSON)",
       "evidence": [
-        { "text": "밸런스 표는 TSV 4종, 조절값은 ScriptableObject 7종, 최고 기록은 JSON으로 분리", "project": "OverFixed" },
-        { "text": "열 이름으로 칸을 찾는 제네릭 파서 하나가 TSV 표를 모두 읽음", "project": "OverFixed" }
+        { "text": "밸런스 표는 TSV, 조절값은 ScriptableObject, 기록은 JSON으로 분리", "project": "OverFixed" },
+        { "text": "열 이름으로 칸을 찾는 제네릭 TSV 파서", "project": "OverFixed" },
+        { "text": "enum ID로 표의 오타를 처음 읽을 때 바로 검출", "project": "OverFixed" }
       ]
     },
     {
       "name": "확장 가능한 구조 설계 (인터페이스 · 추상 클래스)",
       "evidence": [
-        { "text": "`IBossPattern` 인터페이스로 보스 패턴 3종의 시작·정리를 통일", "project": "Shifter" },
-        { "text": "추상 클래스 `MiniGame`으로 조작이 다른 미니게임 3종의 공통 동작을 한 곳에", "project": "OverFixed" },
-        { "text": "턴 상태 22종을 `TurnMessage` 하나로 묶어, 새 상태는 enum 값 1 + case 1 + 핸들러 1로 더함", "project": "IfIWasInMarket" }
+        { "text": "인터페이스로 패턴마다 시작·정리 약속 통일", "project": "Shifter" },
+        { "text": "추상 클래스에 공통 동작, 자식에는 종류별 입력·판정만", "project": "OverFixed" },
+        { "text": "enum + 핸들러로 새 상태를 더하는 비용 고정", "project": "IfIWasInMarket" }
       ]
     },
     {
       "name": "네트워크 · 비동기 (WebSocket · UniTask · Newtonsoft.Json)",
       "evidence": [
-        { "text": "서버와 주고받는 길을 `LiarClient` 하나로 모아, 4명이 같은 순간에 같은 장면으로 넘어가게 함", "project": "IfIWasInMarket" },
-        { "text": "상태가 시작될 때 한 번 받은 제한시간으로 남은 시간을 직접 계산해, 매초 시간을 주고받지 않음", "project": "IfIWasInMarket" },
-        { "text": "사용자 ID 표기가 섞인 프로토콜이라, 대소문자만 달라도 값이 빠지는 System.Text.Json 대신 Newtonsoft.Json을 고름", "project": "IfIWasInMarket" }
+        { "text": "서버 턴 상태에 맞춘 클라이언트 간 화면 동기화", "project": "IfIWasInMarket" },
+        { "text": "한 번 받은 제한시간으로 남은 시간을 클라이언트에서 계산", "project": "IfIWasInMarket" },
+        { "text": "UniTask 비동기 전송 (`SendAsync().Forget()`)", "project": "IfIWasInMarket" },
+        { "text": "Newtonsoft.Json으로 프로토콜 메시지 역직렬화", "project": "IfIWasInMarket" }
       ]
     },
     {
       "name": "Git · GitHub 협업 (Asana · Fork)",
       "evidence": [
-        { "text": "꼬인 병합 구간을 이력에서 걷어 내 복구하고, 작업 하나마다 브랜치를 따서 `main`에 합침", "project": "IfIWasInMarket" },
-        { "text": "커밋 기록을 다시 읽어, 리팩터링에서 되살아난 빌드 에러를 찾아 고침", "project": "Shifter" }
+        { "text": "작업 하나마다 브랜치를 따서 `main`에 병합", "project": "IfIWasInMarket" },
+        { "text": "꼬인 병합 이력 복구", "project": "IfIWasInMarket" },
+        { "text": "커밋 기록으로 되살아난 버그 추적", "project": "Shifter" }
       ]
     }
   ],
