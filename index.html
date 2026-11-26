@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>김진우 · 포트폴리오</title>
+<!-- 고른 테마(밝게 / 어둡게)를 그리기 전에 먼저 입힘 — 새로고침할 때 어두운 화면이 번쩍이지 않게. 기본은 어둡게 -->
+<script>try { if (localStorage.getItem('pf-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}</script>
 <!-- 링크 미리보기(메신저·메일·검색): 미리보기 봇은 스크립트를 돌리지 않아 data/를 못 읽으므로 여기만 글을 적어 둠.
      profile.md의 이름·직무·한 줄 정체성을 바꾸면 이 네 줄도 같이 바꿈. og:image는 배포 주소(GitHub Pages) 기준 절대 주소여야 함 -->
 <meta name="description" content="김진우 · Unity 게임 클라이언트 프로그래머 포트폴리오 — 좋은 플레이 경험은 감이 아니라 데이터로 다듬습니다.">
@@ -29,15 +31,22 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
+  /* 테마 2가지: 어둡게(기본) · 밝게(html[data-theme="light"]). 머리 막대의 [밝게 / 어둡게] 버튼이 바꾸고 브라우저에 기억함(localStorage 'pf-theme').
+     글자·선·판의 반투명 색은 모두 --ink-rgb · --bg-rgb에서 나오므로 두 테마는 아래 색 몇 개만 다름.
+     게임 화면 틀(.crt .screen · 월드맵 썸네일)과 크게 보기 창은 그림을 보는 곳이라 두 테마 모두 어두움 */
   :root {
+    color-scheme: dark;
     --bg: #0A0D0B;
     --ink: #E9EEE6;
     --acc: #7BE38F;
-    --body: rgba(233, 238, 230, .80);
-    --muted: rgba(233, 238, 230, .56);
-    --line: rgba(233, 238, 230, .12);
-    --line2: rgba(233, 238, 230, .24);
-    --panel: rgba(233, 238, 230, .04);
+    --ink-rgb: 233, 238, 230;
+    --bg-rgb: 10, 13, 11;
+    --scan: rgba(0, 0, 0, .14);
+    --body: rgba(var(--ink-rgb), .80);
+    --muted: rgba(var(--ink-rgb), .56);
+    --line: rgba(var(--ink-rgb), .12);
+    --line2: rgba(var(--ink-rgb), .24);
+    --panel: rgba(var(--ink-rgb), .04);
     --acc-deep: color-mix(in srgb, var(--acc) 30%, var(--bg));
     --acc-soft: color-mix(in srgb, var(--acc) 13%, transparent);
     --acc-line: color-mix(in srgb, var(--acc) 45%, transparent);
@@ -50,19 +59,41 @@
     --cur: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='30' viewBox='0 0 10 15' shape-rendering='crispEdges'%3E%3Cpath d='M.5.5v11l3-3 2 5 2-1-2-4.5h4z' fill='%23E9EEE6' stroke='%230A0D0B'/%3E%3C/svg%3E") 1 1, auto;
     --cur-hot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='30' viewBox='0 0 10 15' shape-rendering='crispEdges'%3E%3Cpath d='M.5.5v11l3-3 2 5 2-1-2-4.5h4z' fill='%237BE38F' stroke='%230A0D0B'/%3E%3C/svg%3E") 1 1, pointer;
   }
+  /* 밝게: 종이색 바탕 + 진한 글자. 강조 초록은 밝은 바탕에서 읽히도록 진하게(바탕 대비 약 4.6:1) */
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #F2EFE6;
+    --ink: #1B211D;
+    --acc: #1F7A3A;
+    --ink-rgb: 27, 33, 29;
+    --bg-rgb: 242, 239, 230;
+    --scan: rgba(0, 0, 0, .035);
+    --body: rgba(var(--ink-rgb), .84);
+    --muted: rgba(var(--ink-rgb), .62);
+    --line: rgba(var(--ink-rgb), .14);
+    --line2: rgba(var(--ink-rgb), .30);
+    --acc-deep: color-mix(in srgb, var(--acc) 22%, var(--bg));
+    --acc-soft: color-mix(in srgb, var(--acc) 11%, transparent);
+  }
+  /* 테마 버튼: [밝게 | 어둡게] 두 칸, 지금 테마 칸이 초록 */
+  .theme-sw { display: inline-flex; height: 32px; padding: 2px; background: var(--panel); --pc: var(--line2); }
+  .theme-sw button { display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; border: 0; background: transparent; font-family: var(--pixel); font-weight: 700;
+    font-size: 12px; color: var(--muted); white-space: nowrap; transition: color .12s, background-color .12s; }
+  .theme-sw button:hover { color: var(--ink); }
+  .theme-sw button[aria-pressed="true"] { color: var(--bg); background: var(--acc); }
   html { scroll-behavior: smooth; scroll-padding-top: 72px; cursor: var(--cur); }
   a, button, summary, [role="button"] { cursor: var(--cur-hot); }
   button:disabled { cursor: var(--cur); }
   body {
     margin: 0; background-color: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden;
     word-break: keep-all; overflow-wrap: break-word;   /* 한글은 낱말 단위로만 꺾음(레이아웃 원칙 2 — theme/typeset.css가 기대하는 규칙) */
-    background-image: linear-gradient(rgba(233, 238, 230, .026) 1px, transparent 1px), linear-gradient(90deg, rgba(233, 238, 230, .026) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(var(--ink-rgb), .026) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--ink-rgb), .026) 1px, transparent 1px);
     background-size: 32px 32px;
   }
   /* 주사선(CRT) — 바탕에만 아주 옅게. z-index -1 = 글·그림·상자 "아래"(본문 바탕 무늬 위).
      화면 맨 위를 덮으면 스크린샷마다 검은 가로줄이 그어지고, 화면 배율 125%·150%에서는 줄 간격이 들쭉날쭉해져 더 눈에 띕니다. */
   body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
-    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, .14) 2px 3px); }
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, var(--scan) 2px 3px); }
   body.lb-open { overflow: hidden; }
   ::selection { background: var(--acc); color: var(--bg); }
   a:focus-visible, button:focus-visible { outline: 2px dashed var(--acc); outline-offset: 4px; }
@@ -162,7 +193,7 @@
   .crt .dot.on { background-color: var(--acc); }
 
   /* RPG 대화창 */
-  .dialog { position: relative; padding: 26px 24px 30px; background: rgba(10, 13, 11, .94); --pc: var(--ink); }
+  .dialog { position: relative; padding: 26px 24px 30px; background: rgba(var(--bg-rgb), .94); --pc: var(--ink); }
   .dialog .who { position: absolute; top: -13px; left: 18px; padding: 3px 10px; background: var(--bg); font-family: var(--pixel); font-weight: 700; font-size: 12px;
     color: var(--acc); --pc: var(--acc); }
   .dialog .more { position: absolute; right: 16px; bottom: 8px; font-size: 11px; color: var(--acc); }
@@ -180,7 +211,7 @@
   a.chip:hover { background: var(--acc); color: var(--bg); }
   .slot { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex: none; font-family: var(--arcade); font-size: 10px;
     color: var(--acc); background: var(--acc-soft); --pc: var(--acc-line); }
-  .ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; background: rgba(233, 238, 230, .08); color: var(--ink); }
+  .ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; background: rgba(var(--ink-rgb), .08); color: var(--ink); }
 
   /* 상태창 · 스킬 */
   .portrait { display: flex; align-items: center; justify-content: center; width: 84px; height: 84px; flex: none; font-family: var(--arcade); font-size: 20px;
@@ -191,7 +222,7 @@
   @media (min-width: 768px) { .evrow { grid-template-columns: repeat(2, minmax(0, 1fr)); } .evrow .main { grid-column: 1 / -1; } }
   @media (min-width: 1280px) { .evrow { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); } .evrow .main { grid-column: auto; } }
   .evp { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
-  .evp .wbar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 8px 14px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
+  .evp .wbar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 8px 14px; border-bottom: 1px dashed var(--line); background: rgba(var(--ink-rgb), .03); }
   .evp .wbar .tg { font-family: var(--arcade); font-size: 9px; color: var(--acc); }
   .evp .wbar .tt { font-family: var(--pixel); font-weight: 700; font-size: 13px; color: var(--ink); }
   .evp .wbar .ts { margin-left: auto; font-family: var(--pixel); font-size: 11px; color: var(--muted); }
@@ -209,7 +240,7 @@
   .dm .how { grid-column: 2; margin-top: -6px; font-size: 11.5px; color: var(--muted); }
   /* EXTEND: 더하는 것만 +1 칸으로 */
   .ext { display: grid; gap: 8px; }
-  .ext .add { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(10, 13, 11, .55); --pc: var(--acc-line); }
+  .ext .add { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(var(--bg-rgb), .55); --pc: var(--acc-line); }
   .ext .add .pl { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 30px; padding: 0 6px; font-family: var(--arcade); font-size: 10px;
     color: var(--bg); background: var(--acc); }
   .ext .add .nm { min-width: 0; font-family: var(--pixel); font-weight: 700; font-size: 12.5px; color: var(--ink); }
@@ -228,7 +259,7 @@
   /* 스킬 창: 머리 막대(SKILL 01) + 아이콘·제목 + 범용 근거 줄(프로젝트 이름은 보이지 않음 — 프로젝트가 늘어도 그대로 읽힘). 올리면 테두리·아이콘이 초록으로 */
   .sk { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
   .sk:hover { --pc: var(--acc-line); }
-  .sk .wbar { display: flex; align-items: center; gap: 10px; padding: 7px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
+  .sk .wbar { display: flex; align-items: center; gap: 10px; padding: 7px 16px; border-bottom: 1px dashed var(--line); background: rgba(var(--ink-rgb), .03); }
   .sk .wbar .no { font-family: var(--arcade); font-size: 9px; color: var(--muted); }
   .sk .hd { display: flex; align-items: center; gap: 14px; padding: 12px 16px 0; }
   .sk .ico { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; color: var(--acc); background: var(--acc-soft);
@@ -257,18 +288,18 @@
   /* 월드맵: 넓은 화면은 지도 + 옆 정보창, 좁은 화면은 위아래. 노드는 계단 길 위에(좁은 화면은 한 줄에 하나) */
   .mapgrid { display: grid; gap: 28px; }
   @media (min-width: 1024px) { .mapgrid { grid-template-columns: minmax(0, 1fr) 360px; align-items: stretch; } }
-  .map { position: relative; min-height: 420px; background-color: rgba(233, 238, 230, .03);
-    background-image: linear-gradient(rgba(233, 238, 230, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(233, 238, 230, .035) 1px, transparent 1px);
+  .map { position: relative; min-height: 420px; background-color: rgba(var(--ink-rgb), .03);
+    background-image: linear-gradient(rgba(var(--ink-rgb), .035) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--ink-rgb), .035) 1px, transparent 1px);
     background-size: 16px 16px; }
   .map .path { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .map .path polyline { fill: none; stroke: rgba(233, 238, 230, .30); stroke-width: 4px; stroke-dasharray: 4 10; vector-effect: non-scaling-stroke; }
+  .map .path polyline { fill: none; stroke: rgba(var(--ink-rgb), .30); stroke-width: 4px; stroke-dasharray: 4 10; vector-effect: non-scaling-stroke; }
   .map .world { position: absolute; left: 16px; top: 12px; display: flex; align-items: center; gap: 10px; }
   .map .wbtn { width: 32px; justify-content: center; padding: 0; }
   .node { position: absolute; transform: translate(-50%, -50%); padding: 0; border: 0; background: transparent; color: var(--ink); text-align: left; }
   .node .thumb { position: relative; display: block; overflow: hidden; border-radius: 10px / 8px; background: #000; box-shadow: 0 0 0 2px var(--line2);
     transition: box-shadow .15s; }
   .node .thumb img { display: block; width: 100%; height: auto; }
-  .node .lbl { display: block; margin-top: 12px; padding: 8px 10px; background: rgba(10, 13, 11, .92); transition: background-color .15s; }
+  .node .lbl { display: block; margin-top: 12px; padding: 8px 10px; background: rgba(var(--bg-rgb), .92); transition: background-color .15s; }
   .node .you { position: absolute; left: 50%; top: -30px; transform: translateX(-50%); font-family: var(--arcade); font-size: 9px; color: var(--acc); white-space: nowrap;
     animation: bob .7s steps(2) infinite; }
   .node:hover .thumb, .node:focus-visible .thumb { box-shadow: 0 0 0 2px var(--acc); animation: bob .5s steps(2) infinite; }
@@ -307,7 +338,7 @@
   .tab[aria-current="step"] { color: var(--bg); background: var(--acc); --pc: var(--acc); }
   .tarr { width: 36px; height: 36px; justify-content: center; padding: 0; }
   .tbar { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 4px; height: 8px; margin-top: 14px; }
-  .tbar button { height: 8px; padding: 0; border: 0; background: rgba(233, 238, 230, .10); transition: background-color .12s; }
+  .tbar button { height: 8px; padding: 0; border: 0; background: rgba(var(--ink-rgb), .10); transition: background-color .12s; }
   .tbar button:hover { background: var(--acc-line); }
   .tbar .thumbbar { position: absolute; left: 0; top: 0; bottom: 0; width: calc((100% - (var(--n) - 1) * 4px) / var(--n)); background: var(--acc);
     transform: translateX(calc(var(--k) * (100% + 4px))); transition: transform .45s var(--ease); pointer-events: none; }
@@ -334,13 +365,13 @@
   .zoom:hover img, .zoom:focus-visible img { --pc: var(--acc); }
   .boss { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 11px 14px; text-align: left; color: var(--ink); background: var(--panel); }
   .boss .bt { color: var(--muted); }
-  .boss .hp { display: block; height: 6px; background: rgba(233, 238, 230, .10); box-shadow: inset 0 0 0 1px rgba(233, 238, 230, .22); }
+  .boss .hp { display: block; height: 6px; background: rgba(var(--ink-rgb), .10); box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), .22); }
   .boss .hp i { display: block; height: 100%; width: 0; background: var(--acc); }
   .boss .hp i.drain { animation: drain .7s steps(7) forwards; }
   .boss .cl { display: inline-block; }
   .boss .cl.pop { color: var(--acc); animation: pop .45s steps(3); }
   .boss:hover { --pc: var(--acc-line); }
-  .boss[aria-pressed="true"] { background: rgba(10, 13, 11, .94); --pc: var(--acc); }
+  .boss[aria-pressed="true"] { background: rgba(var(--bg-rgb), .94); --pc: var(--acc); }
   .boss[aria-pressed="true"] .bt { color: var(--acc); }
   .log { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; }
   .hit-in { animation: hit .32s steps(4); }
@@ -355,7 +386,7 @@
   .shot:hover { transform: translate(-2px, -2px); }
   .shot:hover img, .shot:focus-visible img, .shot.on img { --pc: var(--acc); }
   .shot-cap { min-height: 44px; margin-top: 14px; padding: 8px 12px; font-family: var(--pixel); font-size: 12px; line-height: 1.5; color: var(--body); word-break: keep-all;
-    background: rgba(10, 13, 11, .9); --pc: var(--line2); }
+    background: rgba(var(--bg-rgb), .9); --pc: var(--line2); }
 
   /* 크게 보기 */
   .lbx { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 72px 76px; background: rgba(5, 7, 6, .93);
@@ -377,7 +408,7 @@
   .sparks i { position: absolute; width: 4px; height: 4px; margin: -2px 0 0 -2px; background: var(--acc); animation: spark .42s steps(5) forwards; }
 
   /* 왼쪽 세로 레일 (넓은 화면) */
-  .rail { position: fixed; left: 0; top: 0; bottom: 0; width: 64px; z-index: 45; border-right: 1px solid var(--line); background: rgba(10, 13, 11, .94);
+  .rail { position: fixed; left: 0; top: 0; bottom: 0; width: 64px; z-index: 45; border-right: 1px solid var(--line); background: rgba(var(--bg-rgb), .94);
     display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 14px 0 20px; }
   @media (min-width: 1024px) { .rail { display: flex; } }
   .rail .logo { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; font-family: var(--arcade); font-size: 10px; color: var(--acc); }
@@ -396,7 +427,7 @@
   .rail .ico:hover { color: var(--acc); transform: translateY(-2px); }
 
   /* 머리 막대 */
-  .nav { position: fixed; top: 0; right: 0; left: 0; z-index: 40; height: 64px; border-bottom: 1px solid var(--line); background: rgba(10, 13, 11, .86);
+  .nav { position: fixed; top: 0; right: 0; left: 0; z-index: 40; height: 64px; border-bottom: 1px solid var(--line); background: rgba(var(--bg-rgb), .86);
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
   @media (min-width: 1024px) { .nav { left: 64px; } }
   .nav .m { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 64px; font-family: var(--pixel); font-weight: 700; font-size: 13px; color: var(--muted); }
@@ -442,7 +473,7 @@
 <link rel="stylesheet" href="theme/typeset.css"><!-- 줄바꿈 규칙(짧은 끝줄 막기): theme/layout-principles.md 원칙 2 -->
 </head>
 <body>
-<div id="root"><p style="padding:96px 24px;color:rgba(233,238,230,.56);font-family:system-ui,sans-serif">불러오는 중…</p></div>
+<div id="root"><p style="padding:96px 24px;color:rgba(var(--ink-rgb), .56);font-family:system-ui,sans-serif">불러오는 중…</p></div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
@@ -666,6 +697,21 @@ function IconMail() {
 function IconCheck() {
   return <svg width="14" height="10" viewBox="0 0 7 5" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true" className="flex-none mt-[7px] acc"><path d="M6 0h1v1H6zM5 1h1v1H5zM0 2h1v1H0zM4 2h1v1H4zM1 3h1v1H1zM3 3h1v1H3zM2 4h1v1H2z" /></svg>;
 }
+// 테마 바꾸기 [밝게 | 어둡게] — html의 data-theme를 바꾸고 브라우저에 기억(다음에 열어도 그대로). 처음 고르는 값은 head의 작은 스크립트가 먼저 입힘
+function ThemeSwitch() {
+  const [theme, setTheme] = useState(() => (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'));
+  const pick = (v) => {
+    setTheme(v);
+    if (v === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+    try { localStorage.setItem('pf-theme', v); } catch (e) {}
+  };
+  return (
+    <div className="theme-sw pxb2" role="group" aria-label="화면 테마">
+      <button type="button" aria-pressed={theme === 'light'} onClick={() => pick('light')}>밝게</button>
+      <button type="button" aria-pressed={theme === 'dark'} onClick={() => pick('dark')}>어둡게</button>
+    </div>
+  );
+}
 function PdfButton({ t, className = '' }) {
   const [busy, setBusy] = useState(false);
   const go = async () => {
@@ -767,7 +813,10 @@ function Nav({ prof, projects, t, active }) {
         <nav className="ml-auto hidden md:flex items-center gap-6">
           {items.map(([id, label, on]) => <a key={id} href={`#${id}`} className={`m ${on ? 'on' : ''}`}><span className="cur" aria-hidden="true">▶</span>{label}</a>)}
         </nav>
-        <PdfButton t={t} className="ml-auto md:ml-0" />
+        <div className="ml-auto md:ml-0 flex items-center gap-3">
+          <ThemeSwitch />
+          <PdfButton t={t} />
+        </div>
       </div>
     </header>
   );
