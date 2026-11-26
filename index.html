@@ -186,6 +186,47 @@
   .portrait { display: flex; align-items: center; justify-content: center; width: 84px; height: 84px; flex: none; font-family: var(--arcade); font-size: 20px;
     color: var(--acc); background: var(--acc-soft); --pc: var(--acc-line); }
   .skill:hover { --pc: var(--acc-line); }
+  /* 스킬 창: 머리 막대(SKILL 01 · 근거 프로젝트 게이지) + 아이콘·제목 + 근거 줄. 올리면 테두리·아이콘이 초록으로 */
+  .sk { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
+  .sk:hover { --pc: var(--acc-line); }
+  .sk .wbar { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
+  .sk .wbar .no { font-family: var(--arcade); font-size: 9px; color: var(--muted); }
+  .gauge { display: inline-flex; gap: 3px; margin-left: auto; }
+  .gauge i { width: 10px; height: 8px; background: rgba(233, 238, 230, .12); }
+  .gauge i.on { background: var(--acc); }
+  .sk .hd { display: flex; align-items: center; gap: 14px; padding: 18px 16px 0; }
+  .sk .ico { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex: none; color: var(--acc); background: var(--acc-soft);
+    --pc: var(--acc-line); transition: background-color .12s, color .12s; }
+  .sk:hover .ico { background: var(--acc); color: var(--bg); --pc: var(--acc); }
+  .sk h3 { margin: 0; min-width: 0; font-family: var(--pixel); font-weight: 700; font-size: 18px; line-height: 1.35; color: var(--ink); word-break: keep-all; }
+  .sk h3 .sub { display: block; margin-top: 3px; font-weight: 400; font-size: 12px; line-height: 1.45; color: var(--muted); }
+  .sk ul { margin: 0; padding: 14px 16px 16px; list-style: none; }
+  .sk li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 9px 0; font-size: 14px; line-height: 1.6; color: var(--body); word-break: keep-all;
+    border-top: 1px dashed var(--line); }
+  .sk li:first-child { border-top: 0; padding-top: 0; }
+  .sk li .pj { display: inline-block; margin-top: 3px; font-family: var(--pixel); font-weight: 700; font-size: 11px; color: var(--acc); white-space: nowrap; }
+  .sk li .pj:hover { text-decoration: underline; text-underline-offset: 3px; }
+  /* 인벤토리 창: 분류마다 한 줄(이름 + 아이템 슬롯), 아래 설명칸은 올린 아이템을 설명.
+     스킬 창 격자의 빈 칸에 들어가므로 폭이 좁으면 분류 이름을 위에, 넓으면 왼쪽에(컨테이너 폭 기준) */
+  .inv { display: flex; flex-direction: column; min-width: 0; background: var(--panel); container-type: inline-size; }
+  .inv .wbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 9px 16px; border-bottom: 1px dashed var(--line); background: rgba(233, 238, 230, .03); }
+  .inv .rows { flex: 1; padding: 4px 16px; }
+  .inv .row { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .inv .row:last-child { border-bottom: 0; }
+  @container (min-width: 600px) { .inv .row { grid-template-columns: 120px minmax(0, 1fr); align-items: center; gap: 18px; } }
+  .inv .gl { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 12px; color: var(--muted); }
+  .inv .gl .n { margin-right: 6px; font-family: var(--arcade); font-size: 9px; color: var(--acc); }
+  .inv .items { display: flex; flex-wrap: wrap; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .item { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px 0 4px; border: 0; color: var(--body); background: rgba(10, 13, 11, .6);
+    --pc: var(--line2); transition: color .12s, transform .1s steps(2); }
+  .item .cart { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex: none; font-family: var(--arcade); font-size: 9px;
+    color: var(--acc); background: var(--acc-soft); transition: background-color .12s, color .12s; }
+  .item .nm { font-family: var(--pixel); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+  .item:hover, .item:focus-visible { color: var(--ink); --pc: var(--acc-line); transform: translateY(-2px); }
+  .item.on { color: var(--ink); --pc: var(--acc); }
+  .item.on .cart { background: var(--acc); color: var(--bg); }
+  .inv .desc { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-height: 58px; margin: 0 16px 16px; padding: 9px 12px; font-family: var(--pixel);
+    font-size: 12px; line-height: 1.5; color: var(--body); background: rgba(10, 13, 11, .9); --pc: var(--line2); }
 
   /* 월드맵: 넓은 화면은 지도 + 옆 정보창, 좁은 화면은 위아래. 노드는 계단 길 위에(좁은 화면은 한 줄에 하나) */
   .mapgrid { display: grid; gap: 28px; }
@@ -889,11 +930,62 @@ function Status({ prof, projects, t, no }) {
   );
 }
 
-// ── 03 스킬: 기술 스택 카드(근거 프로젝트와 함께) ──
+// ── 03 스킬: 기술 스택 카드(아이콘 + 제목 + 근거 줄) + 도구 인벤토리 ──
+// 픽셀 아이콘: '#' = 칠한 칸. 스킬 이름의 낱말로 고르고, 맞는 것이 없으면 번호 슬롯
+const PX_ICONS = {
+  cube: ['.....#.....', '...##.##...', '.##.....##.', '#.........#', '###.....###', '#..##.##..#', '#....#....#', '#....#....#', '#....#....#', '.##..#..##.', '...#####...', '.....#.....'],
+  data: ['.########.', '#........#', '#........#', '.########.', '#........#', '#........#', '.########.', '#........#', '#........#', '.########.'],
+  blocks: ['####..####', '#..#..#..#', '#..#..#..#', '####..####', '..........', '..........', '####...#..', '#..#...#..', '#..#.#####', '####...#..', '.......#..'],
+  swap: ['........#..', '.........#.', '###########', '.........#.', '........#..', '..#........', '.#.........', '###########', '.#.........', '..#........'],
+  branch: ['.##.....##.', '#..#...#..#', '.##.....##.', '.#.......#.', '.#......#..', '.#....##...', '.#..##.....', '.###.......', '.#.........', '.##........', '#..#.......', '.##........'],
+};
+const SKILL_ICON = [[/unity/i, 'cube'], [/데이터|data|tsv/i, 'data'], [/구조|설계|패턴|pattern/i, 'blocks'], [/네트워크|network|socket|비동기/i, 'swap'], [/git|협업/i, 'branch']];
+function PxIcon({ name, cell = 2 }) {
+  const rows = PX_ICONS[name];
+  const d = rows.map((r, y) => [...r].map((c, x) => (c === '#' ? `M${x} ${y}h1v1H${x}z` : '')).join('')).join('');
+  return <svg width={rows[0].length * cell} height={rows.length * cell} viewBox={`0 0 ${rows[0].length} ${rows.length}`} fill="currentColor" shapeRendering="crispEdges" aria-hidden="true"><path d={d} /></svg>;
+}
+// "Unity 6 (URP · Input System · uGUI)" → 제목 "Unity 6" + 작은 줄 "URP · Input System · uGUI" (이름은 profile.md 메모 그대로)
+const splitSkill = (name) => { const m = String(name).match(/^(.*?)\s*\((.+)\)\s*$/); return m ? [m[1], m[2]] : [name, '']; };
+
+// 도구 인벤토리 — 프로젝트 문서 개요 표(엔진 · 패키지 · 도구 · 협업 도구 칸)에 적힌 것만. p = 적힌 프로젝트(올리면 보임)
+//   Shifter: Unity 6 · Rider · Git · GitHub · Claude / OverFixed: Unity 6 · Input System · uGUI + TextMeshPro · DOTween · Rider · Git / GitHub
+//   IfIWasInMarket: Unity 6 · UniTask · Newtonsoft.Json · DOTween · uGUI + TextMeshPro · Input System · GitHub 조직 저장소 · Fork · Asana · Rider
+const TOOL_GROUPS = [
+  { label: '엔진 · IDE', items: [
+    { name: 'Unity', mark: 'U', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] },
+    { name: 'Rider', mark: 'RD', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] } ] },
+  { label: '라이브러리', items: [
+    { name: 'DOTween', mark: 'DT', p: ['IfIWasInMarket', 'OverFixed'] },
+    { name: 'UniTask', mark: 'UT', p: ['IfIWasInMarket'] },
+    { name: 'Newtonsoft.Json', mark: '{}', p: ['IfIWasInMarket'] },
+    { name: 'TextMeshPro', mark: 'TMP', p: ['IfIWasInMarket', 'OverFixed'] },
+    { name: 'Input System', mark: 'IN', p: ['IfIWasInMarket', 'OverFixed'] } ] },
+  { label: '협업 도구', items: [
+    { name: 'Git', mark: 'GIT', p: ['Shifter', 'OverFixed'] },
+    { name: 'GitHub', mark: 'GH', p: ['Shifter', 'IfIWasInMarket', 'OverFixed'] },
+    { name: 'Fork', mark: 'FK', p: ['IfIWasInMarket'] },
+    { name: 'Asana', mark: 'AS', p: ['IfIWasInMarket'] } ] },
+  { label: 'AI 도구', items: [
+    { name: 'Claude', mark: 'CL', p: ['Shifter'] } ] },
+];
+
 function Skills({ pf, byId, t, no }) {
   const skills = pf.skills || [];
   if (!skills.length) return null;
-  const cols = skills.length >= 3 ? 'md:grid-cols-2 xl:grid-cols-3' : skills.length === 2 ? 'md:grid-cols-2' : '';
+  const cols = skills.length >= 3 ? 'md:grid-cols-2 xl:grid-cols-6' : skills.length === 2 ? 'md:grid-cols-2' : '';
+  const groups = TOOL_GROUPS.map((g) => ({ ...g, items: g.items.filter((x) => x.p.some((id) => byId[id])) })).filter((g) => g.items.length);
+  const total = Object.keys(byId).length;
+  const nItems = groups.reduce((a, g) => a + g.items.length, 0);
+  const [cur, setCur] = useState(null);   // 설명칸에 보일 아이템(올리기 · 포커스 · 누르기)
+  const used = (x) => x.p.filter((id) => byId[id]).map((id) => byId[id].title);
+  // 빈 칸 없는 격자: 넓은 화면은 6칸 격자에 창마다 2칸(3열). 마지막 줄이 2개면 3칸씩, 1개면 6칸 — 중간 폭(2열)도 마지막 하나가 남으면 2칸
+  const n = skills.length;
+  const span = (i) => {
+    const xl = n >= 3 && i >= n - (n % 3) ? (n % 3 === 2 ? 'xl:col-span-3' : 'xl:col-span-6') : 'xl:col-span-2';
+    const md = n >= 2 && n % 2 === 1 && i === n - 1 ? 'md:col-span-2' : '';
+    return `${xl} ${md}`;
+  };
   return (
     <section id="skills" className="sec stage">
       <div className="wrap pad">
@@ -901,25 +993,33 @@ function Skills({ pf, byId, t, no }) {
           <div className="flex-1 min-w-0 basis-[320px]"><Eyebrow no={no('skills')}>{t('page.stack')}</Eyebrow><h2 className="giant mt-4">{t('en.skills')}</h2></div>
           <div className="min-w-0 pb-1 lg:text-right">
             <p className="f-pixel text-[13px] txt">SKILL SLOTS — {t('page.stack-note')}</p>
-            <p className="mt-1 f-pixel text-[12px] muted"><span className="f-arcade text-[10px] acc">×N</span> = 근거 프로젝트 수</p>
+            <p className="mt-1 f-pixel text-[12px] muted"><span className="gauge align-[-1px] mr-1.5" aria-hidden="true"><i className="on" /><i /></span>= 근거가 나온 프로젝트 수</p>
           </div>
         </div>
         <div className={`mt-8 grid gap-6 ${cols}`}>
           {skills.map((s, i) => {
+            const [title, sub] = splitSkill(s.name);
+            const icon = (SKILL_ICON.find(([re]) => re.test(s.name)) || [])[1];
             const ev = s.evidence || [];
-            const n = new Set(ev.map((e) => e.project).filter(Boolean)).size;
+            const n = new Set(ev.map((e) => e.project).filter((id) => byId[id])).size;
             return (
-              <article key={i} className="skill panel pxb p-5 min-w-0">
-                <div className="flex items-center gap-3.5">
-                  <span className="slot pxb2" aria-hidden="true">{pad(i + 1)}</span>
-                  <h3 className="flex-1 min-w-0 f-pixel font-bold text-[17px] leading-snug break-keep">{s.name}</h3>
-                  {n > 0 && <span className="f-arcade text-[12px] acc flex-none" aria-label={`근거 프로젝트 ${n}개`}>×{n}</span>}
+              <article key={i} className={`sk pxb ${span(i)}`}>
+                <div className="wbar">
+                  <span className="no">SKILL {pad(i + 1)}</span>
+                  {total > 0 && <span className="gauge" role="img" aria-label={`근거 프로젝트 ${n} / ${total}`}>{Array.from({ length: total }, (_, k) => <i key={k} className={k < n ? 'on' : ''} />)}</span>}
                 </div>
-                <ul className="mt-[18px] space-y-3.5">
+                <div className="hd">
+                  <span className="ico pxb2" aria-hidden="true">{icon ? <PxIcon name={icon} /> : <span className="f-arcade text-[11px]">{pad(i + 1)}</span>}</span>
+                  <h3>{title}{sub && <span className="sub">{sub}</span>}</h3>
+                </div>
+                <ul>
                   {ev.map((e, k) => (
-                    <li key={k} className="text-[14px] leading-[1.7] txt break-keep">
-                      <span className="acc mr-1.5" aria-hidden="true">▸</span><Rich text={e.text} />
-                      {byId[e.project] && <> <a href={`#p-${e.project}`} className="chip pxb2 ml-1" onClick={(ev2) => { ev2.preventDefault(); enterStage(`p-${e.project}`); }}>{byId[e.project].title}</a></>}
+                    <li key={k}>
+                      <span className="acc" aria-hidden="true">▸</span>
+                      <span>
+                        <Rich text={e.text} />
+                        {byId[e.project] && <><br /><a href={`#p-${e.project}`} className="pj" onClick={(ev2) => { ev2.preventDefault(); enterStage(`p-${e.project}`); }}>{byId[e.project].title} →</a></>}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -927,10 +1027,43 @@ function Skills({ pf, byId, t, no }) {
             );
           })}
         </div>
+        {groups.length > 0 && (
+          <div className="inv pxb mt-8">
+            <div className="wbar">
+              <span className="f-arcade text-[10px] acc">INVENTORY</span>
+              <span className="f-pixel font-bold text-[13px]">쓴 도구</span>
+              <span className="ml-auto f-arcade text-[9px] muted">ITEMS {pad(nItems)}</span>
+            </div>
+            <div className="rows">
+              {groups.map((g, gi) => (
+                <div key={g.label} className="row">
+                  <p className="gl"><span className="n">{pad(gi + 1)}</span>{g.label}</p>
+                  <ul className="items">
+                    {g.items.map((x) => (
+                      <li key={x.name}>
+                        <button type="button" className={`item pxb2 ${cur === x ? 'on' : ''}`} aria-pressed={cur === x}
+                                onMouseEnter={() => setCur(x)} onFocus={() => setCur(x)} onClick={() => setCur(x)}>
+                          <span className="cart" aria-hidden="true">{x.mark}</span>
+                          <span className="nm">{x.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <p className="desc pxb2" aria-live="polite">
+              {cur
+                ? <><span className="font-bold acc">{cur.name}</span><span>{g2label(cur)}</span><span className="muted">쓴 프로젝트 — {used(cur).join(' · ')}</span></>
+                : <span className="muted"><span className="acc mr-1.5" aria-hidden="true">▶</span>아이템에 올리면 쓴 프로젝트가 여기 보입니다</span>}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
 }
+const g2label = (x) => (TOOL_GROUPS.find((g) => g.items.includes(x)) || {}).label || '';
 
 // ── 04 월드맵: 프로젝트를 기간 순서로 계단 길 위에. 고르면 옆 정보창이 미끄러져 바뀌고, 고른 노드를 한 번 더 누르면(Enter) 입장.
 // 한 월드에 5개까지. 더 많으면 WORLD 1 · 2 …로 나눠 ◀ ▶(키는 월드 끝을 넘으면 다음 월드로) ──
