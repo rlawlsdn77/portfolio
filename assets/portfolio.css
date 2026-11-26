@@ -158,6 +158,9 @@ code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft
 .fk { width: fit-content; font-family: var(--display); font-size: 11.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); }
 .flist h3 { margin-top: 4px; font-size: 18px; font-weight: 800; line-height: 1.35; }
 .flist .fr-t p:not(.fk) { margin-top: 6px; font-size: 15px; line-height: 1.65; color: var(--body); }
+/* 선택 이유: 설명 아래 강조색 줄 + 라벨(2026-11-26) */
+.flist .fr-t p.fwhy { margin-top: 10px; padding-left: 12px; border-left: 2px solid var(--accent-ink); font-size: 14px; line-height: 1.65; color: var(--ink); }
+.fwhy b { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 800; color: var(--accent-ink); }
 .pill { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: var(--pill); border: 1px solid var(--line-2); background: transparent;
         font-size: 13px; font-weight: 700; color: var(--ink); text-decoration: none; white-space: nowrap; transition: border-color .15s, background .15s, color .15s; }
 .pill:hover, li.on .pill { border-color: var(--accent-ink); background: var(--accent-soft); color: var(--accent-ink); }
@@ -285,6 +288,9 @@ code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft
   .flist li { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10pt; padding: 8pt 10pt; }
   .flist h3 { font-size: 11pt; }
   .flist .fr-t p:not(.fk) { font-size: 9.5pt; }
+  .flist .fr-t p.fwhy { margin-top: 4pt; padding-left: 7pt; border-left-width: 1.5pt; font-size: 9pt; line-height: 1.45; }
+  .flist li:has(.fwhy) { padding-top: 7pt; padding-bottom: 7pt; }   /* 선택 이유가 들어가도 기능 소개가 A4 한 쪽에 들어가게 */
+  .fwhy b { margin-bottom: 1pt; font-size: 7.5pt; }
   .fk { font-size: 7.5pt; }
   .pill { font-size: 8pt; padding: 3pt 8pt; }
   .shot.on, .flist li.on { box-shadow: none; background: none; border-color: var(--line); }
